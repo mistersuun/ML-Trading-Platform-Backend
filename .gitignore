@@ -3,3 +3,11 @@ __pycache__/
 *.egg-info/
 venv/
 .env
+.venv/
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+*.sqlite
+*.db
+report.html
+data/snapshots/*.parquet
