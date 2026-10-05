@@ -230,3 +230,41 @@ ORDER_ELIGIBLE_STATUSES = ("oos_validated", "deflated_validated")
 
 # Pairs excluded from the default scan (D3)
 RESEARCH_ONLY_PAIRS = [("GC=F", "SI=F"), ("CL=F", "NG=F")]
+
+# ══════════════════════════════════════════════════════════════
+#  PHASE 2 — CORRECT RESULTS (roadmap WS2.1-WS2.7 + reviewer amendments)
+# ══════════════════════════════════════════════════════════════
+
+# Engine convention (D11): signal at bar t executes at the open of t+1; Sharpe uses rf=0 on daily
+# mark-to-market returns of the actual position size. "close" execution is an explicit opt-in only.
+EXECUTION_MODE = "next_open"
+MIN_TRADES_OOS = 30
+
+# Data
+RESEARCH_LOOKBACK_DAYS = 365 * 8      # validation needs long history; display endpoints may use less
+DATA_COVERAGE_MIN = 0.95              # share of expected sessions that must be present
+DATA_MAX_ABS_DAILY_RETURN = 0.5       # flag (not drop) bars beyond this 1-day move
+
+# Validation (D6). The hold-out starts at a FIXED calendar date and is never used for selection;
+# results on it are read once per strategy version. Revisit (move forward) only with a new
+# strategy version, and record the change in docs/decisions.md.
+HOLDOUT_START = "2025-07-01"
+WF_TRAIN_BARS = 504                   # ~2y
+WF_TEST_BARS = 126                    # ~6m
+WF_STEP_BARS = 126
+OOS_PSR_MIN = 0.95
+NULL_DRAWS = 1000
+NULL_P_MAX = 0.05
+COST_STRESS_MULT = 2.0
+FDR_ALPHA = 0.05                      # Benjamini-Hochberg across ALL candidates tested in a run
+SEED = 20261005
+
+# ML
+ML_HORIZON_BARS = 1
+ML_EMBARGO_BARS = 5
+ML_CV_TEST_BARS = 126
+
+# Pairs
+PAIRS_MIN_ALIGNED_BARS = 252
+PAIRS_ROLLING_WINDOW = 60
+PAIRS_TIME_STOP_HALF_LIVES = 3
