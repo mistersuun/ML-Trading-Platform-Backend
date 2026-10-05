@@ -149,7 +149,6 @@ def test_BT_5b_zero_signal_flat_curve_sharpe_is_zero():
 
 
 # --------------------------------------------------------------------------- BT-6
-@pytest.mark.xfail(**BUG, reason="BT-6: profit_factor is gross_profit/1e-10 (~1e9) when there are no losses")
 def test_BT_6_profit_factor_finite_and_capped_with_no_losses():
     df = flat_frame(40, 100.0)
     set_bars(df, 7, 8, open_=100.0, close=104.5, high=105.0, low=99.5)  # take-profit bar

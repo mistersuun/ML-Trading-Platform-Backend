@@ -15,8 +15,8 @@ the broker-state dedupe added in WS0.4; the per-bar dedupe arrives with WS1.3.
 |---|---|---|---|
 | ORD-1 | `test_orders_bugs.py::test_ORD_1_qty_bounded_when_profit_factor_huge` | fixed | WS1.3 / WS0.4 |
 | ORD-2 | `test_orders_bugs.py::test_ORD_2_one_order_per_symbol_bar` | fixed | WS1.3 / WS0.4 |
-| ORD-2b | `test_orders_bugs.py::test_ORD_2b_no_rebuy_on_same_bar_after_position_closed` | xfail | WS1.3 |
-| ORD-3 | `test_orders_bugs.py::test_ORD_3_risk_manager_blocks_orders_when_halted` | xfail | WS1.3 / WS0.4 |
+| ORD-2b | `test_orders_bugs.py::test_ORD_2b_no_rebuy_on_same_bar_after_position_closed` | fixed | WS1.3 |
+| ORD-3 | `test_orders_bugs.py::test_ORD_3_risk_manager_blocks_orders_when_halted` | fixed | WS1.3 / WS0.4 |
 | ORD-4 | `test_orders_bugs.py::test_ORD_4_no_non_equity_symbol_reaches_broker` | fixed | WS1.3 / WS0.4 |
 | ORD-5 | `test_orders_bugs.py::test_ORD_5_sell_without_position_rejected` | fixed | WS1.3 / WS0.4 |
 | ORD-6 | `test_orders_bugs.py::test_ORD_6_ml_sell_confidence_at_least_half` | fixed | WS1.3 / WS0.4 |
@@ -30,7 +30,7 @@ the broker-state dedupe added in WS0.4; the per-bar dedupe arrives with WS1.3.
 | BT-1a | `test_backtest_bugs.py::test_BT_1a_canary_peeking_signal_is_profitable_today` | fixed | n/a (characterization of BT-1) |
 | BT-1b | `test_backtest_bugs.py::test_BT_1b_peeking_signal_not_profitable_with_next_bar_entry` | xfail | WS2.2 / WS2.3 |
 | BT-5b | `test_backtest_bugs.py::test_BT_5b_zero_signal_flat_curve_sharpe_is_zero` | fixed | WS2.2 / WS2.3 |
-| BT-6 | `test_backtest_bugs.py::test_BT_6_profit_factor_finite_and_capped_with_no_losses` | xfail | WS2.2 / WS2.3 |
+| BT-6 | `test_backtest_bugs.py::test_BT_6_profit_factor_finite_and_capped_with_no_losses` | fixed | WS1.5 |
 | BT-7 | `test_backtest_bugs.py::test_BT_7_equity_curve_covers_every_bar` | xfail | WS2.2 / WS2.3 |
 | WF-1 | `test_backtest_bugs.py::test_WF_1_walk_forward_uses_training_window_for_warmup` | xfail | WS2.2 / WS2.3 |
 | ML-1 | `test_ml_bugs.py::test_ML_1_target_up_nan_on_unresolved_rows` | xfail | WS2.5 |
@@ -52,7 +52,7 @@ the broker-state dedupe added in WS0.4; the per-bar dedupe arrives with WS1.3.
 | DATA-1 | `test_api_data_alerts_bugs.py::test_DATA_1_futures_symbol_not_sent_as_equity` | xfail | WS2.1 |
 | DATA-2 | `test_api_data_alerts_bugs.py::test_DATA_2_adjusted_close_consistent_with_ohl` | xfail | WS2.1 |
 | DATA-3 | `test_api_data_alerts_bugs.py::test_DATA_3_in_progress_bar_dropped` | xfail | WS2.1 |
-| ALR-1 | `test_api_data_alerts_bugs.py::test_ALR_1_telegram_message_with_underscore_delivered` | xfail | WS1.7 |
-| ALR-2 | `test_api_data_alerts_bugs.py::test_ALR_2_bot_token_not_in_logs_on_http_error` | xfail | WS1.7 |
-| LLM-1 | `test_api_data_alerts_bugs.py::test_LLM_1_model_id_configurable_via_env` | xfail | WS1.8 |
-| LLM-1b | `test_api_data_alerts_bugs.py::test_LLM_1b_api_failure_is_surfaced` | xfail | WS1.8 |
+| ALR-1 | `test_api_data_alerts_bugs.py::test_ALR_1_telegram_message_with_underscore_delivered` | fixed | WS1.7 |
+| ALR-2 | `test_api_data_alerts_bugs.py::test_ALR_2_bot_token_not_in_logs_on_http_error` | fixed | WS1.7 |
+| LLM-1 | `test_api_data_alerts_bugs.py::test_LLM_1_model_id_configurable_via_env` | fixed | WS1.8 |
+| LLM-1b | `test_api_data_alerts_bugs.py::test_LLM_1b_api_failure_is_surfaced` | fixed | WS1.8 |

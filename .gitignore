@@ -10,3 +10,5 @@ venv/
 *.sqlite
 *.db
 report.html
+state/*.db*
+state/KILL

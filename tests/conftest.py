@@ -45,6 +45,18 @@ def _block_network():
     enable_socket()
 
 
+@pytest.fixture(autouse=True)
+def _isolated_state_paths(tmp_path, monkeypatch):
+    """Never touch the real state/ dir: point the state DB and kill switch at tmp_path (DB not created).
+
+    Tests that need an initialised DB call tests.fixtures.fake_broker.init_state."""
+    import config
+
+    monkeypatch.setattr(config, "STATE_DB_PATH", str(tmp_path / "state" / "trading.db"))
+    monkeypatch.setattr(config, "KILL_SWITCH_FILE", str(tmp_path / "state" / "KILL"))
+    monkeypatch.delenv("KILL_SWITCH", raising=False)
+
+
 @pytest.fixture
 def frozen_now():
     return FROZEN_NOW

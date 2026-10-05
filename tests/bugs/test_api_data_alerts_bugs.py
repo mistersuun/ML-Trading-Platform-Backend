@@ -204,16 +204,14 @@ def test_DATA_3_in_progress_bar_dropped(av, frozen_now, monkeypatch):
 
 
 # --------------------------------------------------------------------------- ALR-1
-@pytest.mark.xfail(reason="BUG-ALR-1: Telegram sent with parse_mode=Markdown, underscores make the alert fail", **BUG)
 def test_ALR_1_telegram_message_with_underscore_delivered(telegram, capsys):
     msg = alerts.format_signal_alert({"symbol": "SPY", "pattern": "bull_flag"}, "BUY", 100.0)
     assert msg.count("_") % 2 == 1  # sanity: triggers the Telegram Markdown parse error
-    assert alerts.send_alert(msg, method="telegram") is True
+    assert alerts.send_alert(msg, method="telegram").sent is True
     assert len(telegram.sent) == 1
 
 
 # --------------------------------------------------------------------------- ALR-2
-@pytest.mark.xfail(reason="BUG-ALR-2: bot token leaks into logs via the HTTPError URL", **BUG)
 def test_ALR_2_bot_token_not_in_logs_on_http_error(telegram, monkeypatch, caplog):
     def fail_post(url, json=None, **kw):
         resp = requests.Response()
@@ -224,7 +222,7 @@ def test_ALR_2_bot_token_not_in_logs_on_http_error(telegram, monkeypatch, caplog
 
     monkeypatch.setattr(alerts.requests, "post", fail_post)
     with caplog.at_level(logging.DEBUG):
-        assert alerts.send_alert("hello", method="telegram") is False
+        assert alerts.send_alert("hello", method="telegram").sent is False
     assert caplog.records, "expected the failure to be logged"
     assert config.TELEGRAM_BOT_TOKEN not in caplog.text
     assert "SECRET-TOKEN" not in caplog.text
@@ -246,26 +244,35 @@ def reloaded_config_with_model(monkeypatch):
     importlib.reload(config)
 
 
-@pytest.mark.xfail(reason="BUG-LLM-1: Claude model id hard-coded in config.py, ANTHROPIC_MODEL env ignored", **BUG)
+class _FakeLLMClient:
+    """Stands in for anthropic.Anthropic; records parse() kwargs, optionally raises."""
+    def __init__(self, exc=None):
+        from types import SimpleNamespace
+        self.seen, self.exc = {}, exc
+        self.messages = SimpleNamespace(parse=self._parse)
+        self.beta = SimpleNamespace(messages=SimpleNamespace(parse=self._parse))
+
+    def _parse(self, **kw):
+        from types import SimpleNamespace
+        if self.exc:
+            raise self.exc
+        self.seen = kw
+        return SimpleNamespace(stop_reason="end_turn", parsed_output=claude_integration.Briefing(bias="neutral"),
+                               usage=None, _request_id="req_1")
+
+
 def test_LLM_1_model_id_configurable_via_env(reloaded_config_with_model, monkeypatch):
-    seen = {}
-
-    def fake_post(url, json=None, **kw):
-        seen["model"] = json["model"]
-        return _FakeResp({"content": [{"text": "ok"}]})
-
-    monkeypatch.setattr(claude_integration.requests, "post", fake_post)
+    fake = _FakeLLMClient()
+    monkeypatch.setattr(claude_integration, "_get_client", lambda: fake)
     claude_integration.generate_summary([], [], [])
-    assert seen["model"] == reloaded_config_with_model
+    assert fake.seen["model"] == reloaded_config_with_model
 
 
-@pytest.mark.xfail(reason="BUG-LLM-1: Claude API failure is swallowed (returns None, indistinguishable from no key)", **BUG)
 def test_LLM_1b_api_failure_is_surfaced(monkeypatch):
-    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "sk-test")
-    monkeypatch.setattr(claude_integration.requests, "post",
-                        lambda *a, **k: _FakeResp({"error": "model not found"}, status=404))
-    try:
-        out = claude_integration.generate_summary([], [], [])
-    except Exception:
-        return  # raising is an acceptable way of surfacing the failure
+    import anthropic
+    import httpx2
+    resp = httpx2.Response(404, request=httpx2.Request("POST", "https://api.anthropic.com/v1/messages"))
+    fake = _FakeLLMClient(exc=anthropic.NotFoundError("model not found", response=resp, body=None))
+    monkeypatch.setattr(claude_integration, "_get_client", lambda: fake)
+    out = claude_integration.generate_summary([], [], [])
     assert out is not None and ("fail" in out.lower() or "error" in out.lower())

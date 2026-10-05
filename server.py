@@ -14,12 +14,14 @@ from routes.pairs_routes import router as pairs_router
 from routes.ml_routes import router as ml_router
 from routes.stress_routes import router as stress_router
 from routes.config_routes import router as config_router
+from logging_setup import install_redaction
 
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     datefmt="%H:%M:%S",
 )
+install_redaction()
 
 
 class NumpyEncoder(json.JSONEncoder):

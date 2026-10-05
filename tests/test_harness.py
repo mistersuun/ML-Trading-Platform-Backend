@@ -57,26 +57,34 @@ def test_ou_pair_spread_is_mean_reverting():
     assert abs(np.corrcoef(spread.values[1:], spread.values[:-1])[0, 1]) < 0.99
 
 
-def test_fake_broker_records_calls(monkeypatch):
+def test_fake_broker_records_calls(monkeypatch, tmp_path):
     import paper_trader
+    from tests.fixtures.fake_broker import init_state, pretend_validated
+    init_state(monkeypatch, tmp_path)
+    pretend_validated(monkeypatch)
     broker = install_fake_broker(monkeypatch, FakeBroker(equity=5000, cash=5000, buying_power=10000))
     acct = paper_trader.get_account()
     assert acct["equity"] == 5000 and acct["buying_power"] == 10000
     assert paper_trader.get_positions() == []
-    res = paper_trader.execute_signal("AAPL", 1, current_price=100.0)
+    res = paper_trader.execute_signal("AAPL", 1, current_price=100.0, atr=1.0)
     assert res["symbol"] == "AAPL"
-    assert [c[0] for c in broker.calls] == ["get_account", "get_all_positions", "get_account", "get_all_positions", "get_orders", "submit_order"]
+    assert [c[0] for c in broker.calls] == ["get_account", "get_all_positions",  # display reads
+                                            "get_all_positions", "get_account",  # sleeve equity refresh
+                                            "get_asset", "get_all_positions", "get_orders", "submit_order"]
     assert broker.calls_to("submit_order")[0][1][0].symbol == "AAPL"
 
 
-def test_fake_broker_failures(monkeypatch):
+def test_fake_broker_failures(monkeypatch, tmp_path):
     import paper_trader
+    from tests.fixtures.fake_broker import init_state, pretend_validated
+    init_state(monkeypatch, tmp_path)
+    pretend_validated(monkeypatch)
     broker = install_fake_broker(monkeypatch)
     broker.timeout_on("get_account")
     assert paper_trader.get_account() is None
     broker.clear_failures()
     broker.raise_on("submit_order")
-    assert paper_trader.submit_order("AAPL", 1, "buy") is None
+    assert paper_trader.execute_signal("AAPL", 1, current_price=100.0, atr=1.0) is None
     assert len(broker.calls_to("submit_order")) == 1
     with pytest.raises(TimeoutError):
         broker.timeout_on("get_asset")

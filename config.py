@@ -157,7 +157,12 @@ ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "")
 # ══════════════════════════════════════════════════════════════
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+# CLAUDE_MODEL wins; ANTHROPIC_MODEL is accepted as an alias.
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL") or os.getenv("ANTHROPIC_MODEL") or "claude-opus-5-5"
+LLM_EFFORT = os.getenv("LLM_EFFORT", "medium")
+LLM_TIMEOUT_S = 120
+LLM_MAX_TOKENS = 16000
+LLM_REFUSAL_FALLBACK = os.getenv("LLM_REFUSAL_FALLBACK", "default").strip().lower()  # default | off
 
 # ══════════════════════════════════════════════════════════════
 #  PAPER TRADING
@@ -182,8 +187,15 @@ def _f(name: str, default: float) -> float:
     except (TypeError, ValueError):
         return default
 
-STATE_DB_PATH = os.getenv("STATE_DB_PATH", str(Path(__file__).parent / "state" / "trading.db"))
-KILL_SWITCH_FILE = os.getenv("KILL_SWITCH_FILE", str(Path(__file__).parent / "state" / "KILL"))
+def _repo_path(env_key: str, default: str) -> str:
+    """Relative overrides resolve against the repo, not the cwd: cron/scheduler may run elsewhere,
+    and a kill-switch file the process never looks at fails open."""
+    p = Path(os.getenv(env_key, "") or default)
+    return str(p if p.is_absolute() or str(p) == ":memory:" else Path(__file__).parent / p)
+
+
+STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/trading.db")
+KILL_SWITCH_FILE = _repo_path("KILL_SWITCH_FILE", "state/KILL")
 
 # Signal-sleeve equity is a configured dollar amount, never derived from broker equity.
 SIGNAL_SLEEVE_EQUITY = _f("SIGNAL_SLEEVE_EQUITY", 10_000.0)

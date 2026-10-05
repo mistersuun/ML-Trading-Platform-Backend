@@ -141,6 +141,9 @@ class Trade:
     bars_held: int = 0
 
 
+PROFIT_FACTOR_CAP = 10.0
+
+
 @dataclass
 class BacktestResult:
     symbol: str
@@ -152,7 +155,8 @@ class BacktestResult:
     win_rate: float = 0.0
     avg_win_pct: float = 0.0
     avg_loss_pct: float = 0.0
-    profit_factor: float = 0.0
+    profit_factor: float = 0.0  # always finite: when there are no losses it equals PROFIT_FACTOR_CAP
+    profit_factor_undefined: bool = False  # True when there were no losses (ratio is infinite)
     total_return_pct: float = 0.0
     max_drawdown_pct: float = 0.0
     sharpe_ratio: float = 0.0
@@ -161,6 +165,10 @@ class BacktestResult:
     avg_trade_duration_days: float = 0.0
     expectancy: float = 0.0
     equity_curve: pd.Series = field(default_factory=pd.Series)
+
+    @property
+    def profit_factor_capped(self) -> float:
+        return min(self.profit_factor, PROFIT_FACTOR_CAP)
 
     @property
     def is_valid(self) -> bool:
@@ -179,7 +187,8 @@ class BacktestResult:
             "win_rate": f"{self.win_rate:.1%}",
             "avg_win": f"{self.avg_win_pct:.2%}",
             "avg_loss": f"{self.avg_loss_pct:.2%}",
-            "profit_factor": f"{self.profit_factor:.2f}",
+            "profit_factor": None if self.profit_factor_undefined else f"{self.profit_factor:.2f}",
+            "profit_factor_capped": self.profit_factor_capped,
             "total_return": f"{self.total_return_pct:.2%}",
             "max_drawdown": f"{self.max_drawdown_pct:.2%}",
             "sharpe": f"{self.sharpe_ratio:.2f}",
@@ -293,8 +302,14 @@ def classic_backtest(
     result.avg_loss_pct = np.mean(losses) if losses else 0
 
     gross_profit = sum(wins) if wins else 0
-    gross_loss = abs(sum(losses)) if losses else 1e-10
-    result.profit_factor = gross_profit / gross_loss
+    gross_loss = abs(sum(losses)) if losses else 0.0
+    if gross_loss > 0:
+        result.profit_factor = gross_profit / gross_loss
+    elif gross_profit > 0:  # no losing P&L: ratio undefined, never expose a 1e9 sentinel
+        result.profit_factor = PROFIT_FACTOR_CAP
+        result.profit_factor_undefined = True
+    else:
+        result.profit_factor = 0.0
 
     result.total_return_pct = (capital - config.BACKTEST_INITIAL_CAPITAL) / config.BACKTEST_INITIAL_CAPITAL
 
