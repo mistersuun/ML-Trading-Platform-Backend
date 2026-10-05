@@ -1,0 +1,102 @@
+{
+  "adx_trend": {
+    "buy": 2,
+    "sell": 4,
+    "sha256": "381ed042551bb45b034486b5c3585f94d251e480f6ebc3d2a95f3134169b75cd"
+  },
+  "atr_breakout": {
+    "buy": 7,
+    "sell": 5,
+    "sha256": "867bdb725d70dc20145bf54678f200e9d1e8027d4220db1d7613e11be5bb6b3a"
+  },
+  "bollinger_bounce": {
+    "buy": 10,
+    "sell": 11,
+    "sha256": "7f8d0bd64e52e094b756214ef8f398fc310d3ca38a452b80513aeaf5254e16d4"
+  },
+  "bollinger_squeeze": {
+    "buy": 10,
+    "sell": 6,
+    "sha256": "57c37befaccfaaeff3194789042f08f42234b18c621c1123530a1e72b5e011a5"
+  },
+  "confluence": {
+    "buy": 0,
+    "sell": 1,
+    "sha256": "38b2b3e2a2bcd4736901cf4a4a26a7624f5eebb3eb57f93a83e058081130aab5"
+  },
+  "donchian_breakout": {
+    "buy": 14,
+    "sell": 10,
+    "sha256": "d882c94bf57949c6a039ebbd97a7087f58908a7ea3cd9af3c38a78ab8c662b46"
+  },
+  "ema_crossover": {
+    "buy": 13,
+    "sell": 13,
+    "sha256": "8bb6909d1279c398602dc6719829dc2b0927a7ac05dbf0e97e4073d0281801e3"
+  },
+  "ichimoku_cloud": {
+    "buy": 20,
+    "sell": 29,
+    "sha256": "9b7c54c67ad7f654d4bcbcfa066a0d851cc768ab1b27909e7bd9862e7d1baf5f"
+  },
+  "inside_bar_breakout": {
+    "buy": 29,
+    "sell": 25,
+    "sha256": "1ed644540ec57d641eeffae7f01e3a4f797893bb272392ec5e6bdffc8d196eec"
+  },
+  "keltner_reversion": {
+    "buy": 16,
+    "sell": 16,
+    "sha256": "dd74858f39ff9183cf715749f92ce5827d4997077efba8b42e290fcecb9da003"
+  },
+  "macd_crossover": {
+    "buy": 19,
+    "sell": 20,
+    "sha256": "b3539970f0b48134e09788eb7743504b3e3615345d3dc64d9278dc410081b15d"
+  },
+  "macd_hist_reversal": {
+    "buy": 19,
+    "sell": 20,
+    "sha256": "b3539970f0b48134e09788eb7743504b3e3615345d3dc64d9278dc410081b15d"
+  },
+  "mean_rev_composite": {
+    "buy": 4,
+    "sell": 11,
+    "sha256": "1c573f7db7a2bd749bbe3094713daaa8640e172ad58afc59ae4026563d9c40ff"
+  },
+  "rsi_divergence": {
+    "buy": 21,
+    "sell": 20,
+    "sha256": "ce5588912cf0ea1a2aeb29fe74b61a8680c065b69bf6bfb45ae1029f2d7f756d"
+  },
+  "rsi_reversal": {
+    "buy": 5,
+    "sell": 6,
+    "sha256": "5f219adc5087e4087712b5dec6ac6a8f644642b5f8b2f38822100be2119b8b47"
+  },
+  "sma_200_trend": {
+    "buy": 13,
+    "sell": 12,
+    "sha256": "14e41110aae5c87c8c5db760772508f0b94ab945dad2aec5eb5efc689b42ccec"
+  },
+  "stochastic_cross": {
+    "buy": 24,
+    "sell": 24,
+    "sha256": "1d76ada108ed0056d4a478bf42236013b9e9d06e1ad016061cc0e6830fedb1e7"
+  },
+  "trend_momentum_combo": {
+    "buy": 41,
+    "sell": 26,
+    "sha256": "eea28ac9c20213200b783c1e55c99de5e1d139905b110e6a0722b9df7068ac2b"
+  },
+  "triple_ema": {
+    "buy": 15,
+    "sell": 16,
+    "sha256": "e89e3217317d3625171997e1cf566eb9ddac3374d60eaf75fe733c0657e123a2"
+  },
+  "volume_breakout": {
+    "buy": 0,
+    "sell": 0,
+    "sha256": "fc19b1997119425765295aeab72d76faa6927d4f83985d328c26f20468d6cc76"
+  }
+}
