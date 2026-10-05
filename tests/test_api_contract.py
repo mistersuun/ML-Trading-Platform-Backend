@@ -74,6 +74,8 @@ def test_every_route_is_covered_by_the_sweep(client):
         ("POST", "/api/backtest/walk-forward"), ("GET", "/api/pairs/configured"), ("POST", "/api/pairs/analyze"),
         ("POST", "/api/pairs/scan"), ("POST", "/api/ml/predict"), ("POST", "/api/stress/full"),
         ("POST", "/api/stress/regimes"), ("POST", "/api/stress/sensitivity"),
+        ("GET", "/api/data/status"), ("GET", "/api/results/technical/latest"),
+        ("GET", "/api/results/pairs/latest"), ("GET", "/api/results/ml/latest"),
     }
     paths = client.get("/openapi.json").json()["paths"]
     actual = {(m.upper(), path) for path, ops in paths.items() if path.startswith("/api") for m in ops}
@@ -110,8 +112,8 @@ def test_route_sweep_strict_json(client, patch_fetch, fast_ml, long_frame, monke
 
 
 def test_watchlist_fetch_route(client, monkeypatch):
-    import routes.data_routes as dr
-    monkeypatch.setattr(dr, "fetch_watchlist", lambda markets=None: {"AAA": gbm_ohlc(n=70)})
+    import data_fetcher
+    monkeypatch.setattr(data_fetcher, "fetch_watchlist", lambda markets=None: {"AAA": gbm_ohlc(n=70)})
     r = client.get("/api/data/watchlist/fetch?markets=unit")
     assert r.status_code == 200 and strict(r) == {"count": 1, "symbols": ["AAA"]}
 
@@ -171,20 +173,20 @@ def test_unknown_symbol_is_404_envelope(client, patch_fetch):
 
 
 def test_domain_exceptions_map_to_status_codes(client, patch_fetch, monkeypatch):
-    import routes.backtest_routes as br
+    import data_fetcher
     from data.validate import DataQualityError, DataUnavailableError
     from instruments import UnknownSymbol
     body = {"symbol": "SPY", "pattern_name": "ema_crossover"}
     for exc, status, code in ((UnknownSymbol("QQQQ"), 404, "unknown_symbol"),
                               (DataQualityError("bad bars"), 502, "data_quality"),
                               (DataUnavailableError("no source"), 404, "no_data")):
-        monkeypatch.setattr(br, "fetch_ohlcv", lambda *a, _e=exc, **k: (_ for _ in ()).throw(_e))
+        monkeypatch.setattr(data_fetcher, "fetch_ohlcv", lambda *a, _e=exc, **k: (_ for _ in ()).throw(_e))
         assert_envelope(client.post("/api/backtest/run", json=body), status, code)
 
 
 def test_unexpected_error_is_500_with_request_id_and_no_traceback(client, monkeypatch):
-    import routes.backtest_routes as br
-    monkeypatch.setattr(br, "fetch_ohlcv", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret internals")))
+    import data_fetcher
+    monkeypatch.setattr(data_fetcher, "fetch_ohlcv", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("secret internals")))
     r = client.post("/api/backtest/run", json={"symbol": "SPY", "pattern_name": "ema_crossover"})
     err = assert_envelope(r, 500, "internal_error")
     assert err["request_id"] and r.headers["x-request-id"] == err["request_id"]
@@ -235,7 +237,7 @@ def test_unknown_route_uses_the_envelope(client):
 
 # ---------------------------------------------------------------- pairs scan with a signal
 def test_pairs_scan_with_a_signal_returns_200_strict_json(client, patch_fetch, monkeypatch):
-    import routes.pairs_routes as pr
+    import services.pairs as pr
     monkeypatch.setattr(config, "PAIRS", [("PA", "PB")])
     monkeypatch.setattr(pr, "scan_all_pairs", lambda data, pairs: [{
         "symbol_a": "PA", "symbol_b": "PB", "has_signal": np.bool_(True), "signal_direction": "LONG_SPREAD",
@@ -307,3 +309,45 @@ def test_research_views_label_the_holdout_and_can_exclude_it(client, patch_fetch
                                                                for t in body["trades"])
     cut = strict(client.post("/api/backtest/run", json={**req, "include_holdout": False}))
     assert cut["equity_curve"] and all(p["date"] < config.HOLDOUT_START for p in cut["equity_curve"])
+
+
+# ---------------------------------------------------------------- Phase 3 wiring
+def test_data_status_route_is_not_shadowed_by_the_symbol_route(client, monkeypatch):
+    import services.data_status as ds
+    monkeypatch.setattr(ds, "configured_symbols", lambda: ["SPY"])
+    r = client.get("/api/data/status", params={"symbol": "spy"})
+    assert r.status_code == 200
+    body = r.json()
+    assert [row["symbol"] for row in body["symbols"]] == ["SPY"]
+
+
+def test_results_route_is_mounted_and_missing_result_is_404(client, monkeypatch, tmp_path):
+    from results import store
+    monkeypatch.setattr(store, "RESULTS_DIR", tmp_path)
+    r = client.get("/api/results/technical/latest")
+    assert r.status_code == 404 and r.json()["error"]["code"] == "not_found"
+    assert client.get("/api/results/BAD KIND/latest").status_code in (404, 422)
+
+
+def test_heavy_routes_share_one_cap_and_return_429_when_busy(client, patch_fetch):
+    from api.concurrency import HEAVY, Busy
+    import server
+    from routes import backtest_routes, data_routes, ml_routes, pairs_routes, pattern_routes, stress_routes
+    mods = (ml_routes, pairs_routes, pattern_routes, stress_routes, backtest_routes, data_routes)
+    routes = [r for m in mods for r in m.router.routes] + list(server.app.routes)
+    sems = [getattr(getattr(r, "endpoint", None), "semaphore", None) for r in routes]
+    capped = [x for x in sems if x is not None]
+    assert len(capped) == 8 and all(x is HEAVY for x in capped)   # one shared cap for every heavy route
+    assert HEAVY.acquire(blocking=False)
+    try:
+        for method, url, body in [("post", "/api/patterns/scan", {}), ("post", "/api/pairs/scan", None),
+                                  ("post", "/api/ml/predict", {"symbol": "AAPL"}),
+                                  ("post", "/api/stress/full", {"symbol": "AAPL", "pattern_name": "ema_crossover"}),
+                                  ("post", "/api/stress/sensitivity", {"symbol": "AAPL", "pattern_name": "ema_crossover"}),
+                                  ("post", "/api/backtest/walk-forward", {"symbol": "AAPL", "pattern_name": "ema_crossover"}),
+                                  ("get", "/api/data/watchlist/fetch", None), ("get", "/api/data/status", None)]:
+            r = client.post(url, json=body) if method == "post" and body is not None else getattr(client, method)(url)
+            assert r.status_code == 429 and r.json()["error"]["code"] == Busy.code, url
+    finally:
+        HEAVY.release()
+    assert client.get("/api/health").status_code == 200

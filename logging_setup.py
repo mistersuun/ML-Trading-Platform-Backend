@@ -1,5 +1,6 @@
 """Log redaction: mask configured secrets and token-shaped strings in every log record."""
 import logging
+import os
 import re
 
 import config
@@ -10,14 +11,23 @@ _SECRET_KEYS = (
 )
 _PATTERNS = (
     (re.compile(r"bot\d+:[A-Za-z0-9_-]+"), "bot***"),
+    (re.compile(r"(?i)\bbearer\s+[^\s,;'\"]+"), "Bearer ***"),
     (re.compile(r"apikey=[^&\s]+"), "apikey=***"),
     (re.compile(r"/api/webhooks/\d+/[A-Za-z0-9_-]+"), "/api/webhooks/***"),
 )
 MASK = "***"
+_EXTRA: set = set()   # secrets registered at runtime (e.g. the API token from settings / .env)
+
+
+def register_secret(value) -> None:
+    """Mask `value` in every log record from now on (ignored when empty or very short)."""
+    if value and len(str(value)) >= 4:
+        _EXTRA.add(str(value))
 
 
 def _secrets() -> list:
-    vals = {str(getattr(config, k, "") or "") for k in _SECRET_KEYS}
+    vals = {str(getattr(config, k, "") or "") for k in _SECRET_KEYS} | _EXTRA
+    vals.add(os.environ.get("API_TOKEN", "").strip())
     hook = str(getattr(config, "DISCORD_WEBHOOK_URL", "") or "")
     if "/api/webhooks/" in hook:  # retry warnings log only the path, never the full URL
         vals.add(hook.split("/api/webhooks/", 1)[1].strip("/"))

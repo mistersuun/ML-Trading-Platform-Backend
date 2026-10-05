@@ -68,7 +68,7 @@ Time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 TELEGRAM_LIMIT = 4096
 DISCORD_LIMIT = 2000
 MAX_RETRIES = 2
-ALERT_KINDS = ("signal", "order_decision", "halt", "reconcile_mismatch", "briefing_failed")
+ALERT_KINDS = ("signal", "order_decision", "halt", "reconcile_mismatch", "briefing_failed", "heartbeat")
 
 # Injectable so tests never really sleep.
 _sleep = time.sleep

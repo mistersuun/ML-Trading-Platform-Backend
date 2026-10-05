@@ -12,6 +12,8 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
+from email.utils import parsedate_to_datetime
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -19,6 +21,7 @@ from typing import Optional
 import pandas as pd
 import requests
 import yfinance as yf
+from tenacity import RetryCallState, Retrying, retry_if_exception_type, retry_if_result, stop_after_attempt, wait_exponential_jitter
 
 import config
 import instruments
@@ -48,6 +51,8 @@ class BarsMeta:
     calendar: str
     fetched_at: datetime
     quality: QualityReport
+    stale: bool = False        # served from the bar store because the (pinned) source failed; never a silent switch
+    from_cache: bool = False
 
 
 @dataclass
@@ -60,6 +65,7 @@ class Bars:
     calendar = property(lambda self: self.meta.calendar)
     fetched_at = property(lambda self: self.meta.fetched_at)
     quality = property(lambda self: self.meta.quality)
+    stale = property(lambda self: self.meta.stale)
 
 
 @dataclass(frozen=True)
@@ -94,20 +100,63 @@ def _spec(symbol: str) -> _Spec:
 
 # ------------------------------------------------------------------ source pins
 
-_PINNED: dict = {}
+_PINNED: dict = {}          # in-memory fallback / cache; the bar_sources table is authoritative when the state DB exists
 _PIN_LOCK = threading.Lock()
 
 
-def _pin_key(symbol: str, period_days: Optional[int] = None) -> str:
+def _window_class(period_days: Optional[int] = None) -> str:
     """Pins are per (symbol, window class): a vendor that covers 730 days (e.g. a short IEX feed) may not cover
     the 8-year research window, so the research window decides its own pin instead of inheriting a short one."""
-    if period_days is not None and period_days >= config.RESEARCH_LOOKBACK_DAYS:
-        return f"{symbol}#research"
-    return symbol
+    return "research" if period_days is not None and period_days >= config.RESEARCH_LOOKBACK_DAYS else "default"
+
+
+def _pin_key(symbol: str, period_days: Optional[int] = None) -> str:
+    return f"{symbol}#research" if _window_class(period_days) == "research" else symbol
+
+
+def _state_conn():
+    """Connection to the migrated state DB, or None when it is not initialised (research scripts, tests)."""
+    try:
+        from state import db as _db
+        return _db.require_initialized()
+    except Exception:
+        return None
+
+
+def _db_run(fn):
+    conn = _state_conn()
+    if conn is None:
+        return None, False
+    try:
+        return fn(conn), True
+    except Exception as e:  # a broken pin table must not break data fetching
+        logger.warning("bar_sources unavailable (%s); using in-memory pins", type(e).__name__)
+        return None, False
+    finally:
+        conn.close()
+
+
+def _get_pin(symbol: str, period_days: Optional[int] = None) -> Optional[str]:
+    wc = _window_class(period_days)
+    row, used = _db_run(lambda c: c.execute(
+        "SELECT source FROM bar_sources WHERE symbol=? AND window_class=?", (symbol, wc)).fetchone())
+    if used:
+        return row["source"] if row else None
+    return _PINNED.get(_pin_key(symbol, period_days))
+
+
+def _set_pin(symbol: str, period_days: Optional[int], source: str) -> None:
+    wc = _window_class(period_days)
+    with _PIN_LOCK:
+        _PINNED[_pin_key(symbol, period_days)] = source
+    _db_run(lambda c: c.execute(
+        "INSERT INTO bar_sources(symbol, window_class, source, pinned_at) VALUES (?,?,?,?) "
+        "ON CONFLICT(symbol, window_class) DO UPDATE SET source=excluded.source, pinned_at=excluded.pinned_at",
+        (symbol, wc, source, datetime.now(timezone.utc).isoformat())))
 
 
 def pinned_source(symbol: str, period_days: Optional[int] = None) -> Optional[str]:
-    return _PINNED.get(_pin_key(symbol, period_days))
+    return _get_pin(symbol, period_days)
 
 
 def reset_pins(symbol: Optional[str] = None) -> None:
@@ -117,6 +166,68 @@ def reset_pins(symbol: Optional[str] = None) -> None:
         else:
             _PINNED.pop(symbol, None)
             _PINNED.pop(f"{symbol}#research", None)
+    if symbol is None:
+        _db_run(lambda c: c.execute("DELETE FROM bar_sources"))
+    else:
+        _db_run(lambda c: c.execute("DELETE FROM bar_sources WHERE symbol=?", (symbol,)))
+
+
+# ------------------------------------------------------------------ HTTP retries (tenacity)
+
+RETRY_ATTEMPTS = 4
+RETRY_MAX_WAIT = 60.0
+_RETRY_STATUS = frozenset({429, 500, 502, 503, 504})   # never 401/403/404: those will not heal by waiting
+_sleep = time.sleep                                     # tests replace this so no test waits
+
+
+def _retry_after(resp) -> Optional[float]:
+    """Seconds from a Retry-After header (delta-seconds or HTTP date), else None."""
+    try:
+        raw = (getattr(resp, "headers", None) or {}).get("Retry-After")
+    except Exception:
+        return None
+    if raw is None:
+        return None
+    try:
+        return max(0.0, float(raw))
+    except (TypeError, ValueError):
+        try:
+            return max(0.0, (parsedate_to_datetime(str(raw)) - datetime.now(timezone.utc)).total_seconds())
+        except Exception:
+            return None
+
+
+_backoff = wait_exponential_jitter(initial=1.0, max=RETRY_MAX_WAIT, jitter=1.0)
+
+
+def _wait(state: RetryCallState) -> float:
+    out = state.outcome
+    if out is not None and not out.failed:
+        ra = _retry_after(out.result())
+        if ra is not None:
+            return min(ra, RETRY_MAX_WAIT)
+    return _backoff(state)
+
+
+def _retryable_response(resp) -> bool:
+    return getattr(resp, "status_code", 200) in _RETRY_STATUS
+
+
+def _retrying() -> Retrying:
+    return Retrying(
+        stop=stop_after_attempt(RETRY_ATTEMPTS),
+        wait=_wait,
+        retry=(retry_if_exception_type((requests.Timeout, requests.ConnectionError))
+               | retry_if_result(_retryable_response)),
+        sleep=lambda s: _sleep(s),
+        retry_error_callback=lambda st: st.outcome.result(),   # exhausted on a status: hand the response back
+        reraise=True,
+    )
+
+
+def http_get(url: str, **kw):
+    """requests.get with retries for 429/5xx/timeouts (exponential backoff + jitter, honours Retry-After)."""
+    return _retrying()(lambda: requests.get(url, **kw))
 
 
 # ------------------------------------------------------------------ helpers
@@ -173,7 +284,7 @@ def fetch_alpaca(spec: _Spec, start: pd.Timestamp, end: pd.Timestamp, interval: 
     rows: list = []
     try:
         while True:
-            resp = requests.get(url, headers=headers, params=params, timeout=15)
+            resp = http_get(url, headers=headers, params=params, timeout=15)
             if getattr(resp, "status_code", 200) >= 400:
                 logger.warning("Alpaca rejected %s: HTTP %s %s", spec.symbol, resp.status_code,
                                str(getattr(resp, "text", ""))[:200])
@@ -202,13 +313,13 @@ def fetch_alpaca(spec: _Spec, start: pd.Timestamp, end: pd.Timestamp, interval: 
 def fetch_yfinance(spec: _Spec, start: pd.Timestamp, end: pd.Timestamp, interval: str, now: pd.Timestamp) -> pd.DataFrame:
     """yfinance with auto_adjust=True stated explicitly (split+dividend adjusted O/H/L/C)."""
     try:
-        hist = yf.Ticker(spec.yf_symbol).history(
+        hist = _retrying()(lambda: yf.Ticker(spec.yf_symbol).history(
             start=start.strftime("%Y-%m-%d"),
             end=(end + pd.Timedelta(days=1)).strftime("%Y-%m-%d"),
             interval=interval,
             auto_adjust=True,
             actions=False,
-        )
+        ))
     except Exception as e:
         logger.warning("yfinance failed for %s: %s", spec.symbol, type(e).__name__)
         return _empty()
@@ -259,11 +370,13 @@ def fetch_bars(
     end_date: Optional[datetime] = None,
     sources: Optional[list] = None,
     now: Optional[datetime] = None,
+    pin: bool = True,
 ) -> Bars:
     """Fetch validated bars. Raises DataQualityError (bad data) or DataUnavailableError (no data).
 
     A symbol is pinned to the first source that returns valid data and keeps using it for the rest
     of the process. An explicit ``sources`` list overrides (and re-pins) - used by fetch_pair.
+    ``pin=False`` leaves the pin untouched (the bar store pins explicitly with the caller's window).
     """
     now_utc = _utc_now(now)
     end = min(to_utc(end_date) if end_date is not None else now_utc, now_utc)
@@ -271,15 +384,15 @@ def fetch_bars(
     start_n, end_n = start.tz_localize(None), end.tz_localize(None)
     spec = _spec(symbol)
     cal = get_calendar(spec.calendar)
-    pin_key = _pin_key(symbol, period_days)
+    pinned = _get_pin(symbol, period_days)
 
     if sources:
         order = [s for s in sources if s in SUPPORTED_SOURCES]
         for s in sources:
             if s not in SUPPORTED_SOURCES:
                 logger.warning("data source %r is not supported (ignored)", s)
-    elif pin_key in _PINNED:
-        order = [_PINNED[pin_key]]
+    elif pinned:
+        order = [pinned]
     else:
         order = [s for s in config.DATA_SOURCE_PRIORITY if s in SUPPORTED_SOURCES]
         if len(order) < len(config.DATA_SOURCE_PRIORITY):
@@ -296,9 +409,12 @@ def fetch_bars(
             logger.warning("%s from %s failed validation: %s", symbol, src, e)
             last_err = e
             continue
-        with _PIN_LOCK:
-            _PINNED[pin_key] = src
+        if pin:
+            _set_pin(symbol, period_days, src)
         df.attrs["source"] = src
+        df.attrs["stale"] = False
+        lc = cal.last_closed_session(now_utc)
+        df.attrs["last_closed"] = None if lc is None else pd.Timestamp(lc).isoformat()   # JSON-safe (parquet attrs)
         meta = BarsMeta(source=src, adjusted=True, calendar=spec.calendar,
                         fetched_at=datetime.now(timezone.utc), quality=rep)
         logger.info("  %s: %d bars for %s", src, len(df), symbol)
@@ -321,7 +437,7 @@ def _align(a: pd.DataFrame, b: pd.DataFrame, cal_a: str, cal_b: str, sym_a: str,
 def fetch_pair_bars(sym_a: str, sym_b: str, period_days: int = config.PAIRS_LOOKBACK,
                     end_date: Optional[datetime] = None, now: Optional[datetime] = None) -> tuple:
     """Fetch both legs from the SAME source and align them per calendar. Returns (Bars_a, Bars_b)."""
-    pa, pb = _PINNED.get(sym_a), _PINNED.get(sym_b)
+    pa, pb = _get_pin(sym_a), _get_pin(sym_b)
     if pa and pb and pa == pb:
         order = [pa]
     else:

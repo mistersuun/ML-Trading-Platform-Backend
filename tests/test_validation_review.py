@@ -116,31 +116,35 @@ def test_short_only_edge_is_not_validated_for_the_executable_long_only_variant()
     assert exe.params["long_only"] is True and exe.params["stop_atr"] == config.ATR_STOP_MULT
 
 
-def test_scan_technical_sends_unvalidated_buy_for_short_only_edge(monkeypatch):
+def test_scan_technical_reports_nothing_for_short_only_edge(monkeypatch):
+    """D11 (Phase 3): the legacy in-sample tier that used to let this through as an 'unvalidated' BUY is retired;
+    a long-only executable variant with no OOS evidence is simply not reported (and so never order-eligible)."""
     import main
+    from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+    import backtester, data_fetcher
     df = make_frame(21)
-    monkeypatch.setattr(main, "PATTERN_REGISTRY", {"short_edge": _short_edge_pattern(df)})
-    monkeypatch.setattr(main, "send_alert", lambda *a, **k: True)
-    monkeypatch.setattr(main, "_holdout_store", lambda: HoldoutStore(":memory:"))
+    monkeypatch.setattr(scan_svc, "PATTERN_REGISTRY", {"short_edge": _short_edge_pattern(df)})
+    monkeypatch.setattr(session_svc, "send_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan_svc, "_holdout_store", lambda: HoldoutStore(":memory:"))
     intents: list = []
-    got = main.scan_technical({"S": df}, intents=intents)
-    assert intents and all(i.direction == 1 for i in intents)
-    assert all(i.validation_status == "unvalidated" for i in intents)
-    assert all(g["validation_status"] == "unvalidated" for g in got)
+    got = scan_svc.scan_technical({"S": df}, intents=intents)
+    assert intents == [] and got == []
 
 
 def test_scan_technical_requests_executable_variant_and_store(monkeypatch):
     import main
+    from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+    import backtester, data_fetcher
     seen = {}
 
     def fake(frames, patterns, *a, **k):
         seen.update(k)
         return []
 
-    monkeypatch.setattr(main.validation, "evaluate_candidates", fake)
-    monkeypatch.setattr(main, "send_alert", lambda *a, **k: True)
-    monkeypatch.setattr(main, "_holdout_store", lambda: "STORE")
-    main.scan_technical({}, intents=[])
+    monkeypatch.setattr(scan_svc.validation, "evaluate_candidates", fake)
+    monkeypatch.setattr(session_svc, "send_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan_svc, "_holdout_store", lambda: "STORE")
+    scan_svc.scan_technical({}, intents=[])
     assert seen["executable_variant"] is True and seen["holdout_store"] == "STORE" and seen["require_holdout_store"] is True
 
 
@@ -329,15 +333,29 @@ def test_missing_required_holdout_store_fails_closed_but_offline_use_still_works
 
 def test_scan_technical_with_unopenable_store_never_validates_and_closes_the_store(monkeypatch):
     import main
+    from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+    import backtester, data_fetcher
     df = make_frame(21)
-    monkeypatch.setattr(main, "PATTERN_REGISTRY", {"short_edge": _short_edge_pattern(df)})
-    monkeypatch.setattr(main, "send_alert", lambda *a, **k: True)
-    monkeypatch.setattr(main, "_holdout_store", lambda: None)
-    got = main.scan_technical({"S": df}, intents=[])
-    assert all(g["validation_status"] == "unvalidated" for g in got)
+    monkeypatch.setattr(scan_svc, "PATTERN_REGISTRY", {"short_edge": _short_edge_pattern(df)})
+    monkeypatch.setattr(session_svc, "send_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan_svc, "_holdout_store", lambda: None)
+    seen = []
+    real = scan_svc.validation.evaluate_candidates
+
+    def spy(*a, **k):
+        out = real(*a, **k)
+        seen.extend(out)
+        return out
+    monkeypatch.setattr(scan_svc.validation, "evaluate_candidates", spy)
+    intents = []
+    scan_svc.scan_technical({"S": df}, intents=intents)
+    # the real validation ran and failed closed: every candidate unvalidated with the store reason, no order intent
+    assert seen and all(r.validation_status == "unvalidated" and "holdout_store_unavailable" in r.rejected_reasons
+                        for r in seen)
+    assert intents == []
     st = HoldoutStore(":memory:")
-    monkeypatch.setattr(main, "_holdout_store", lambda: st)
-    main.scan_technical({"S": df}, intents=[])
+    monkeypatch.setattr(scan_svc, "_holdout_store", lambda: st)
+    scan_svc.scan_technical({"S": df}, intents=[])
     with pytest.raises(Exception):
         st.get("v", "k")                    # closed in a finally
 

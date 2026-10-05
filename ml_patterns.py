@@ -14,8 +14,9 @@ Models: Random Forest, XGBoost, LightGBM (soft-voting ensemble of whichever are 
 """
 
 import logging
-import pickle
 import re
+from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
@@ -38,6 +39,7 @@ except ImportError:
 
 import config
 from features import prepare_ml_data, compute_features, get_feature_columns, horizon_from_target
+from ml import store
 from ml.labels import make_labels
 from ml.splits import PurgedTimeSeriesSplit
 
@@ -354,21 +356,71 @@ class MLPatternDetector:
         self.oos_metrics = m
 
     # ------------------------------------------------------------------ persistence
-    def save(self, path: str = "ml_model.pkl"):
-        with open(path, "wb") as f:
-            pickle.dump({"model": self.model, "feature_cols": self.feature_cols,
-                         "target_col": self.target_col, "min_confidence": self.min_confidence,
-                         "model_names": self.model_names}, f)
+    def save(self, symbol: str, df: Optional[pd.DataFrame] = None, metrics: Optional[dict] = None,
+             root=None) -> Path:
+        """Write a versioned artefact (models/<symbol>/<UTC ts>/) via ml.store; returns its directory."""
+        if self.model is None:
+            raise ValueError("Model not trained. Call train() first.")
+        bundle = {"model": self.model, "feature_cols": self.feature_cols, "target_col": self.target_col,
+                  "min_confidence": self.min_confidence, "model_names": self.model_names,
+                  "n_estimators": self.n_estimators}
+        label_spec = {"target_col": self.target_col, "horizon": self.horizon, "embargo": self.embargo,
+                      "gap": self.gap}
+        m = dict(metrics or {})
+        if self.oos_metrics:
+            m.setdefault("oos", self.oos_metrics)
+        return store.save(symbol, bundle, feature_cols=self.feature_cols, df=df,
+                          label_spec=label_spec, metrics=m, root=root)
 
-    def load(self, path: str = "ml_model.pkl"):
-        with open(path, "rb") as f:
-            data = pickle.load(f)
-        self.model = data["model"]
-        self.feature_cols = data["feature_cols"]
-        self.target_col = data["target_col"]
+    def load(self, path) -> dict:
+        """Load a version directory; raises ml.store.ModelStoreError on a major library or feature
+        schema mismatch. Returns the stored metadata."""
+        bundle, meta = store.load(path, current_schema_hash())
+        self._apply(bundle)
+        return meta
+
+    def _apply(self, bundle: dict) -> None:
+        self.model = bundle["model"]
+        self.feature_cols = list(bundle["feature_cols"])
+        self.target_col = bundle["target_col"]
         self.horizon = horizon_from_target(self.target_col)
-        self.min_confidence = data["min_confidence"]
-        self.model_names = data.get("model_names", [])
+        self.min_confidence = bundle["min_confidence"]
+        self.model_names = list(bundle.get("model_names", []))
+
+    def load_latest(self, symbol: str, root=None) -> Optional[dict]:
+        """Load the newest valid stored model for `symbol`; returns its metadata, or None."""
+        found = store.load_latest_valid(symbol, current_schema_hash(), root)
+        if found is None:
+            return None
+        bundle, meta, _ = found
+        self._apply(bundle)
+        return meta
+
+    def load_or_train(self, df: pd.DataFrame, symbol: str, root=None, force: bool = False) -> dict:
+        """Display/predict path: use the latest valid stored model unless it is missing or older than
+        retrain_days (or `force`, the nightly run); then train on `df` and store a new version.
+        Returns the metadata (CV metrics are in meta['metrics'])."""
+        if not force:
+            meta = self.load_latest(symbol, root)
+            if meta is not None and not store.is_stale(meta, self.retrain_days):
+                return meta
+        metrics = self.train(df)
+        if self.model is None:
+            raise ValueError(f"cannot train a model for {symbol}: {metrics.get('error', 'unknown')}")
+        path = self.save(symbol, df=df, metrics=metrics, root=root)
+        return store.read_metadata(path)
+
+
+@lru_cache(maxsize=1)
+def current_schema_hash() -> str:
+    """Hash of the feature columns the current code produces (from a synthetic frame)."""
+    rng = np.random.default_rng(0)
+    n = 400
+    close = 100 * np.exp(np.cumsum(rng.normal(0, 0.01, n)))
+    df = pd.DataFrame({"Open": close, "High": close * 1.01, "Low": close * 0.99, "Close": close,
+                       "Volume": rng.integers(1_000, 2_000, n).astype(float)},
+                      index=pd.bdate_range("2020-01-01", periods=n))
+    return store.schema_hash(get_feature_columns(compute_features(df, include_targets=False)))
 
 
 def ml_pattern_signal(df: pd.DataFrame) -> pd.DataFrame:

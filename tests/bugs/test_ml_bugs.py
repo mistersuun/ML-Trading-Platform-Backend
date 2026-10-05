@@ -9,6 +9,8 @@ from fastapi.testclient import TestClient
 
 import backtester
 import main
+from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+import backtester, data_fetcher
 import ml_patterns
 from features import compute_features
 from ml_patterns import MLPatternDetector
@@ -94,7 +96,7 @@ def test_ML_3_ml_route_backtests_only_out_of_sample(monkeypatch, fast_ml, patch_
 def test_ML_3_scan_ml_backtests_only_out_of_sample(monkeypatch, fast_ml, gbm_frame):
     seen = {}
     orig_train = MLPatternDetector.train
-    orig_bt = main.classic_backtest
+    orig_bt = backtester.classic_backtest
 
     def spy_train(self, df):
         seen.setdefault("train_ends", []).append(df.index[-1])
@@ -107,9 +109,9 @@ def test_ML_3_scan_ml_backtests_only_out_of_sample(monkeypatch, fast_ml, gbm_fra
         return orig_bt(df, *a, **k)
 
     monkeypatch.setattr(MLPatternDetector, "train", spy_train)
-    monkeypatch.setattr(main, "classic_backtest", spy_bt)
-    monkeypatch.setattr(main, "check_recent_signal", lambda *a, **k: 1)
-    main.scan_ml({"SPY": gbm_frame}, False)
+    monkeypatch.setattr(backtester, "classic_backtest", spy_bt)
+    monkeypatch.setattr(scan_svc, "check_recent_signal", lambda *a, **k: 1)
+    scan_svc.scan_ml({"SPY": gbm_frame}, False)
     assert "bt_start" in seen, "scan_ml never reached the backtest"
     # Every training window is recorded; a rolling-retrain fix trains several times, a split fix once.
     # The earliest model must have been trained strictly before the first backtested bar.

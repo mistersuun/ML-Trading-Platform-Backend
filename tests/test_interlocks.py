@@ -18,6 +18,9 @@ from hypothesis import given, settings, strategies as st
 import config
 import execution
 import main
+import validation
+from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+import backtester, data_fetcher
 import paper_trader
 from brokers.alpaca import AlpacaBroker
 from execution import OrderIntent, accept_reconciliation, submit_intent
@@ -111,11 +114,15 @@ def test_trading_mode_off_means_zero_submits(monkeypatch, tmp_path):
     df.iloc[-1, df.columns.get_loc("signal")] = 1
     res = SimpleNamespace(is_valid=True, win_rate=0.6, profit_factor=2.0)
     res.summary = lambda: {"win_rate": 0.6, "profit_factor": 2.0}
-    monkeypatch.setattr(main, "classic_backtest", lambda *a, **k: res)
-    monkeypatch.setattr(main, "send_alert", lambda *a, **k: True)
-    monkeypatch.setattr(main, "format_signal_alert", lambda *a, **k: "m")
-    monkeypatch.setattr(main, "PATTERN_REGISTRY", {"p": lambda d: d.copy()})
-    out = main.scan_technical({"AAPL": df}, paper_trade=True)
+    monkeypatch.setattr(backtester, "classic_backtest", lambda *a, **k: res)
+    monkeypatch.setattr(session_svc, "send_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan_svc, "format_signal_alert", lambda *a, **k: "m")
+    monkeypatch.setattr(scan_svc, "PATTERN_REGISTRY", {"p": lambda d: d.copy()})
+    # D11 (Phase 3): the in-sample tier is retired; the signal is reported because the (stubbed) OOS run is positive
+    monkeypatch.setattr(scan_svc.validation, "evaluate_candidates", lambda frames, patterns, *a, **k: [
+        validation.CandidateResult(symbol="AAPL", pattern="p", params={}, n_oos_trades=config.MIN_TRADES_OOS + 10,
+                                   oos={"sharpe": 1.0})])
+    out = scan_svc.scan_technical({"AAPL": df}, paper_trade=True)
     assert out and b.calls == []  # not a single broker call, not just no submits
 
 

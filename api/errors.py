@@ -9,10 +9,11 @@ import uuid
 from typing import Any, Optional
 
 from fastapi import FastAPI, Request
+from pydantic import BaseModel, ConfigDict, ValidationError
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from api.serialize import SafeJSONResponse
+from api.serialize import SafeJSONResponse, ok, to_native
 from data.validate import DataQualityError, DataUnavailableError
 from instruments import UnknownSymbol
 from pairs_trading import InsufficientData
@@ -51,6 +52,52 @@ class UnknownPattern(ApiError):
 
 class InsufficientHistory(ApiError):
     status_code, code = 422, "insufficient_data"
+
+
+class ContractViolation(ApiError):
+    """A response that does not satisfy its declared response_model (a server bug, never a client error)."""
+    status_code, code = 500, "contract_violation"
+
+
+class ErrorBody(BaseModel):
+    """The ``error`` object of the envelope (documented in OpenAPI for every non-2xx response)."""
+    model_config = ConfigDict(extra="forbid")
+    code: str
+    message: str
+    details: Optional[Any] = None
+    request_id: Optional[str] = None
+
+
+class ErrorEnvelope(BaseModel):
+    """Body of every non-2xx response: ``{"error": {"code", "message", "details", "request_id"}}``."""
+    model_config = ConfigDict(extra="forbid")
+    error: ErrorBody
+
+
+# `responses=` declaration for routes (OpenAPI only; the handlers below produce the bodies).
+ERROR_RESPONSES: dict = {
+    401: {"model": ErrorEnvelope, "description": "unauthorized (API_TOKEN set, token missing or wrong)"},
+    404: {"model": ErrorEnvelope, "description": "unknown_symbol / no_data / not_found"},
+    422: {"model": ErrorEnvelope, "description": "validation_error / unknown_pattern / insufficient_data"},
+    500: {"model": ErrorEnvelope, "description": "internal_error / contract_violation"},
+    502: {"model": ErrorEnvelope, "description": "data_quality"},
+}
+
+
+def reply(model: type, data: Any, status_code: int = 200):
+    """Strict-JSON response for `data`, checked against `model`.
+
+    NaN / inf are mapped to null first (so Optional[float] fields stay valid). If the payload still does not
+    satisfy the model the request fails with a 500 ``contract_violation`` envelope and the problem is logged;
+    invalid JSON is never emitted."""
+    native = to_native(data.model_dump(mode="json") if isinstance(data, BaseModel) else data)
+    try:
+        model.model_validate(native)
+    except ValidationError as exc:
+        logger.error("response contract violation for %s: %s", model.__name__, exc)
+        raise ContractViolation("Response did not match its declared contract",
+                                {"model": model.__name__, "errors": exc.error_count()}) from exc
+    return ok(native, status_code)
 
 
 def envelope(code: str, message: str, details: Any = None, request_id: Optional[str] = None) -> dict:

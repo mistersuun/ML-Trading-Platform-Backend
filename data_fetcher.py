@@ -1,4 +1,4 @@
-"""Compatibility shim over the ``data`` package (WS2.1).
+"""Compatibility shim over the ``data`` package (WS2.1) and its bar store (WS3.3).
 
 Old callers keep their signatures and get DataFrames; use ``fetch_bars`` for the full ``Bars``
 (source, adjusted, calendar, fetched_at, quality). Alpha Vantage no longer exists as a source.
@@ -14,7 +14,8 @@ import pandas as pd
 import requests  # noqa: F401  (re-exported for tests that patch data_fetcher.requests)
 
 import config
-from data import adapters as _adapters
+from data import adapters as _adapters  # noqa: F401
+from data import store as _store
 from data.adapters import Bars, fetch_pair_bars, pinned_source, reset_pins  # noqa: F401
 from data.validate import DataQualityError, DataUnavailableError
 
@@ -27,9 +28,12 @@ def fetch_bars(
     interval: str = "1d",
     end_date: Optional[datetime] = None,
     sources: Optional[list] = None,
+    refresh: bool = False,
 ) -> Bars:
-    """Validated bars with metadata. Raises DataQualityError / DataUnavailableError."""
-    return _adapters.fetch_bars(symbol, period_days, interval, end_date, sources, now=datetime.now(timezone.utc))
+    """Validated bars with metadata, through the persistent bar store (``refresh=True`` forces a fetch).
+    Raises DataQualityError / DataUnavailableError."""
+    return _store.get_bars(symbol, period_days, interval, end_date, sources, now=datetime.now(timezone.utc),
+                           refresh=refresh)
 
 
 def fetch_ohlcv(
@@ -38,10 +42,11 @@ def fetch_ohlcv(
     interval: str = "1d",
     end_date: Optional[datetime] = None,
     sources: Optional[list] = None,
+    refresh: bool = False,
 ) -> pd.DataFrame:
     """OHLCV DataFrame (``Bars.df``); empty DataFrame when no valid data is available."""
     try:
-        return fetch_bars(symbol, period_days, interval, end_date, sources).df
+        return fetch_bars(symbol, period_days, interval, end_date, sources, refresh=refresh).df
     except (DataQualityError, DataUnavailableError) as e:
         logger.warning("No usable data for %s: %s", symbol, e)
         return pd.DataFrame()
@@ -68,7 +73,7 @@ def fetch_pair(sym_a: str, sym_b: str, period_days: int = config.PAIRS_LOOKBACK,
     """Aligned (df_a, df_b) from one source for both legs, or None. Pairs code should pass
     ``min_aligned=config.PAIRS_MIN_ALIGNED_BARS`` for research use."""
     try:
-        ba, bb = fetch_pair_bars(sym_a, sym_b, period_days, now=datetime.now(timezone.utc))
+        ba, bb = _store.get_pair_bars(sym_a, sym_b, period_days, now=datetime.now(timezone.utc))
     except (DataQualityError, DataUnavailableError) as e:
         logger.warning("No usable pair data for %s/%s: %s", sym_a, sym_b, e)
         return None

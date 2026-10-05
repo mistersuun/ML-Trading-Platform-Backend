@@ -12,3 +12,6 @@ venv/
 report.html
 state/*.db*
 state/KILL
+data/bars/
+results/*/
+models/

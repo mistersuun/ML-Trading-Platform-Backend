@@ -177,7 +177,9 @@ protobuf==7.36.2
     #   streamlit
     #   yfinance
 pyarrow==25.0.1
-    # via streamlit
+    # via
+    #   ml-trading-platform-backend
+    #   streamlit
 pycparser==3.0 ; implementation_name != 'PyPy'
     # via cffi
 pydantic==2.13.5
@@ -185,8 +187,11 @@ pydantic==2.13.5
     #   alpaca-py
     #   anthropic
     #   fastapi
+    #   pydantic-settings
 pydantic-core==2.46.5
     # via pydantic
+pydantic-settings==2.15.0
+    # via ml-trading-platform-backend
 pydeck==0.9.3
     # via streamlit
 pyluach==2.3.0
@@ -196,6 +201,7 @@ python-dateutil==2.9.0.post0
 python-dotenv==1.2.4
     # via
     #   ml-trading-platform-backend
+    #   pydantic-settings
     #   uvicorn
 python-multipart==0.0.32
     # via streamlit
@@ -262,6 +268,8 @@ streamlit==1.65.0
     # via ml-trading-platform-backend
 ta==0.11.0
     # via ml-trading-platform-backend
+tenacity==9.1.4
+    # via ml-trading-platform-backend
 threadpoolctl==3.7.0
     # via scikit-learn
 toml==0.10.2
@@ -292,6 +300,7 @@ typing-inspection==0.4.4
     # via
     #   fastapi
     #   pydantic
+    #   pydantic-settings
 tzdata==2026.5
     # via
     #   exchange-calendars

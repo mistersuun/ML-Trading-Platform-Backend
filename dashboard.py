@@ -25,11 +25,12 @@ st.set_page_config(
 )
 
 import config
-from data_fetcher import fetch_ohlcv, fetch_watchlist
+from services import backtest as backtest_svc, ml as ml_svc, pairs as pairs_svc, scan as scan_svc
+from services.providers import default_provider
 from patterns import PATTERN_REGISTRY, run_all_patterns
-from backtester import classic_backtest, walk_forward_validate, BacktestResult
+from backtester import BacktestResult   # type only; every backtest runs through services
 from stress_test import full_stress_test, detect_regimes, monte_carlo_analysis, parameter_sensitivity
-from pairs_trading import analyze_pair, is_valid_pair, generate_pair_signals, backtest_pair, scan_all_pairs
+from pairs_trading import analyze_pair, is_valid_pair, generate_pair_signals, backtest_pair
 from risk_manager import RiskManager
 from dashboard_fmt import (fmt, pair_metric_texts, regime_profitability, safe_analyze_pair,
                            scanned_pair_texts)
@@ -62,12 +63,12 @@ st.markdown("""
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_symbol_data(symbol: str, period_days: int = 730) -> pd.DataFrame:
-    return fetch_ohlcv(symbol, period_days=period_days)
+    return default_provider().ohlcv(symbol, period_days)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def load_watchlist_data(markets: tuple) -> dict:
-    return fetch_watchlist(list(markets))
+    return default_provider().watchlist(list(markets))
 
 
 # ══════════════════════════════════════════════════════════════
@@ -368,34 +369,22 @@ if page == "📊 Dashboard":
             pairs_results = []
             progress = st.progress(0, text="Scanning patterns...")
 
-            symbols = list(data.keys())
-            for idx, (symbol, df) in enumerate(data.items()):
-                progress.progress((idx + 1) / len(symbols), text=f"Scanning {symbol}...")
-                for pat_name, pat_func in PATTERN_REGISTRY.items():
-                    try:
-                        signals = pat_func(df)
-                        result = classic_backtest(signals, symbol, pat_name)
-                        if result.is_valid:
-                            recent = 0
-                            tail = signals.tail(config.VALIDATION_WINDOW_DAYS)["signal"]
-                            if (tail == 1).any():
-                                recent = 1
-                            elif (tail == -1).any():
-                                recent = -1
-
-                            if recent != 0:
-                                s = result.summary()
-                                s["direction"] = "🟢 BUY" if recent == 1 else "🔴 SELL"
-                                s["price"] = f"${df['Close'].iloc[-1]:,.2f}"
-                                tech_results.append(s)
-                    except Exception:
-                        pass
+            progress.progress(0.5, text="Scanning patterns...")
+            for sig in scan_svc.in_sample_scan(data):
+                price = data[sig.symbol]["Close"].iloc[-1]
+                tech_results.append({
+                    "symbol": sig.symbol, "pattern": sig.pattern,
+                    "direction": "🟢 BUY" if sig.signal == "BUY" else "🔴 SELL",
+                    "price": f"${price:,.2f}", "win_rate": fmt(sig.win_rate, ".1%"),
+                    "profit_factor": fmt(sig.profit_factor, ".2f"), "sharpe": fmt(sig.sharpe, ".2f"),
+                    "total_return": fmt(sig.total_return, ".1%"), "max_drawdown": fmt(sig.max_drawdown, ".1%"),
+                    "total_trades": sig.total_trades})
 
             progress.empty()
 
             # Run pairs scan
             with st.spinner("Scanning pairs..."):
-                pairs_results = scan_all_pairs(data)
+                pairs_results = pairs_svc.scan_pairs_data(data)
                 pairs_triggered = [p for p in pairs_results if p.get("has_signal")]
 
             st.session_state["scan_results"] = tech_results
@@ -475,9 +464,8 @@ elif page == "🔧 Technical Scanner":
         if df.empty:
             st.error(f"No data for {symbol}")
         else:
-            pat_func = PATTERN_REGISTRY[pattern_name]
-            signals = pat_func(df)
-            result = classic_backtest(signals, symbol, pattern_name)
+            run = backtest_svc.run_on_frame(df, symbol, pattern_name)
+            signals, result = run.signals, run.result
 
             # Signal status
             recent = 0
@@ -534,19 +522,11 @@ elif page == "🔧 Technical Scanner":
             st.subheader("📊 Compare All Patterns on This Symbol")
             if st.button("Run All Patterns", key="run_all"):
                 comparison = []
-                bar = st.progress(0)
-                pat_list = list(PATTERN_REGISTRY.items())
-                for i, (pn, pf) in enumerate(pat_list):
-                    bar.progress((i + 1) / len(pat_list))
-                    try:
-                        sig = pf(df)
-                        r = classic_backtest(sig, symbol, pn)
-                        if r.total_trades > 0:
-                            s = r.summary()
-                            s["is_valid"] = "✅" if r.is_valid else "❌"
-                            comparison.append(s)
-                    except Exception:
-                        pass
+                bar = st.progress(0.5)
+                for r in backtest_svc.compare_patterns(df, symbol):
+                    row = r.summary()
+                    row["is_valid"] = "✅" if r.is_valid else "❌"
+                    comparison.append(row)
                 bar.empty()
 
                 if comparison:
@@ -660,7 +640,7 @@ elif page == "📈 Pairs Trading":
                     data[s] = d
             bar.empty()
 
-            results = scan_all_pairs(data)
+            results = pairs_svc.scan_pairs_data(data)
             if results:
                 rdf = pd.DataFrame(results)
                 display_cols = ["symbol_a", "symbol_b", "has_signal", "signal_direction",
@@ -694,13 +674,9 @@ elif page == "🤖 ML Signals":
         else:
             if st.button("🧠 Train & Predict", type="primary"):
                 with st.spinner("Computing features & training models..."):
-                    from ml_patterns import MLPatternDetector
-                    detector = MLPatternDetector()
-
-                    # Walk-forward: train on 75%, predict on all
-                    split = int(len(df) * config.ML_TRAIN_TEST_SPLIT)
-                    train_df = df.iloc[:split]
-                    metrics = detector.train(train_df)
+                    # Legacy view: train on 75%, predict on all (use /api/ml/predict for out-of-sample numbers)
+                    ml_run = ml_svc.train_and_predict(df, symbol)
+                    metrics = ml_run.metrics
 
                 st.subheader("Model Performance")
                 mc1, mc2, mc3 = st.columns(3)
@@ -740,8 +716,7 @@ elif page == "🤖 ML Signals":
                     st.plotly_chart(fig_feat, use_container_width=True)
 
                 # Predictions
-                with st.spinner("Generating predictions..."):
-                    pred_df = detector.predict(df)
+                pred_df = ml_run.predictions
 
                 # Show recent predictions
                 st.subheader("Recent ML Predictions")
@@ -759,7 +734,7 @@ elif page == "🤖 ML Signals":
                 )
 
                 # Backtest ML signals
-                bt = classic_backtest(pred_df, symbol, "ml_ensemble")
+                bt = ml_run.backtest
                 if bt.total_trades > 0:
                     st.subheader("ML Signal Backtest")
                     b1, b2, b3, b4, b5 = st.columns(5)
@@ -863,7 +838,7 @@ elif page == "🔬 Stress Test Lab":
             # ── 4. WALK-FORWARD VALIDATION ──
             st.subheader("4. Walk-Forward Out-of-Sample")
             with st.spinner("Running walk-forward folds..."):
-                wf_results = walk_forward_validate(df, symbol, pat_func, pattern, n_splits=5)
+                wf_results = backtest_svc.walk_forward_results(df, symbol, pattern, n_splits=5)
 
             if wf_results:
                 wf_data = [r.summary() for r in wf_results if r.total_trades > 0]

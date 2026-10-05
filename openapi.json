@@ -1,0 +1,3753 @@
+{
+  "components": {
+    "schemas": {
+      "BacktestRequest": {
+        "properties": {
+          "include_holdout": {
+            "default": true,
+            "title": "Include Holdout",
+            "type": "boolean"
+          },
+          "pattern_name": {
+            "title": "Pattern Name",
+            "type": "string"
+          },
+          "period_days": {
+            "default": 730,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "stop_loss": {
+            "default": 0.02,
+            "exclusiveMinimum": 0.0,
+            "maximum": 0.5,
+            "title": "Stop Loss",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "take_profit": {
+            "default": 0.04,
+            "exclusiveMinimum": 0.0,
+            "maximum": 1.0,
+            "title": "Take Profit",
+            "type": "number"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern_name"
+        ],
+        "title": "BacktestRequest",
+        "type": "object"
+      },
+      "BacktestResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "equity_curve": {
+            "items": {
+              "$ref": "#/components/schemas/EquityPoint"
+            },
+            "title": "Equity Curve",
+            "type": "array"
+          },
+          "holdout": {
+            "$ref": "#/components/schemas/HoldoutInfo"
+          },
+          "is_valid": {
+            "title": "Is Valid",
+            "type": "boolean"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "title": "Metrics",
+            "type": "object"
+          },
+          "metrics_display": {
+            "additionalProperties": true,
+            "title": "Metrics Display",
+            "type": "object"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/TradeOut"
+            },
+            "title": "Trades",
+            "type": "array"
+          },
+          "validation_status": {
+            "default": "unvalidated",
+            "title": "Validation Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "metrics",
+          "metrics_display",
+          "equity_curve",
+          "trades",
+          "is_valid",
+          "holdout"
+        ],
+        "title": "BacktestResponse",
+        "type": "object"
+      },
+      "ConfigBacktest": {
+        "additionalProperties": false,
+        "properties": {
+          "commission_pct": {
+            "title": "Commission Pct",
+            "type": "number"
+          },
+          "initial_capital": {
+            "title": "Initial Capital",
+            "type": "number"
+          },
+          "lookback_days": {
+            "title": "Lookback Days",
+            "type": "integer"
+          },
+          "slippage_pct": {
+            "title": "Slippage Pct",
+            "type": "number"
+          },
+          "stop_loss_pct": {
+            "title": "Stop Loss Pct",
+            "type": "number"
+          },
+          "take_profit_pct": {
+            "title": "Take Profit Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lookback_days",
+          "initial_capital",
+          "commission_pct",
+          "slippage_pct",
+          "stop_loss_pct",
+          "take_profit_pct"
+        ],
+        "title": "ConfigBacktest",
+        "type": "object"
+      },
+      "ConfigML": {
+        "additionalProperties": false,
+        "properties": {
+          "lookback_bars": {
+            "title": "Lookback Bars",
+            "type": "integer"
+          },
+          "min_confidence": {
+            "title": "Min Confidence",
+            "type": "number"
+          },
+          "n_estimators": {
+            "title": "N Estimators",
+            "type": "integer"
+          },
+          "train_test_split": {
+            "title": "Train Test Split",
+            "type": "number"
+          }
+        },
+        "required": [
+          "train_test_split",
+          "n_estimators",
+          "lookback_bars",
+          "min_confidence"
+        ],
+        "title": "ConfigML",
+        "type": "object"
+      },
+      "ConfigResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "backtest": {
+            "$ref": "#/components/schemas/ConfigBacktest"
+          },
+          "ml": {
+            "$ref": "#/components/schemas/ConfigML"
+          },
+          "pairs": {
+            "items": {
+              "$ref": "#/components/schemas/PairRef"
+            },
+            "title": "Pairs",
+            "type": "array"
+          },
+          "risk": {
+            "$ref": "#/components/schemas/ConfigRisk"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/ConfigValidation"
+          },
+          "watchlist": {
+            "additionalProperties": true,
+            "title": "Watchlist",
+            "type": "object"
+          }
+        },
+        "required": [
+          "watchlist",
+          "pairs",
+          "backtest",
+          "validation",
+          "risk",
+          "ml"
+        ],
+        "title": "ConfigResponse",
+        "type": "object"
+      },
+      "ConfigRisk": {
+        "additionalProperties": false,
+        "properties": {
+          "max_correlated_positions": {
+            "title": "Max Correlated Positions",
+            "type": "integer"
+          },
+          "max_drawdown_halt_pct": {
+            "title": "Max Drawdown Halt Pct",
+            "type": "number"
+          },
+          "max_portfolio_risk_pct": {
+            "title": "Max Portfolio Risk Pct",
+            "type": "number"
+          },
+          "max_position_pct": {
+            "title": "Max Position Pct",
+            "type": "number"
+          }
+        },
+        "required": [
+          "max_position_pct",
+          "max_portfolio_risk_pct",
+          "max_correlated_positions",
+          "max_drawdown_halt_pct"
+        ],
+        "title": "ConfigRisk",
+        "type": "object"
+      },
+      "ConfigValidation": {
+        "additionalProperties": false,
+        "properties": {
+          "min_profit_factor": {
+            "title": "Min Profit Factor",
+            "type": "number"
+          },
+          "min_sharpe": {
+            "title": "Min Sharpe",
+            "type": "number"
+          },
+          "min_trades": {
+            "title": "Min Trades",
+            "type": "integer"
+          },
+          "min_win_rate": {
+            "title": "Min Win Rate",
+            "type": "number"
+          },
+          "signal_recency_days": {
+            "title": "Signal Recency Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "min_win_rate",
+          "min_profit_factor",
+          "min_sharpe",
+          "min_trades",
+          "signal_recency_days"
+        ],
+        "title": "ConfigValidation",
+        "type": "object"
+      },
+      "DataStatusResponse": {
+        "properties": {
+          "symbols": {
+            "items": {
+              "$ref": "#/components/schemas/StoreSymbolStatus"
+            },
+            "title": "Symbols",
+            "type": "array"
+          }
+        },
+        "required": [
+          "symbols"
+        ],
+        "title": "DataStatusResponse",
+        "type": "object"
+      },
+      "EquityPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "value"
+        ],
+        "title": "EquityPoint",
+        "type": "object"
+      },
+      "ErrorBody": {
+        "additionalProperties": false,
+        "description": "The ``error`` object of the envelope (documented in OpenAPI for every non-2xx response).",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "additionalProperties": false,
+        "description": "Body of every non-2xx response: ``{\"error\": {\"code\", \"message\", \"details\", \"request_id\"}}``.",
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "FeatureImportance": {
+        "additionalProperties": false,
+        "properties": {
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "importance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Importance"
+          }
+        },
+        "required": [
+          "feature"
+        ],
+        "title": "FeatureImportance",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HoldoutInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "bars": {
+            "title": "Bars",
+            "type": "integer"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "share": {
+            "title": "Share",
+            "type": "number"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start",
+          "bars",
+          "share",
+          "note"
+        ],
+        "title": "HoldoutInfo",
+        "type": "object"
+      },
+      "LatestMLResult": {
+        "additionalProperties": false,
+        "properties": {
+          "age_hours": {
+            "title": "Age Hours",
+            "type": "number"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Payload",
+            "type": "array"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "generated_at",
+          "age_hours",
+          "stale",
+          "payload"
+        ],
+        "title": "LatestMLResult",
+        "type": "object"
+      },
+      "LatestPairsResult": {
+        "additionalProperties": false,
+        "properties": {
+          "age_hours": {
+            "title": "Age Hours",
+            "type": "number"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Payload",
+            "type": "array"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "generated_at",
+          "age_hours",
+          "stale",
+          "payload"
+        ],
+        "title": "LatestPairsResult",
+        "type": "object"
+      },
+      "LatestSignal": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "signal",
+          "price"
+        ],
+        "title": "LatestSignal",
+        "type": "object"
+      },
+      "LatestTechnicalResult": {
+        "additionalProperties": false,
+        "description": "Latest nightly technical scan: the validated / OOS-positive candidates (a superset of ScanSignal).",
+        "properties": {
+          "age_hours": {
+            "title": "Age Hours",
+            "type": "number"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "items": {
+              "$ref": "#/components/schemas/TechnicalCandidate"
+            },
+            "title": "Payload",
+            "type": "array"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "generated_at",
+          "age_hours",
+          "stale",
+          "payload"
+        ],
+        "title": "LatestTechnicalResult",
+        "type": "object"
+      },
+      "MLPredictResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "equity_curve": {
+            "items": {
+              "$ref": "#/components/schemas/EquityPoint"
+            },
+            "title": "Equity Curve",
+            "type": "array"
+          },
+          "feature_importance": {
+            "items": {
+              "$ref": "#/components/schemas/FeatureImportance"
+            },
+            "title": "Feature Importance",
+            "type": "array"
+          },
+          "holdout": {
+            "$ref": "#/components/schemas/HoldoutInfo"
+          },
+          "importance_basis": {
+            "title": "Importance Basis",
+            "type": "string"
+          },
+          "is_valid": {
+            "title": "Is Valid",
+            "type": "boolean"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "title": "Metrics",
+            "type": "object"
+          },
+          "metrics_display": {
+            "additionalProperties": true,
+            "title": "Metrics Display",
+            "type": "object"
+          },
+          "model_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Type"
+          },
+          "n_oos_bars": {
+            "title": "N Oos Bars",
+            "type": "integer"
+          },
+          "oos_metrics": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oos Metrics"
+          },
+          "oos_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oos Start"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/MLSignal"
+            },
+            "title": "Signals",
+            "type": "array"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total_signals": {
+            "title": "Total Signals",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "symbol",
+          "feature_importance",
+          "signals",
+          "total_signals",
+          "metrics",
+          "metrics_display",
+          "equity_curve",
+          "is_valid",
+          "n_oos_bars",
+          "importance_basis",
+          "holdout"
+        ],
+        "title": "MLPredictResponse",
+        "type": "object"
+      },
+      "MLRequest": {
+        "properties": {
+          "include_holdout": {
+            "default": true,
+            "title": "Include Holdout",
+            "type": "boolean"
+          },
+          "period_days": {
+            "default": 730,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "MLRequest",
+        "type": "object"
+      },
+      "MLSignal": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "p_up": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "P Up"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "string"
+          }
+        },
+        "required": [
+          "date",
+          "signal",
+          "price"
+        ],
+        "title": "MLSignal",
+        "type": "object"
+      },
+      "OhlcvBar": {
+        "additionalProperties": false,
+        "properties": {
+          "close": {
+            "title": "Close",
+            "type": "number"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "high": {
+            "title": "High",
+            "type": "number"
+          },
+          "low": {
+            "title": "Low",
+            "type": "number"
+          },
+          "open": {
+            "title": "Open",
+            "type": "number"
+          },
+          "volume": {
+            "title": "Volume",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "title": "OhlcvBar",
+        "type": "object"
+      },
+      "OhlcvResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/OhlcvBar"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "count",
+          "data"
+        ],
+        "title": "OhlcvResponse",
+        "type": "object"
+      },
+      "PairAnalysisResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "backtest": {
+            "additionalProperties": true,
+            "title": "Backtest",
+            "type": "object"
+          },
+          "bars_per_year": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bars Per Year"
+          },
+          "coint_pvalue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coint Pvalue"
+          },
+          "correlation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correlation"
+          },
+          "current_zscore": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Zscore"
+          },
+          "half_life": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Half Life"
+          },
+          "hedge_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hedge Ratio"
+          },
+          "is_cointegrated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Cointegrated"
+          },
+          "is_valid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Valid"
+          },
+          "n_obs": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Obs"
+          },
+          "non_executable": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Non Executable"
+          },
+          "non_executable_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Non Executable Reason"
+          },
+          "prices_a": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "Prices A",
+            "type": "array"
+          },
+          "prices_b": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "Prices B",
+            "type": "array"
+          },
+          "spread_data": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Spread Data",
+            "type": "array"
+          },
+          "symbol_a": {
+            "title": "Symbol A",
+            "type": "string"
+          },
+          "symbol_b": {
+            "title": "Symbol B",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol_a",
+          "symbol_b",
+          "spread_data",
+          "prices_a",
+          "prices_b",
+          "backtest"
+        ],
+        "title": "PairAnalysisResponse",
+        "type": "object"
+      },
+      "PairRef": {
+        "additionalProperties": false,
+        "properties": {
+          "a": {
+            "title": "A",
+            "type": "string"
+          },
+          "b": {
+            "title": "B",
+            "type": "string"
+          }
+        },
+        "required": [
+          "a",
+          "b"
+        ],
+        "title": "PairRef",
+        "type": "object"
+      },
+      "PairRequest": {
+        "properties": {
+          "period_days": {
+            "default": 504,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol_a": {
+            "title": "Symbol A",
+            "type": "string"
+          },
+          "symbol_b": {
+            "title": "Symbol B",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol_a",
+          "symbol_b"
+        ],
+        "title": "PairRequest",
+        "type": "object"
+      },
+      "PairsConfiguredResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "pairs": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "title": "Pairs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "pairs"
+        ],
+        "title": "PairsConfiguredResponse",
+        "type": "object"
+      },
+      "PairsScanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "failed": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "n_pairs_configured": {
+            "title": "N Pairs Configured",
+            "type": "integer"
+          },
+          "pairs": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Pairs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "pairs",
+          "n_pairs_configured",
+          "failed"
+        ],
+        "title": "PairsScanResponse",
+        "type": "object"
+      },
+      "PatternDetectResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "buys": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "Buys",
+            "type": "array"
+          },
+          "latest_signal": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestSignal"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "sells": {
+            "items": {
+              "$ref": "#/components/schemas/PricePoint"
+            },
+            "title": "Sells",
+            "type": "array"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total_signals": {
+            "title": "Total Signals",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "total_signals",
+          "buys",
+          "sells"
+        ],
+        "title": "PatternDetectResponse",
+        "type": "object"
+      },
+      "PatternListResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "patterns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Patterns",
+            "type": "array"
+          }
+        },
+        "required": [
+          "patterns",
+          "count"
+        ],
+        "title": "PatternListResponse",
+        "type": "object"
+      },
+      "PatternRequest": {
+        "properties": {
+          "pattern_name": {
+            "title": "Pattern Name",
+            "type": "string"
+          },
+          "period_days": {
+            "default": 730,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern_name"
+        ],
+        "title": "PatternRequest",
+        "type": "object"
+      },
+      "PatternScanResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "failed": {
+            "items": {
+              "$ref": "#/components/schemas/ScanFailure"
+            },
+            "title": "Failed",
+            "type": "array"
+          },
+          "signals": {
+            "items": {
+              "$ref": "#/components/schemas/ScanSignal"
+            },
+            "title": "Signals",
+            "type": "array"
+          }
+        },
+        "required": [
+          "count",
+          "signals",
+          "failed"
+        ],
+        "title": "PatternScanResponse",
+        "type": "object"
+      },
+      "PricePoint": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "price"
+        ],
+        "title": "PricePoint",
+        "type": "object"
+      },
+      "RegimeRequest": {
+        "properties": {
+          "period_days": {
+            "default": 730,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "RegimeRequest",
+        "type": "object"
+      },
+      "ScanFailure": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "title": "Error",
+            "type": "string"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "error"
+        ],
+        "title": "ScanFailure",
+        "type": "object"
+      },
+      "ScanRequest": {
+        "properties": {
+          "markets": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Markets"
+          },
+          "patterns": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Patterns"
+          },
+          "period_days": {
+            "anyOf": [
+              {
+                "maximum": 3650.0,
+                "minimum": 60.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Days"
+          },
+          "recency_days": {
+            "default": 30,
+            "maximum": 10000000.0,
+            "minimum": 1.0,
+            "title": "Recency Days",
+            "type": "integer"
+          }
+        },
+        "title": "ScanRequest",
+        "type": "object"
+      },
+      "ScanSignal": {
+        "additionalProperties": false,
+        "description": "One (symbol, pattern) signal with its IN-SAMPLE display metrics (same numbers for CLI and API).",
+        "properties": {
+          "days_ago": {
+            "title": "Days Ago",
+            "type": "integer"
+          },
+          "is_valid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Valid"
+          },
+          "max_drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "profit_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profit Factor"
+          },
+          "sharpe": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "string"
+          },
+          "signal_date": {
+            "title": "Signal Date",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Return"
+          },
+          "total_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Return Pct"
+          },
+          "total_trades": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Trades"
+          },
+          "validation_status": {
+            "default": "unvalidated",
+            "title": "Validation Status",
+            "type": "string"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "signal",
+          "signal_date",
+          "days_ago",
+          "price"
+        ],
+        "title": "ScanSignal",
+        "type": "object"
+      },
+      "StoreSymbolStatus": {
+        "additionalProperties": false,
+        "description": "SymbolStatus plus the bar store's stale flag.",
+        "properties": {
+          "adjusted": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Adjusted"
+          },
+          "cache_age_seconds": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cache Age Seconds"
+          },
+          "calendar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar"
+          },
+          "coverage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Coverage"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "fetched_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fetched At"
+          },
+          "last_session": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Session"
+          },
+          "n_bars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Bars"
+          },
+          "quality_flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Quality Flags",
+            "type": "array"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "stale": {
+            "default": false,
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "stale_sessions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stale Sessions"
+          },
+          "status": {
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol"
+        ],
+        "title": "StoreSymbolStatus",
+        "type": "object"
+      },
+      "StressReport": {
+        "additionalProperties": true,
+        "description": "full_stress_test's report, passed through as one dict (its existing keys are the contract).",
+        "title": "StressReport",
+        "type": "object"
+      },
+      "StressRequest": {
+        "properties": {
+          "pattern_name": {
+            "title": "Pattern Name",
+            "type": "string"
+          },
+          "period_days": {
+            "default": 2920,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern_name"
+        ],
+        "title": "StressRequest",
+        "type": "object"
+      },
+      "TechnicalCandidate": {
+        "additionalProperties": false,
+        "description": "A CLI scan candidate: the ScanSignal plus its out-of-sample evidence and validation status.",
+        "properties": {
+          "bh_adjusted_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bh Adjusted P"
+          },
+          "days_ago": {
+            "title": "Days Ago",
+            "type": "integer"
+          },
+          "holdout": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout"
+          },
+          "is_valid": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Valid"
+          },
+          "max_drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown"
+          },
+          "n_oos_trades": {
+            "default": 0,
+            "title": "N Oos Trades",
+            "type": "integer"
+          },
+          "n_trials": {
+            "default": 0,
+            "title": "N Trials",
+            "type": "integer"
+          },
+          "null_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null P"
+          },
+          "oos": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oos"
+          },
+          "oos_psr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oos Psr"
+          },
+          "orderable_direction": {
+            "default": 0,
+            "title": "Orderable Direction",
+            "type": "integer"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "profit_factor": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profit Factor"
+          },
+          "rejected_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rejected Reasons",
+            "type": "array"
+          },
+          "sharpe": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe"
+          },
+          "signal": {
+            "title": "Signal",
+            "type": "string"
+          },
+          "signal_bar_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Bar Date"
+          },
+          "signal_date": {
+            "title": "Signal Date",
+            "type": "string"
+          },
+          "signal_value": {
+            "default": 0,
+            "title": "Signal Value",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "total_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Return"
+          },
+          "total_return_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Return Pct"
+          },
+          "total_trades": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Trades"
+          },
+          "validation_status": {
+            "default": "unvalidated",
+            "title": "Validation Status",
+            "type": "string"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "signal",
+          "signal_date",
+          "days_ago",
+          "price"
+        ],
+        "title": "TechnicalCandidate",
+        "type": "object"
+      },
+      "TradeOut": {
+        "additionalProperties": false,
+        "properties": {
+          "bars_held": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bars Held"
+          },
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "entry_date": {
+            "title": "Entry Date",
+            "type": "string"
+          },
+          "entry_price": {
+            "title": "Entry Price",
+            "type": "number"
+          },
+          "exit_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Date"
+          },
+          "exit_price": {
+            "title": "Exit Price",
+            "type": "number"
+          },
+          "exit_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Reason"
+          },
+          "in_holdout": {
+            "default": false,
+            "title": "In Holdout",
+            "type": "boolean"
+          },
+          "pnl_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl Pct"
+          }
+        },
+        "required": [
+          "entry_date",
+          "direction",
+          "entry_price",
+          "exit_price"
+        ],
+        "title": "TradeOut",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "WalkForwardFold": {
+        "additionalProperties": false,
+        "properties": {
+          "fold": {
+            "title": "Fold",
+            "type": "integer"
+          },
+          "metrics": {
+            "additionalProperties": true,
+            "title": "Metrics",
+            "type": "object"
+          },
+          "metrics_display": {
+            "additionalProperties": true,
+            "title": "Metrics Display",
+            "type": "object"
+          }
+        },
+        "required": [
+          "fold",
+          "metrics",
+          "metrics_display"
+        ],
+        "title": "WalkForwardFold",
+        "type": "object"
+      },
+      "WalkForwardRequest": {
+        "properties": {
+          "n_splits": {
+            "default": 4,
+            "maximum": 12.0,
+            "minimum": 2.0,
+            "title": "N Splits",
+            "type": "integer"
+          },
+          "pattern_name": {
+            "title": "Pattern Name",
+            "type": "string"
+          },
+          "period_days": {
+            "default": 730,
+            "maximum": 3650.0,
+            "minimum": 60.0,
+            "title": "Period Days",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern_name"
+        ],
+        "title": "WalkForwardRequest",
+        "type": "object"
+      },
+      "WalkForwardResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "fold_scheme": {
+            "title": "Fold Scheme",
+            "type": "string"
+          },
+          "folds": {
+            "items": {
+              "$ref": "#/components/schemas/WalkForwardFold"
+            },
+            "title": "Folds",
+            "type": "array"
+          },
+          "n_folds": {
+            "title": "N Folds",
+            "type": "integer"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "n_folds",
+          "folds",
+          "fold_scheme"
+        ],
+        "title": "WalkForwardResponse",
+        "type": "object"
+      },
+      "WatchlistSymbolsResponse": {
+        "additionalProperties": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "description": "Configured symbols grouped by market.",
+        "title": "WatchlistSymbolsResponse",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "title": "Trading Bot v2 API",
+    "version": "2.0.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/backtest/run": {
+      "post": {
+        "description": "Run a backtest on a symbol + pattern combination (execution convention: config.EXECUTION_MODE).",
+        "operationId": "run_backtest_api_backtest_run_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BacktestRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BacktestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Run Backtest",
+        "tags": [
+          "backtest"
+        ]
+      }
+    },
+    "/api/backtest/walk-forward": {
+      "post": {
+        "description": "Run walk-forward validation.",
+        "operationId": "run_walk_forward_api_backtest_walk_forward_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalkForwardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalkForwardResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Run Walk Forward",
+        "tags": [
+          "backtest"
+        ]
+      }
+    },
+    "/api/config/": {
+      "get": {
+        "description": "Get current configuration.",
+        "operationId": "get_config_api_config__get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Config",
+        "tags": [
+          "config"
+        ]
+      }
+    },
+    "/api/data/status": {
+      "get": {
+        "description": "Per-symbol data source, coverage, staleness and quality (may fetch bars, so it shares the heavy-endpoint cap: 429 when busy; default: watchlist + allocation).",
+        "operationId": "get_data_status_api_data_status_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "pattern": "^[A-Za-z0-9.\\-=^]{1,20}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Symbol"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DataStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Data Status",
+        "tags": [
+          "data"
+        ]
+      }
+    },
+    "/api/data/watchlist/fetch": {
+      "get": {
+        "description": "Fetch data for all watchlist symbols. Returns just symbols that loaded successfully.",
+        "operationId": "fetch_watchlist_data_api_data_watchlist_fetch_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "markets",
+            "required": false,
+            "schema": {
+              "default": "",
+              "title": "Markets",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Fetch Watchlist Data",
+        "tags": [
+          "data"
+        ]
+      }
+    },
+    "/api/data/watchlist/symbols": {
+      "get": {
+        "description": "Get all configured symbols grouped by market.",
+        "operationId": "get_watchlist_symbols_api_data_watchlist_symbols_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatchlistSymbolsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Watchlist Symbols",
+        "tags": [
+          "data"
+        ]
+      }
+    },
+    "/api/data/{symbol}": {
+      "get": {
+        "description": "Fetch OHLCV data for a symbol (404 when the data layer has nothing valid for it).",
+        "operationId": "get_ohlcv_api_data__symbol__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "pattern": "^[A-Za-z0-9^][A-Za-z0-9^.\\-=/]{0,19}$",
+              "title": "Symbol",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "period_days",
+            "required": false,
+            "schema": {
+              "default": 730,
+              "maximum": 3650,
+              "minimum": 60,
+              "title": "Period Days",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OhlcvResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Ohlcv",
+        "tags": [
+          "data"
+        ]
+      }
+    },
+    "/api/health": {
+      "get": {
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    },
+    "/api/ml/predict": {
+      "post": {
+        "description": "Walk-forward ML predictions; the backtest and signals cover ONLY out-of-sample bars.",
+        "operationId": "ml_predict_api_ml_predict_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MLRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MLPredictResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Ml Predict",
+        "tags": [
+          "ml"
+        ]
+      }
+    },
+    "/api/pairs/analyze": {
+      "post": {
+        "description": "Run full cointegration analysis on a pair.",
+        "operationId": "analyze_api_pairs_analyze_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PairRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairAnalysisResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Analyze",
+        "tags": [
+          "pairs"
+        ]
+      }
+    },
+    "/api/pairs/configured": {
+      "get": {
+        "description": "Get list of configured pairs.",
+        "operationId": "get_configured_pairs_api_pairs_configured_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairsConfiguredResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Configured Pairs",
+        "tags": [
+          "pairs"
+        ]
+      }
+    },
+    "/api/pairs/scan": {
+      "post": {
+        "description": "Scan the default pairs (research-only pairs excluded); BH-corrected across all pairs scanned.",
+        "operationId": "scan_pairs_api_pairs_scan_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PairsScanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Scan Pairs",
+        "tags": [
+          "pairs"
+        ]
+      }
+    },
+    "/api/patterns/detect": {
+      "post": {
+        "description": "Detect a specific pattern on a symbol.",
+        "operationId": "detect_pattern_api_patterns_detect_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatternRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternDetectResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Detect Pattern",
+        "tags": [
+          "patterns"
+        ]
+      }
+    },
+    "/api/patterns/list": {
+      "get": {
+        "description": "List all available patterns.",
+        "operationId": "list_patterns_api_patterns_list_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "List Patterns",
+        "tags": [
+          "patterns"
+        ]
+      }
+    },
+    "/api/patterns/scan": {
+      "post": {
+        "description": "Scan the watchlist for recent pattern signals.\n\nThe statistics attached to each signal are IN-SAMPLE display numbers (validation_status 'unvalidated');\nonly `python main.py scan` runs the out-of-sample validation. Anything that failed is listed in `failed`.",
+        "operationId": "scan_patterns_api_patterns_scan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatternScanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Scan Patterns",
+        "tags": [
+          "patterns"
+        ]
+      }
+    },
+    "/api/results/ml/latest": {
+      "get": {
+        "description": "Latest nightly ML scan.",
+        "operationId": "latest_ml_api_results_ml_latest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestMLResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Latest Ml",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/results/pairs/latest": {
+      "get": {
+        "description": "Latest nightly pairs scan.",
+        "operationId": "latest_pairs_api_results_pairs_latest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestPairsResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Latest Pairs",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/results/technical/latest": {
+      "get": {
+        "description": "Latest nightly technical scan (validated / OOS-positive candidates): payload, generated_at, stale flag.",
+        "operationId": "latest_technical_api_results_technical_latest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestTechnicalResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Latest Technical",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/stress/full": {
+      "post": {
+        "description": "Run the complete stress test suite.",
+        "operationId": "run_stress_test_api_stress_full_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StressRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StressReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Run Stress Test",
+        "tags": [
+          "stress"
+        ]
+      }
+    },
+    "/api/stress/regimes": {
+      "post": {
+        "description": "Detect market regimes for a symbol.",
+        "operationId": "get_regimes_api_stress_regimes_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegimeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Regimes",
+        "tags": [
+          "stress"
+        ]
+      }
+    },
+    "/api/stress/sensitivity": {
+      "post": {
+        "description": "Run parameter sensitivity analysis (bars before HOLDOUT_START only).",
+        "operationId": "get_sensitivity_api_stress_sensitivity_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StressRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Sensitivity",
+        "tags": [
+          "stress"
+        ]
+      }
+    }
+  }
+}
