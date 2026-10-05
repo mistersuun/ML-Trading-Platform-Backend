@@ -13,7 +13,9 @@ Order of checks (any exception fails closed to a Decision, never an order):
   5 ledger insert, key = symbol|side|bar_date (one intent per symbol and bar, any strategy)
   6 no existing position / open order; SELL only reduces an existing long
   7 sizing (ATR risk, symbol/notional/gross/heat caps, open-position and cluster limits)
-  8 bracket BUY (GTC, so the stop/take-profit legs outlive the day) / plain SELL (day), whole shares
+  8 bracket BUY (GTC, so the stop/take-profit legs outlive the day) / plain SELL (day), whole shares.
+    A SELL exit of a bracketed long is cancel legs -> poll until they are terminal -> sell; if the
+    sell then fails, a standalone GTC stop is re-placed, and if that fails the sleeve halts (UNPROTECTED).
   9 submit with a deterministic client_order_id; timeouts are resolved by looking the id up,
     never by retrying with a new id.
 
@@ -28,6 +30,7 @@ import json
 import logging
 import math
 import sqlite3
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Optional
@@ -40,6 +43,9 @@ from risk_manager import RiskManager
 from state import db as state_db
 
 logger = logging.getLogger(__name__)
+
+_sleep = time.sleep  # injectable (tests): the poll that waits for cancelled bracket legs to go terminal
+_clock = time.monotonic
 
 MIN_PRICE = 1.0
 TAKE_PROFIT_ATR_MULT = 3.0
@@ -86,7 +92,7 @@ class ReconcileResult:
     ok: bool
     mismatches: list[str] = field(default_factory=list)
     events: list[dict] = field(default_factory=list)
-    positions: list[BrokerPosition] = field(default_factory=list)
+    positions: Optional[list[BrokerPosition]] = field(default_factory=list)  # None: the broker could not be read
     open_orders: list[BrokerOrder] = field(default_factory=list)
 
 
@@ -140,23 +146,53 @@ def _persist_decision(conn: sqlite3.Connection, key: str, d: Decision) -> None:
 # ── reconciliation ───────────────────────────────────────────
 
 def _accepted(conn: sqlite3.Connection) -> tuple[set, set]:
-    syms: set = set()
-    ids: set = set()
-    for (blob,) in conn.execute("SELECT summary_json FROM runs WHERE kind='reconcile_accept'"):
-        snap = json.loads(blob or "{}")
-        syms.update(snap.get("symbols", []))
-        ids.update(snap.get("order_ids", []))
-    return syms, ids
+    """The LATEST accept snapshot only (it always covers the whole book). A symbol's acceptance expires once
+    a platform bracket is placed on it after the snapshot, so a fresh position must have its own stop."""
+    row = conn.execute("SELECT summary_json FROM runs WHERE kind='reconcile_accept' ORDER BY id DESC LIMIT 1").fetchone()
+    if row is None:
+        return set(), set()
+    snap = json.loads(row[0] or "{}")
+    newer = {r[0] for r in conn.execute("SELECT DISTINCT symbol FROM orders WHERE side='buy' AND order_class='bracket' "
+                                        "AND id > ?", (snap.get("orders_max_id", 0),))}
+    return set(snap.get("symbols", [])) - newer, set(snap.get("order_ids", []))
 
 
 def _bracket_symbols(conn: sqlite3.Connection) -> set:
     return {r[0] for r in conn.execute("SELECT DISTINCT symbol FROM orders WHERE side='buy' AND order_class='bracket'")}
 
 
-def _is_protective_leg(o: BrokerOrder, bracket_syms: set) -> bool:
-    """An open SELL leg (stop-loss / take-profit) of a bracket this platform placed."""
-    return (o.side == "sell" and o.symbol in bracket_syms
-            and (o.parent_id is not None or o.order_class in _LEG_CLASSES))
+def _own_orders(conn: sqlite3.Connection) -> tuple[set, list]:
+    """(client/broker ids of every order this platform recorded, its bracket entries as (symbol, qty, stop, tp))."""
+    ids: set = set()
+    for cid, bid in conn.execute("SELECT client_order_id, broker_id FROM orders"):
+        ids.update(x for x in (cid, bid) if x)
+    brackets = [tuple(r) for r in conn.execute(
+        "SELECT symbol, qty, stop_price, limit_price FROM orders WHERE side='buy' AND order_class='bracket'")]
+    return ids, brackets
+
+
+def _is_own(o: BrokerOrder, ids: set, brackets: list) -> bool:
+    """Attribute an open order to this platform: its id / client id is in the orders table, or it is a leg nested
+    under one of our parents, or (a leg that comes back un-nested once its parent filled, with no parent id)
+    it matches symbol + qty + stop/take-profit price of a bracket we placed. Anything else is not ours."""
+    if o.id in ids or (o.client_order_id and o.client_order_id in ids):
+        return True
+    if o.parent_id is not None:
+        return o.parent_id in ids
+    if o.side == "sell" and o.order_class in _LEG_CLASSES and o.qty is not None:
+        px = o.stop_price if o.order_type in _STOP_TYPES else o.limit_price if o.order_type == "limit" else None
+        if px is None:
+            return False
+        for sym, qty, stop, tp in brackets:
+            want = stop if o.order_type in _STOP_TYPES else tp
+            if sym == o.symbol and qty == o.qty and want and abs(want - px) < 0.005:
+                return True
+    return False
+
+
+def _is_protective(o: BrokerOrder) -> bool:
+    """A cancellable protective order: bracket leg or stop (never a market/limit exit in flight)."""
+    return o.side == "sell" and (o.parent_id is not None or o.order_class in _LEG_CLASSES or o.order_type in _STOP_TYPES)
 
 
 def _snapshot(broker: Broker) -> tuple[list[BrokerPosition], list[BrokerOrder]]:
@@ -173,18 +209,18 @@ def reconcile(broker: Broker, conn: Optional[sqlite3.Connection] = None,
     now = _utc(now)
     conn = state_db.require_initialized(conn)
     mismatches: list[str] = []
-    positions: list[BrokerPosition] = []
+    positions: Optional[list[BrokerPosition]] = []
     orders: list[BrokerOrder] = []
     try:
         positions, orders = _snapshot(broker)
     except Exception as e:
+        positions = None  # unreadable is not a flat book: callers must not size or baseline off it
         mismatches.append(f"broker_error:{type(e).__name__}")
     else:
         acc_syms, acc_ids = _accepted(conn)
         known_syms = {r[0] for r in conn.execute("SELECT DISTINCT symbol FROM orders WHERE side='buy'")} | acc_syms
-        known_ids: set = set(acc_ids)
-        for cid, bid in conn.execute("SELECT client_order_id, broker_id FROM orders"):
-            known_ids.update(x for x in (cid, bid) if x)
+        own_ids, brackets = _own_orders(conn)
+        known_ids: set = own_ids | acc_ids
         bracket_syms = _bracket_symbols(conn)
         for p in positions:
             if p.qty < 0 or p.side == "short":
@@ -193,17 +229,19 @@ def reconcile(broker: Broker, conn: Optional[sqlite3.Connection] = None,
                 mismatches.append(f"unknown_position:{p.symbol}")
             elif p.qty > 0 and p.symbol in bracket_syms and p.symbol not in acc_syms:
                 # the exit legs may expire or be cancelled by hand: a long must keep a live stop
-                if not any(o.symbol == p.symbol and o.side == "sell"
-                           and (o.order_type in _STOP_TYPES or o.order_type == "market") for o in orders):
+                cover = [o for o in orders if o.symbol == p.symbol and o.side == "sell"
+                         and (o.order_type in _STOP_TYPES or o.order_type == "market")]
+                if not cover:
                     mismatches.append(f"missing_protective_stop:{p.symbol}")
+                elif sum(o.qty or 0.0 for o in cover) + 1e-9 < p.qty:  # a 1-share stop on 100 shares is no stop
+                    mismatches.append(f"insufficient_protective_stop:{p.symbol}")
         known_top = {o.id for o in orders if o.parent_id is None
                      and ((o.client_order_id in known_ids) or (o.id in known_ids))}
         for o in orders:
             if o.parent_id is not None:  # a filled parent is no longer open, so also match the DB's broker ids
                 ok = o.parent_id in known_top or o.parent_id in known_ids or o.id in known_ids
             else:
-                # un-nested legs of a filled bracket come back top-level: known if we bracketed that symbol
-                ok = o.id in known_top or _is_protective_leg(o, bracket_syms)
+                ok = o.id in known_top or _is_own(o, own_ids, brackets)
             if not ok:
                 mismatches.append(f"unknown_open_order:{o.client_order_id or o.id}")
         for (key,) in conn.execute(
@@ -225,7 +263,8 @@ def accept_reconciliation(broker: Broker, conn: Optional[sqlite3.Connection] = N
     conn = state_db.require_initialized(conn)
     positions, orders = _snapshot(broker)  # raises on error: never accept an unread book
     snap = {"symbols": sorted({p.symbol for p in positions}),
-            "order_ids": sorted({x for o in orders for x in (o.id, o.client_order_id) if x})}
+            "order_ids": sorted({x for o in orders for x in (o.id, o.client_order_id) if x}),
+            "orders_max_id": conn.execute("SELECT COALESCE(MAX(id), 0) FROM orders").fetchone()[0]}
     conn.execute("BEGIN IMMEDIATE")
     try:
         conn.execute("INSERT INTO runs (kind, started_at, finished_at, status, summary_json) "
@@ -300,15 +339,16 @@ def _size_buy(intent: OrderIntent, mult: float, positions: list[BrokerPosition],
 def refresh_sleeve_equity(rm: RiskManager, broker: Broker, positions: Optional[list[BrokerPosition]] = None,
                           now: Optional[datetime] = None) -> list[dict]:
     """Read the paper account, compute sleeve equity (configured dollars + realized and open P&L, see
-    RiskManager.sleeve_equity) and feed it to the risk manager. Returns events (a new halt). A depleted
+    RiskManager.sleeve_equity) and feed it to the risk manager. Returns events (a new halt, a seeded baseline). A depleted
     sleeve (<= 0) halts. Broker/DB errors propagate: callers must not trade after one."""
     positions = broker.get_positions() if positions is None else positions
     acct = broker.get_account()
     pnl = sum(p.market_value - p.qty * p.avg_entry_price for p in positions)
-    sleeve = rm.sleeve_equity(float(acct["equity"]), pnl)
+    sleeve = rm.sleeve_equity(float(acct["equity"]), pnl, now)
+    events = rm.pop_events()  # baseline seeded / equity-jump halt
     if math.isfinite(sleeve) and sleeve <= 0:
-        return [rm.halt("sleeve equity depleted", now)]
-    return rm.update_equity(sleeve, now)
+        return events + [rm.halt("sleeve equity depleted", now)]
+    return events + rm.update_equity(sleeve, now)
 
 
 def cancel_open_entries(broker: Broker, conn: Optional[sqlite3.Connection] = None) -> list[str]:
@@ -401,7 +441,11 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
     rec = reconcile(broker, conn, now)
     events.extend(rec.events)
     if not rec.ok:
-        return Decision("rejected", ["reconcile_mismatch", *rec.mismatches], client_order_id=key, events=events)
+        # A reduce-only SELL (exit of an existing long) must still run through mismatches such as a missing stop
+        # (that exit is what fixes it). An unreadable book or a short position still blocks it.
+        reduce_only = side == "sell" and not any(m.startswith(("broker_error", "short_position")) for m in rec.mismatches)
+        if not reduce_only:
+            return Decision("rejected", ["reconcile_mismatch", *rec.mismatches], client_order_id=key, events=events)
     positions, open_orders = rec.positions, rec.open_orders
 
     # 5. ledger: one row per (symbol, side, bar). Only 'rejected_retryable' rows may be revived.
@@ -416,7 +460,7 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
             return Decision("duplicate", ["signal_already_processed"], client_order_id=key, events=events)
 
     # 6-8 pre-submit work: any exception here is retryable (nothing was sent)
-    cancels: list[str] = []
+    cancels: list[BrokerOrder] = []
     try:
         spec, early = _plan(intent, side, tsym, key, chk.risk_multiplier, positions, open_orders, conn, cancels)
     except Exception as e:
@@ -430,23 +474,125 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
         _persist_decision(conn, key, early)
         return early
 
-    # 9. an exit first removes the position's own bracket legs (they cover every share), then sells
+    # 9. an exit first removes the position's own bracket legs (they reserve every share), waits for them to be
+    #    terminal, then sells; a failed sell re-protects the position
     if cancels:
-        try:
-            for oid in cancels:
-                broker.cancel_order(oid)
-        except Exception as e:
-            logger.exception("could not cancel protective legs before exit")
-            d = Decision("error", [f"cancel_protective_failed:{type(e).__name__}"], client_order_id=key, events=events)
-            conn.execute("UPDATE signal_ledger SET status='rejected_retryable', decision_json=? WHERE signal_key=?",
-                         (json.dumps(asdict(d), default=str), key))
-            return d
+        return _protected_exit(broker, spec, cancels, positions, intent, key, tsym, conn, now, rm, events)
 
     # 10. submit
     d = _send(broker, spec, key, tsym, conn, now, rm, events, intent.price)
-    if cancels:
-        d.reasons.append(f"cancelled_protective_legs:{len(cancels)}")
     _persist_decision(conn, key, d)
+    return d
+
+
+def _retryable(conn, key: str, d: Decision) -> None:
+    conn.execute("UPDATE signal_ledger SET status='rejected_retryable', decision_json=? WHERE signal_key=?",
+                 (json.dumps(asdict(d), default=str), key))
+
+
+def _await_terminal(broker, ids: set, timeout: Optional[float] = None) -> bool:
+    """Poll open orders until none of `ids` is still open (Alpaca cancels are asynchronous: a leg in
+    pending_cancel still reserves its shares). Bounded; True when confirmed gone."""
+    deadline = _clock() + (config.EXIT_CANCEL_WAIT_SECONDS if timeout is None else timeout)
+    while True:
+        try:
+            if not any(o.id in ids for o in broker.get_open_orders()):
+                return True
+        except Exception as e:
+            logger.error("open-order poll failed while waiting for cancels: %s", type(e).__name__)
+        if _clock() >= deadline:
+            return False
+        _sleep(0.5)
+
+
+def _stop_to_restore(cancels: list[BrokerOrder], conn, tsym: str, intent: OrderIntent) -> Optional[float]:
+    for o in cancels:
+        if o.order_type in _STOP_TYPES and o.stop_price:
+            return float(o.stop_price)
+    row = conn.execute("SELECT stop_price FROM orders WHERE symbol=? AND side='buy' AND stop_price IS NOT NULL "
+                       "ORDER BY id DESC LIMIT 1", (tsym,)).fetchone()
+    if row and row[0]:
+        return float(row[0])
+    if _finite(intent.atr) and intent.atr > 0:
+        px = _r2(intent.price - config.ATR_STOP_MULT * intent.atr)
+        return px if px > 0 else None
+    return None
+
+
+def _stop_live(broker, tsym: str, held: float) -> bool:
+    try:
+        cover = sum(o.qty or 0.0 for o in broker.get_open_orders() if o.symbol == tsym and o.side == "sell"
+                    and o.order_type in _STOP_TYPES and o.status != "pending_cancel")
+    except Exception:
+        return False
+    return cover + 1e-9 >= held
+
+
+def _reprotect(broker, tsym, held, stop_px, key, conn, now, rm, events) -> list[str]:
+    """After an exit failed with its legs cancelled: put a standalone GTC stop back on the held qty. If that
+    fails too, halt and emit an UNPROTECTED event (the caller alerts on it)."""
+    if _stop_live(broker, tsym, held):
+        return ["still_protected"]
+    n = conn.execute("SELECT COUNT(*) FROM orders WHERE client_order_id LIKE ?", (f"{key}-stop-%",)).fetchone()[0] + 1
+    cid, err, bo = f"{key}-stop-{n}", "no_stop_price", None
+    if stop_px:
+        try:
+            bo = broker.submit(OrderSpec(tsym, "sell", int(held), "stop", ENTRY_TIF, cid, stop_price=stop_px))
+        except Exception as e:
+            err = type(e).__name__
+            try:
+                bo = broker.get_order_by_client_id(cid)
+            except Exception:
+                bo = None
+    if bo is not None:
+        conn.execute("INSERT OR IGNORE INTO orders (client_order_id, broker_id, symbol, side, qty, order_class, "
+                     "stop_price, status, created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                     (cid, bo.id, tsym, "sell", held, "simple", stop_px, bo.status or "accepted", now.isoformat()))
+        return ["standalone_stop_replaced"]
+    reason = (f"UNPROTECTED {tsym}: exit failed after its stop was cancelled and the standalone stop could not be "
+              f"re-placed ({err}); {held:g} sh held with no stop. Fix it by hand at the broker.")
+    logger.error(reason)
+    try:
+        rm.halt(reason, now)
+    except Exception:
+        logger.exception("could not persist the UNPROTECTED halt")
+    events.append({"type": "halt", "reason": reason, "at": now.isoformat()})
+    return ["UNPROTECTED"]
+
+
+def _protected_exit(broker, spec, cancels, positions, intent, key, tsym, conn, now, rm, events) -> Decision:
+    """cancel legs -> confirm terminal -> sell -> re-protect on failure. The ledger row stays retryable (never
+    'rejected') whenever the position was left without its legs."""
+    held = sum(p.qty for p in positions if p.symbol == tsym and p.qty > 0)
+    stop_px = _stop_to_restore(cancels, conn, tsym, intent)
+    ids = {o.id for o in cancels}
+    cancelled = False
+    try:
+        for o in cancels:
+            try:
+                broker.cancel_order(o.id)
+            except Exception as e:
+                if getattr(e, "status_code", None) in (404, 422):
+                    continue  # already gone: the sibling leg was auto-cancelled, or it is terminal / pending cancel
+                raise
+            cancelled = True
+    except Exception as e:
+        logger.exception("could not cancel protective legs before exit")
+        d = Decision("error", [f"cancel_protective_failed:{type(e).__name__}"], client_order_id=key, events=events)
+        if cancelled:  # one leg is gone, another could not be cancelled: make sure a stop is still live
+            d.reasons += _reprotect(broker, tsym, held, stop_px, key, conn, now, rm, events)
+        _retryable(conn, key, d)
+        return d
+    settled = _await_terminal(broker, ids)
+    d = _send(broker, spec, key, tsym, conn, now, rm, events, intent.price)
+    d.reasons.append(f"cancelled_protective_legs:{len(cancels)}")
+    if not settled:
+        d.reasons.append("legs_not_confirmed_cancelled")
+    if d.status in ("rejected", "error"):
+        d.reasons += _reprotect(broker, tsym, held, stop_px, key, conn, now, rm, events)
+    _persist_decision(conn, key, d)
+    if d.status == "rejected":
+        _retryable(conn, key, d)
     return d
 
 
@@ -463,10 +609,12 @@ def _plan(intent, side, tsym, key, risk_multiplier, positions, open_orders, conn
         if held <= 0:
             return rej("shorts_disabled", "no_long_position")
         groups: dict[str, float] = {}
-        bracket_syms = _bracket_symbols(conn)
-        legs = [o.id for o in sym_orders if _is_protective_leg(o, bracket_syms)]
+        own_ids, brackets = _own_orders(conn)
+        # only orders attributable to this platform are ever cancelled; any other sell order just reserves shares
+        legs = [o for o in sym_orders if _is_protective(o) and _is_own(o, own_ids, brackets)]
+        leg_ids = {o.id for o in legs}
         for o in sym_orders:
-            if o.side == "sell" and o.id not in legs:
+            if o.side == "sell" and o.id not in leg_ids:
                 if o.qty is None:
                     return rej("open_sell_order_unknown_qty")
                 groups[o.parent_id or o.id] = max(groups.get(o.parent_id or o.id, 0.0), o.qty)  # OCO legs count once

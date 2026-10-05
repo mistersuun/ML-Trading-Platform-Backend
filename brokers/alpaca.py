@@ -49,6 +49,8 @@ def _to_order(o: Any, parent_id: Optional[str] = None) -> BrokerOrder:
         parent_id=parent_id,
         order_type=None if otype is None else _enum_text(otype),
         order_class=None if oclass is None else _enum_text(oclass),
+        stop_price=_opt_float(getattr(o, "stop_price", None)),
+        limit_price=_opt_float(getattr(o, "limit_price", None)),
     )
 
 
@@ -111,8 +113,8 @@ class AlpacaBroker:
 
     def _request(self, spec: OrderSpec):
         from alpaca.trading.enums import OrderClass, OrderSide, TimeInForce
-        from alpaca.trading.requests import (LimitOrderRequest, MarketOrderRequest,
-                                             StopLossRequest, TakeProfitRequest)
+        from alpaca.trading.requests import (LimitOrderRequest, MarketOrderRequest, StopLossRequest,
+                                             StopOrderRequest, TakeProfitRequest)
         validate_spec(spec)
         common: dict = dict(
             symbol=spec.symbol, qty=int(spec.qty),
@@ -124,6 +126,8 @@ class AlpacaBroker:
                           stop_loss=StopLossRequest(stop_price=spec.stop_price))
         if spec.order_type == "market":
             return MarketOrderRequest(**common)
+        if spec.order_type == "stop":
+            return StopOrderRequest(stop_price=spec.stop_price, **common)
         return LimitOrderRequest(limit_price=spec.limit_price, **common)
 
     def submit(self, spec: OrderSpec) -> BrokerOrder:

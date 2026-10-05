@@ -208,6 +208,8 @@ MAX_PORTFOLIO_HEAT_PCT = 0.04       # total open risk-to-stop
 MAX_OPEN_POSITIONS = 8
 MAX_POSITIONS_PER_CLUSTER = 2
 MAX_ORDERS_PER_DAY = 5
+EQUITY_JUMP_HALT_PCT = _f("EQUITY_JUMP_HALT_PCT", 0.10)   # sleeve equity move between readings, no orders in between -> halt (D10)
+EXIT_CANCEL_WAIT_SECONDS = _f("EXIT_CANCEL_WAIT_SECONDS", 10.0)  # max wait for cancelled bracket legs to go terminal
 MAX_ORDER_NOTIONAL = _f("MAX_ORDER_NOTIONAL", 1000.0)   # absolute $ cap; order cap = min(this, MAX_SYMBOL_PCT*sleeve)
 DAILY_LOSS_STOP_PCT = 0.015         # no new entries for the day
 WEEKLY_LOSS_STOP_PCT = 0.03         # no new entries for the week

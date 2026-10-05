@@ -9,7 +9,7 @@ import math
 from dataclasses import dataclass
 from typing import Optional, Protocol, runtime_checkable
 
-ORDER_TYPES = ("market", "limit")
+ORDER_TYPES = ("market", "limit", "stop")  # "stop": standalone protective sell stop (re-protect after a failed exit)
 SIDES = ("buy", "sell")
 
 
@@ -33,6 +33,8 @@ class BrokerOrder:
     parent_id: Optional[str] = None  # set for bracket legs returned nested under their parent
     order_type: Optional[str] = None  # "market" | "limit" | "stop" | ...
     order_class: Optional[str] = None  # "simple" | "bracket" | "oco" | "oto"
+    stop_price: Optional[float] = None
+    limit_price: Optional[float] = None
 
 
 @dataclass(frozen=True)
@@ -70,6 +72,9 @@ def validate_spec(spec: OrderSpec) -> None:
         raise ValueError("client_order_id required")
     if spec.order_type == "limit" and not (spec.limit_price and spec.limit_price > 0):
         raise ValueError("limit order needs a positive limit_price")
+    if spec.order_type == "stop":
+        if spec.bracket or spec.side != "sell" or not (spec.stop_price and spec.stop_price > 0):
+            raise ValueError("a stop order is a standalone sell with a positive stop_price")
     if spec.bracket:
         if spec.side != "buy":
             raise ValueError("brackets are only built for long entries (shorts are disabled)")

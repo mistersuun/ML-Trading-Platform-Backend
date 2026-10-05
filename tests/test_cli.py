@@ -202,3 +202,44 @@ def test_cancel_on_halt_cancels_unfilled_entries_only_and_alerts(monkeypatch, tm
     monkeypatch.setattr(config, "CANCEL_ON_HALT", False)
     assert main._cancel_if_halted(broker, rm, conn) == []
     conn.close()
+
+
+# ---------------------------------------------------------------- review round 2
+def test_risk_init_prints_the_dedicated_account_assumption(capsys):
+    assert _run(["risk", "init"]) == 0
+    out = capsys.readouterr().out
+    assert "D10" in out and "dedicated" in out and "rebaseline" in out
+
+
+def test_risk_rebaseline_needs_confirm(capsys):
+    _run(["risk", "init"])
+    capsys.readouterr()
+    assert _run(["risk", "rebaseline"]) != 0 and "--confirm" in capsys.readouterr().err
+    assert _run(["risk", "rebaseline", "--confirm"]) == 0
+
+
+def test_unprotected_and_baseline_events_alert_as_halt(monkeypatch):
+    sent = []
+    monkeypatch.setattr(main, "send_alert", lambda msg, **k: sent.append((k.get("kind"), msg)) or True)
+    main._announce_events([{"type": "halt", "reason": "UNPROTECTED AAPL: no stop", "at": "t1"},
+                           {"type": "baseline_seeded", "reason": "account baseline set to 1.00", "at": "t2"}], set())
+    assert [k for k, _ in sent] == ["halt", "halt"]
+    assert "UNPROTECTED AAPL" in sent[0][1] and "BASELINE" in sent[1][1]
+
+
+def test_unreadable_broker_refuses_the_session_and_seeds_no_baseline(monkeypatch, tmp_path):
+    import execution
+    from state import db
+    init_state(monkeypatch, tmp_path)
+    monkeypatch.setattr(config, "TRADING_MODE", "paper")
+    monkeypatch.setattr(config, "PAPER_TRADE_ENABLED", True)
+    monkeypatch.setattr(main, "send_alert", lambda *a, **k: True)
+    fake = FakeBroker()
+    fake.raise_on("get_all_positions")
+    monkeypatch.setattr(main, "get_broker", lambda: AlpacaBroker(fake))
+    assert execution.reconcile(AlpacaBroker(fake), db.connect()).positions is None  # not a flat book
+    assert main.open_session() is None
+    assert fake.calls_to("get_account") == []  # never fed to refresh_sleeve_equity
+    conn = db.connect()
+    assert conn.execute("SELECT account_baseline FROM risk_state").fetchone()[0] is None
+    conn.close()

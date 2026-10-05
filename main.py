@@ -9,7 +9,7 @@ so in Phase 1 every scan is effectively alert-only. There is no live trading mod
 Commands:
     python main.py scan [--mode technical pairs ml] [--symbol AAPL] [--market stocks]
                         [--stress AAPL ema_crossover] [--schedule --time 08:00] [--report] [--paper]
-    python main.py risk init | status | halt --reason TEXT | resume --confirm | reconcile [--accept]
+    python main.py risk init | status | halt --reason TEXT | resume --confirm | rebaseline --confirm | reconcile [--accept]
     python main.py check-llm
     python main.py rebalance --holdings holdings.csv [--contributions 500]
     python main.py backup --dest PATH
@@ -112,7 +112,11 @@ def _announce_events(events: list[dict], seen: set) -> None:
             continue
         seen.add(key)
         detail = ev.get("reason") or ", ".join(ev.get("reasons", []))
-        title = "TRADING HALTED" if kind == "halt" else "RECONCILIATION MISMATCH"
+        if kind == "baseline_seeded":
+            _alert(f"ACCOUNT BASELINE SET [{config.TRADING_MODE}]: {detail}\nIf you did not just run "
+                   f"`risk init` / `risk rebaseline --confirm`, check the paper account.", kind="halt", dedup_key=key)
+            continue
+        title = "TRADING HALTED" if kind == "halt" else "RECONCILIATION MISMATCH"  # UNPROTECTED arrives as a halt
         _alert(f"{title} [{config.TRADING_MODE}]: {detail}\nNo orders will be placed until resolved "
                f"(python main.py risk status).", kind=kind if kind in ("halt", "reconcile_mismatch") else "halt",
                dedup_key=key)
@@ -158,6 +162,10 @@ def open_session() -> Optional[ExecSession]:
     try:
         rec = execution.reconcile(broker, conn)
         _announce_events(rec.events, seen)
+        if rec.positions is None:  # broker unreadable: never treat it as a flat book or seed a baseline from it
+            logger.error("Session setup refused: the paper account could not be read; no orders this run")
+            conn.close()
+            return None
         # Sleeve equity = configured dollars + realized and open P&L (account equity vs. its baseline, D10).
         _announce_events(execution.refresh_sleeve_equity(risk, broker, rec.positions), seen)
         _cancel_if_halted(broker, risk, conn)
@@ -651,6 +659,9 @@ def cmd_risk(args) -> int:
         finally:
             conn.close()
         print(f"state DB ready at {config.STATE_DB_PATH} (schema v{version})")
+        print("ASSUMPTION (D10): the Alpaca PAPER account is dedicated to this sleeve. The sleeve baseline is taken "
+              "from the account at the first trading session; deposits, withdrawals or manual trades there distort "
+              "it (a jump > EQUITY_JUMP_HALT_PCT halts; fix with `risk rebaseline --confirm`).")
         return 0
     conn = _db_or_error()
     if conn is None:
@@ -670,6 +681,13 @@ def cmd_risk(args) -> int:
                 return 2
             rm.resume(confirm=True)
             print("halt cleared; the drawdown peak will re-seed on the next equity update")
+            return 0
+        if act == "rebaseline":
+            if not args.confirm:
+                _err("rebaseline requires --confirm (it re-seeds the account baseline and the drawdown peak)")
+                return 2
+            rm.rebaseline(confirm=True)
+            print("account baseline cleared; it re-seeds (with an alert) at the next trading session")
             return 0
         if act == "reconcile":
             try:
@@ -774,6 +792,8 @@ def build_parser() -> argparse.ArgumentParser:
     h.add_argument("--reason", required=True)
     r = rs.add_parser("resume", help="clear a halt")
     r.add_argument("--confirm", action="store_true")
+    rb_ = rs.add_parser("rebaseline", help="re-seed the account baseline after a deposit/withdrawal")
+    rb_.add_argument("--confirm", action="store_true")
     rc = rs.add_parser("reconcile", help="compare the paper account with the state DB")
     rc.add_argument("--accept", action="store_true", help="accept the broker's current state as known")
 

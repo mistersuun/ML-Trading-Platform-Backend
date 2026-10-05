@@ -68,8 +68,9 @@ def test_walker_sees_real_imports():  # guard against the scan silently matching
 # ── no raw order calls outside the chokepoint ───────────────────────────────
 
 _RAW_ORDER_METHODS = {"submit_order", "close_position", "close_all_positions", "cancel_order_by_id",
-                      "cancel_orders", "cancel_order", "replace_order_by_id"}
+                      "cancel_orders", "cancel_order", "replace_order_by_id", "submit"}  # submit = AlpacaBroker.submit
 _CANCEL_METHODS = {"cancel_order_by_id", "cancel_orders", "cancel_order"}  # execution.py may cancel (halt, exits)
+_EXECUTION_METHODS = _CANCEL_METHODS | {"submit"}  # ...and is the one module that submits
 
 
 def _raw_calls(path: pathlib.Path) -> list[str]:
@@ -92,8 +93,8 @@ def test_no_raw_order_calls_or_raw_client_outside_brokers_and_execution():
             continue
         for h in _raw_calls(ROOT / r):
             method = h.split(".")[-1].rstrip("(")
-            if r.name == "execution.py" and method in _CANCEL_METHODS:
-                continue  # cancel_open_entries / protective-leg cancel before an exit
+            if r.name == "execution.py" and method in _EXECUTION_METHODS:
+                continue  # the chokepoint: submit, cancel_open_entries, protective-leg cancel before an exit
             offenders.append(f"{r}: {h}")
     assert offenders == [], offenders
 
@@ -101,8 +102,9 @@ def test_no_raw_order_calls_or_raw_client_outside_brokers_and_execution():
 def test_raw_call_scanner_detects_violations(tmp_path):
     bad = tmp_path / "bad.py"
     bad.write_text("import x\nc = x.build_trading_client()\nc.submit_order(1)\nc.close_position('A')\n"
-                   "from brokers.alpaca import build_trading_client\n")
-    assert len(_raw_calls(bad)) >= 4
+                   "broker.submit(spec)\nfrom brokers.alpaca import build_trading_client\n")
+    assert len(_raw_calls(bad)) >= 5
+    assert any(h.endswith(".submit(") for h in _raw_calls(bad))
     good = tmp_path / "good.py"
     good.write_text("def submit_order(*a):\n    return None\n")  # defining a stub is not calling one
     assert _raw_calls(good) == []

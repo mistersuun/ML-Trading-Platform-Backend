@@ -228,3 +228,66 @@ def test_refresh_sleeve_equity_halts_a_depleted_sleeve(env):
     ev = execution.refresh_sleeve_equity(r, AlpacaBroker(fb), now=T0)
     assert ev and ev[0]["type"] == "halt"
     assert not RiskManager(env[1]).check(T0).allowed
+
+
+# ── baseline seeding is announced; equity-jump guard (D10) ──
+
+def _order_row(conn, cid="o1"):
+    conn.execute("INSERT INTO orders (client_order_id, symbol, side, qty, status, created_at) "
+                 "VALUES (?, 'AAPL', 'buy', 1, 'filled', 'x')", (cid,))
+
+
+def test_baseline_seeding_emits_an_event_once(env):
+    r = RiskManager(env[1])
+    r.sleeve_equity(100_000.0, 0.0, T0)
+    ev = r.pop_events()
+    assert [e["type"] for e in ev] == ["baseline_seeded"] and "100,000.00" in ev[0]["reason"]
+    r.sleeve_equity(100_050.0, 0.0, T0)
+    assert r.pop_events() == []
+
+
+def test_refresh_sleeve_equity_returns_the_seeding_event(env):
+    from brokers.alpaca import AlpacaBroker
+    from brokers.fake import FakeBroker
+    import execution
+    ev = execution.refresh_sleeve_equity(RiskManager(env[1]), AlpacaBroker(FakeBroker(equity=50_000.0)), now=T0)
+    assert [e["type"] for e in ev] == ["baseline_seeded"]
+
+
+def test_equity_jump_without_orders_halts(env):
+    r = RiskManager(env[1])
+    r.sleeve_equity(100_000.0, 0.0, T0)
+    r.pop_events()
+    jump = config.EQUITY_JUMP_HALT_PCT * config.SIGNAL_SLEEVE_EQUITY + 500  # a deposit into the paper account
+    r2 = RiskManager(env[1])  # a later run: the last reading comes from the DB
+    r2.sleeve_equity(100_000.0 + jump, 0.0, T0)
+    ev = r2.pop_events()
+    assert ev and ev[0]["type"] == "halt" and "jumped" in ev[0]["reason"]
+    assert r2.status()["halted"] is True
+
+
+def test_equity_jump_with_a_platform_order_in_between_is_allowed(env):
+    r = RiskManager(env[1])
+    r.sleeve_equity(100_000.0, 0.0, T0)
+    r.pop_events()
+    _order_row(env[1])
+    r.sleeve_equity(100_000.0 + 0.2 * config.SIGNAL_SLEEVE_EQUITY, 0.0, T0)
+    assert r.pop_events() == [] and r.status()["halted"] is False
+
+
+def test_small_moves_do_not_halt(env):
+    r = RiskManager(env[1])
+    r.sleeve_equity(100_000.0, 0.0, T0)
+    r.sleeve_equity(100_000.0 + 0.05 * config.SIGNAL_SLEEVE_EQUITY, 0.0, T0)
+    assert r.pop_events()[0]["type"] == "baseline_seeded" and not r.status()["halted"]
+
+
+def test_rebaseline_requires_confirm_and_reseeds(env):
+    r = RiskManager(env[1])
+    r.sleeve_equity(100_000.0, 0.0, T0)
+    r.pop_events()
+    with pytest.raises(ValueError):
+        r.rebaseline()
+    r.rebaseline(confirm=True)
+    assert r.sleeve_equity(150_000.0, 0.0, T0) == config.SIGNAL_SLEEVE_EQUITY  # new baseline, no jump halt
+    assert [e["type"] for e in r.pop_events()] == ["baseline_seeded"]

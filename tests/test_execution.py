@@ -598,3 +598,206 @@ def test_transient_rejection_without_order_stays_unknown(env, code):
     d = go(env)
     assert d.status == "error" and ledger(env)[0]["status"] == "unknown"
     assert any(m.startswith("orphan_ledger") for m in reconcile(env.broker, env.conn).mismatches)
+
+
+# ── review round 2: exit protocol, reduce-only exits, acceptance scope, attribution ──
+
+def _exit(env, day="2024-06-04"):
+    return go(env, mk(direction=-1, signal_bar_date=day))
+
+
+def _refuse_sells(env, market_only: bool):
+    """Make the broker refuse SELL submits (all of them, or only the market exit), like a 403 insufficient qty."""
+    orig = env.fake.submit_order
+
+    def refuse(order_data=None, *a, **k):
+        is_sell = str(order_data.side).lower().endswith("sell")
+        if is_sell and (not market_only or "Market" in type(order_data).__name__):
+            raise FakeAPIError("insufficient qty available for order", 403)
+        return orig(order_data, *a, **k)
+
+    env.fake.submit_order = refuse
+    return orig
+
+
+def _never_settles(monkeypatch):
+    t = [0.0]
+
+    def clock():
+        t[0] += 1.0
+        return t[0]
+
+    monkeypatch.setattr(execution, "_clock", clock)
+    monkeypatch.setattr(execution, "_sleep", lambda s: None)
+
+
+def test_exit_waits_for_async_cancel_then_sells(env, monkeypatch):
+    d = _fill_own_bracket(env)
+    env.fake.async_cancel = env.fake.enforce_held_qty = True
+    sleeps = []
+    monkeypatch.setattr(execution, "_sleep", lambda s: (sleeps.append(s), env.fake.tick()))
+    ex = _exit(env)
+    assert ex.status == "submitted" and ex.qty == d.qty and "cancelled_protective_legs:2" in ex.reasons
+    assert sleeps  # it polled until the legs were terminal instead of selling into pending_cancel
+    assert ledger(env)[-1]["status"] == "submitted"
+
+
+def test_fake_broker_refuses_sell_while_legs_pending_cancel(env):
+    _fill_own_bracket(env)
+    env.fake.async_cancel = env.fake.enforce_held_qty = True
+    for o in env.broker.get_open_orders():
+        env.broker.cancel_order(o.id)
+    with pytest.raises(FakeAPIError) as ei:
+        env.fake.submit_order(SimpleNamespace(client_order_id="x", symbol="AAPL", qty=10, side="sell"))
+    assert ei.value.status_code == 422
+    with pytest.raises(FakeAPIError) as ei2:  # cancelling a pending_cancel order again is a 422 too
+        env.broker.cancel_order(env.broker.get_open_orders()[0].id)
+    assert ei2.value.status_code == 422
+    env.fake.tick()
+    assert env.fake.reserved_qty("AAPL") == 0
+
+
+def test_sell_refused_after_cancel_replaces_standalone_stop_and_stays_retryable(env):
+    d = _fill_own_bracket(env)
+    orig = _refuse_sells(env, market_only=True)
+    ex = _exit(env)
+    assert ex.status == "rejected" and "standalone_stop_replaced" in ex.reasons and "UNPROTECTED" not in ex.reasons
+    assert ledger(env)[-1]["status"] == "rejected_retryable"  # never 'rejected'
+    stops = [o for o in env.broker.get_open_orders() if o.order_type == "stop" and o.parent_id is None]
+    assert len(stops) == 1 and stops[0].qty == d.qty and stops[0].stop_price == d.stop_price
+    req = [c for c in submits(env) if "Stop" in type(c[1][0]).__name__][0][1][0]
+    assert str(req.time_in_force).lower().endswith("gtc") and str(req.side).lower().endswith("sell")
+    assert reconcile(env.broker, env.conn).ok  # the re-placed stop is ours and covers the position
+    env.fake.submit_order = orig  # next run: the retryable row is revived (not 'duplicate'), the stop swapped for the exit
+    again = _exit(env)
+    assert again.status == "submitted" and again.qty == d.qty
+    assert ledger(env)[-1]["status"] == "submitted"
+
+
+def test_stop_replace_also_fails_emits_unprotected_and_halts(env):
+    d = _fill_own_bracket(env)
+    orig = _refuse_sells(env, market_only=False)
+    ex = _exit(env)
+    assert ex.status == "rejected" and "UNPROTECTED" in ex.reasons
+    ev = [e for e in ex.events if e["type"] == "halt" and e["reason"].startswith("UNPROTECTED AAPL")]
+    assert ev
+    assert env.rm.status()["halted"] and "UNPROTECTED AAPL" in env.rm.status()["halt_reason"]
+    assert ledger(env)[-1]["status"] == "rejected_retryable"
+    assert go(env, mk(symbol="MSFT", signal_bar_date="2024-06-05")).status == "halted"
+    env.rm.resume(confirm=True)
+    env.fake.submit_order = orig
+    assert _exit(env).status == "submitted"  # retry after the operator resumed
+
+
+def test_legs_that_never_settle_end_unprotected_not_silently_rejected(env, monkeypatch):
+    _fill_own_bracket(env)
+    env.fake.async_cancel = env.fake.enforce_held_qty = True
+    _never_settles(monkeypatch)
+    ex = _exit(env)
+    assert "legs_not_confirmed_cancelled" in ex.reasons and "UNPROTECTED" in ex.reasons
+    assert ledger(env)[-1]["status"] == "rejected_retryable"
+
+
+def test_sibling_auto_cancel_404_is_treated_as_gone(env):
+    d = _fill_own_bracket(env)
+    env.fake.oco_cascade = True  # cancelling the stop leg also cancels the take-profit leg
+    ex = _exit(env)
+    assert ex.status == "submitted" and ex.qty == d.qty and not any("UNPROTECTED" in r for r in ex.reasons)
+    assert len(env.fake.calls_to("cancel_order_by_id")) == 2  # the second one 404'd and was ignored
+
+
+def test_exit_proceeds_when_the_protective_stop_is_missing(env):
+    d = _fill_own_bracket(env)
+    for o in env.fake.orders:
+        o.legs = None  # GTC legs expired / cancelled by hand
+    assert not reconcile(env.broker, env.conn).ok
+    ex = _exit(env)
+    assert ex.status == "submitted" and ex.qty == d.qty
+    assert any(e["type"] == "reconcile_mismatch" for e in ex.events)  # still alerted
+    assert env.fake.calls_to("cancel_order_by_id") == []
+
+
+@pytest.mark.parametrize("method", ["get_all_positions", "get_orders"])
+def test_exit_blocked_when_the_book_is_unreadable(env, method):
+    env.fake.add_position("AAPL", 5, 100.0)
+    accept(env)
+    env.fake.raise_on(method)
+    d = _exit(env)
+    assert d.status == "rejected" and "reconcile_mismatch" in d.reasons and not submits(env)
+
+
+def test_exit_blocked_by_a_short_position(env):
+    env.fake.add_position("MSFT", 5, 100.0, side="short")
+    env.fake.add_position("AAPL", 5, 100.0)
+    d = _exit(env)
+    assert d.status == "rejected" and "short_position:MSFT" in d.reasons and not submits(env)
+
+
+def test_acceptance_is_scoped_to_the_latest_snapshot(env):
+    env.fake.add_position("TSLA", 5, 200.0)
+    accept(env)
+    assert reconcile(env.broker, env.conn).ok
+    env.fake.positions.clear()
+    accept(env)  # second snapshot: TSLA gone
+    env.fake.add_position("TSLA", 5, 200.0)  # a NEW manual position in the same symbol
+    assert "unknown_position:TSLA" in reconcile(env.broker, env.conn).mismatches
+
+
+def test_acceptance_expires_when_a_new_bracket_is_placed_on_the_symbol(env):
+    _fill_own_bracket(env)
+    env.fake.orders.clear()  # no live legs
+    accept(env)
+    assert reconcile(env.broker, env.conn).ok  # accepted: exempt from the missing-stop check
+    env.fake.positions.clear()
+    assert go(env, mk(signal_bar_date="2024-06-04")).status == "submitted"  # a new platform bracket on AAPL
+    env.fake.orders.clear()
+    env.fake.add_position("AAPL", 10, 100.0)  # filled, but its legs are gone again
+    assert "missing_protective_stop:AAPL" in reconcile(env.broker, env.conn).mismatches
+
+
+def test_stop_smaller_than_position_is_insufficient(env):
+    d = _fill_own_bracket(env)
+    stop = [leg for o in env.fake.orders for leg in (o.legs or []) if leg.order_type == "stop"][0]
+    stop.qty = 1  # a 1-share stop on a 10-share position
+    r = reconcile(env.broker, env.conn)
+    assert not r.ok and "insufficient_protective_stop:AAPL" in r.mismatches and d.qty == 10
+    stop.qty = d.qty
+    assert reconcile(env.broker, env.conn).ok
+
+
+def test_unattributable_sell_leg_is_unknown_and_never_cancelled_by_an_exit(env):
+    d = _fill_own_bracket(env, nested=False)
+    foreign = env.fake._leg("AAPL", 3, "stop", 50.0)  # an OCO leg on a symbol we bracketed, but not ours
+    env.fake.orders.append(foreign)
+    r = reconcile(env.broker, env.conn)
+    assert not r.ok and f"unknown_open_order:{foreign.client_order_id}" in r.mismatches
+    ex = _exit(env)
+    assert ex.status == "submitted" and ex.qty == d.qty - 3  # the foreign leg keeps reserving its shares
+    cancelled = {str(c[1][0]) for c in env.fake.calls_to("cancel_order_by_id")}
+    assert str(foreign.id) not in cancelled and len(cancelled) == 2
+    assert foreign in env.fake.orders
+
+
+def test_nested_leg_under_an_unknown_parent_is_unknown(env):
+    _fill_own_bracket(env)
+    env.fake.add_filled_bracket("someone-elses", "AAPL", 10, 98.0, 103.0, nested=True)  # same prices, not our parent
+    assert any(m.startswith("unknown_open_order") for m in reconcile(env.broker, env.conn).mismatches)
+
+
+# ── review round 2: cap and ownership mutation targets ──
+
+def test_notional_cap_alone_binds(env, monkeypatch):
+    monkeypatch.setattr(config, "SIGNAL_SLEEVE_EQUITY", 100_000.0)  # MAX_SYMBOL_PCT * sleeve = $10k > MAX_ORDER_NOTIONAL
+    monkeypatch.setattr(config, "MAX_ORDER_NOTIONAL", 500.0)
+    _qty, _dist, caps = execution._size_buy(mk(), 1.0, [], env.conn)
+    assert min(caps, key=caps.get) == "order_notional"
+    d = go(env)
+    assert d.status == "submitted" and d.qty == 5  # 500 / 100; every other cap allows far more
+
+
+def test_cancel_open_entries_leaves_a_foreign_buy_alone(env):
+    env.fake.orders.append(SimpleNamespace(id="f1", client_order_id="manual-buy", symbol="MSFT", qty="3", side="buy",
+                                           status="new", legs=None))
+    assert execution.cancel_open_entries(env.broker, env.conn) == []
+    assert env.fake.calls_to("cancel_order_by_id") == []
+    assert [o.id for o in env.fake.orders] == ["f1"]

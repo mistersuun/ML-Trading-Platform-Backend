@@ -61,6 +61,7 @@ class RiskManager:
     def __init__(self, conn: Optional[sqlite3.Connection] = None):
         self.conn = conn
         self._equity: Optional[float] = None
+        self._events: list[dict] = []  # raised by sleeve_equity() (baseline seeded, equity jump); see pop_events()
 
     # ── internals ────────────────────────────────────────────
 
@@ -156,19 +157,54 @@ class RiskManager:
             raise
         return events
 
-    def sleeve_equity(self, account_equity: float, open_pnl: float) -> float:
+    def pop_events(self) -> list[dict]:
+        """Events raised outside update_equity() (a baseline seeded, an equity-jump halt); the caller alerts on them."""
+        ev, self._events = self._events, []
+        return ev
+
+    def sleeve_equity(self, account_equity: float, open_pnl: float, now: Optional[datetime] = None) -> float:
         """Sleeve equity = SIGNAL_SLEEVE_EQUITY + (paper account equity - baseline), so realized
         losses persist after a stop fills. The baseline (account equity minus open P&L) is captured
-        the first time this is called; the paper account must be dedicated to the sleeve (D10)."""
+        the first time this is called; the paper account must be dedicated to the sleeve (D10).
+
+        Seeding the baseline raises a `baseline_seeded` event (see pop_events). An UPWARD move of more than
+        EQUITY_JUMP_HALT_PCT between consecutive readings with no new `orders` row in between (no platform
+        fill can explain it: a deposit or manual trade; a loss of that size already trips the drawdown halt) halts; resolve with `risk resume --confirm`
+        or `risk rebaseline --confirm`."""
         if not (math.isfinite(account_equity) and math.isfinite(open_pnl)):
             raise ValueError("non-finite account equity or open P&L")
+        now = _utc(now)
         conn = self._db()
         row = self._row(conn)
         base = row["account_baseline"]
         if base is None:
             base = account_equity - open_pnl
             conn.execute("UPDATE risk_state SET account_baseline=? WHERE id=1 AND account_baseline IS NULL", (base,))
-        return config.SIGNAL_SLEEVE_EQUITY + (account_equity - base)
+            self._events.append({"type": "baseline_seeded", "at": now.isoformat(),
+                                 "reason": f"account baseline set to {base:,.2f} (paper account equity minus open P&L); "
+                                           f"the paper account must be dedicated to the sleeve"})
+        sleeve = config.SIGNAL_SLEEVE_EQUITY + (account_equity - base)
+        last = row["last_sleeve_equity"]
+        newest_order = conn.execute("SELECT COALESCE(MAX(id), 0) FROM orders").fetchone()[0]
+        if (last and last > 0 and math.isfinite(sleeve)
+                and (sleeve - last) / last > config.EQUITY_JUMP_HALT_PCT
+                and newest_order == (row["last_sleeve_order_id"] or 0)):
+            ev = self._set_halt(conn, f"sleeve equity jumped up {last:,.2f} -> {sleeve:,.2f} with no platform orders in "
+                                      f"between (deposit/withdrawal/manual trade?)", now)
+            if ev:
+                self._events.append(ev)
+        conn.execute("UPDATE risk_state SET last_sleeve_equity=?, last_sleeve_order_id=? WHERE id=1",
+                     (sleeve if math.isfinite(sleeve) else None, newest_order))
+        return sleeve
+
+    def rebaseline(self, confirm: bool = False) -> None:
+        """Operator re-baseline after a deposit/withdrawal: the next session re-seeds the account baseline
+        (sleeve = SIGNAL_SLEEVE_EQUITY again, realized P&L history is dropped) and the drawdown peak."""
+        if not confirm:
+            raise ValueError("rebaseline requires confirm=True")
+        self._db().execute("UPDATE risk_state SET account_baseline=NULL, last_sleeve_equity=NULL, "
+                           "last_sleeve_order_id=NULL, peak_equity=NULL WHERE id=1")
+        logger.warning("Account baseline cleared by operator; it re-seeds on the next session")
 
     def record_order(self, now: Optional[datetime] = None) -> None:
         now = _utc(now)
