@@ -1006,9 +1006,31 @@
             "title": "Bh",
             "type": "integer"
           },
+          "dsr": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr"
+          },
           "min_trades": {
             "title": "Min Trades",
             "type": "integer"
+          },
+          "n_trials": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials"
           },
           "oos_positive": {
             "title": "Oos Positive",
@@ -1018,9 +1040,42 @@
             "title": "Orders",
             "type": "integer"
           },
+          "pbo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo"
+          },
           "psr": {
             "title": "Psr",
             "type": "integer"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "sharpe_var": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Var"
           },
           "tested": {
             "title": "Tested",
@@ -1461,6 +1516,24 @@
       "MLPredictResponse": {
         "additionalProperties": false,
         "properties": {
+          "abstain_reasons": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Abstain Reasons",
+            "type": "object"
+          },
+          "calibrated": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calibrated"
+          },
           "equity_curve": {
             "items": {
               "$ref": "#/components/schemas/EquityPoint"
@@ -1486,6 +1559,17 @@
             "title": "Is Valid",
             "type": "boolean"
           },
+          "last_abstain_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Abstain Reason"
+          },
           "metrics": {
             "additionalProperties": true,
             "title": "Metrics",
@@ -1495,6 +1579,17 @@
             "additionalProperties": true,
             "title": "Metrics Display",
             "type": "object"
+          },
+          "model_selected": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model Selected"
           },
           "model_type": {
             "anyOf": [
@@ -1651,6 +1746,17 @@
             ],
             "title": "Bh Adjusted P"
           },
+          "dsr_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr P"
+          },
           "generated_at": {
             "anyOf": [
               {
@@ -1669,6 +1775,28 @@
           "label": {
             "title": "Label",
             "type": "string"
+          },
+          "n_trials": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials"
+          },
+          "pbo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo"
           },
           "tested": {
             "anyOf": [
@@ -3481,6 +3609,28 @@
             "title": "Days Ago",
             "type": "integer"
           },
+          "dsr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr"
+          },
+          "dsr_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr P"
+          },
           "holdout": {
             "anyOf": [
               {
@@ -3567,6 +3717,17 @@
           "pattern": {
             "title": "Pattern",
             "type": "string"
+          },
+          "pbo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo"
           },
           "price": {
             "title": "Price",

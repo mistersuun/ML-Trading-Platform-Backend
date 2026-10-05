@@ -226,8 +226,11 @@ CLUSTERS = {
     "energy": ["XOM", "CVX"],
 }
 
-# Signal eligibility for orders (D6). Phase 1 has no OOS validation yet, so nothing is eligible.
-ORDER_ELIGIBLE_STATUSES = ("oos_validated", "deflated_validated")
+# Signal eligibility for orders (D6, WS4.2). oos_validated alone is NOT order-eligible: the candidate must also
+# clear the Deflated Sharpe gate (N = the run's registry trial count).
+ORDER_ELIGIBLE_STATUSES = ("deflated_validated",)
+DSR_P_MAX = 0.05                    # deflated_validated needs DSR one-sided p = 1 - DSR < this
+PBO_S = 16                          # CSCV blocks for the ADVISORY probability of backtest overfitting (not gated)
 
 # Pairs excluded from the default scan (D3)
 RESEARCH_ONLY_PAIRS = [("GC=F", "SI=F"), ("CL=F", "NG=F")]

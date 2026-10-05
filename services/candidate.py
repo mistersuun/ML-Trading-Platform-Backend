@@ -66,26 +66,55 @@ def _curve(returns: pd.Series) -> list[M.CurvePoint]:
 
 def _nightly(symbol: str, pattern: str) -> M.NightlyRef:
     funnel = store.read_latest("funnel")
-    tested = None
+    tested = pbo = n_trials = None
     if funnel and isinstance(funnel[0], dict):
         tested = funnel[0].get("tested")
+        pbo, n_trials = finite(funnel[0].get("pbo")), funnel[0].get("n_trials")
     got = store.read_latest("technical")
     if got is None:
-        return M.NightlyRef(in_last_scan=False, tested=tested, label="not in last scan (no nightly result yet)")
+        return M.NightlyRef(in_last_scan=False, tested=tested, n_trials=n_trials, pbo=pbo,
+                        label="not in last scan (no nightly result yet)")
     payload, ts = got
     for row in payload if isinstance(payload, list) else []:
         if isinstance(row, dict) and row.get("symbol") == symbol and row.get("pattern") == pattern:
             q = finite(row.get("bh_adjusted_p"))
             return M.NightlyRef(in_last_scan=q is not None, generated_at=ts.isoformat(), bh_adjusted_p=q,
                                 validation_status=row.get("validation_status"),
+                                dsr_p=finite(row.get("dsr_p")), n_trials=n_trials, pbo=pbo,
                                 tested=tested if tested is not None else row.get("n_trials"),
                                 label="from the latest nightly scan" if q is not None else
                                 "no stored q (only signalling candidates are kept)")
-    return M.NightlyRef(in_last_scan=False, generated_at=ts.isoformat(), tested=tested,
-                          label="no stored q (only signalling candidates are kept)")
+    return M.NightlyRef(in_last_scan=False, generated_at=ts.isoformat(), tested=tested, n_trials=n_trials,
+                        pbo=pbo, label="no stored q (only signalling candidates are kept)")
 
 
-def _gates(cr, nightly: M.NightlyRef) -> list[M.Gate]:
+def _dsr_gate(dsr_p, n_trials, note) -> M.Gate:
+    """Deflated Sharpe: 1 - DSR must be below DSR_P_MAX, with N = every trial of the run (valid or not)."""
+    name = f"Deflated Sharpe (p < {config.DSR_P_MAX:g})"
+    n_txt = f"N = {n_trials} trials" if n_trials else "N unknown"
+    return M.Gate(key="dsr", name=name, value=finite(dsr_p), threshold=config.DSR_P_MAX, comparator="<",
+                  unit="probability", gating=True,
+                  status="unavailable" if dsr_p is None else ("pass" if dsr_p < config.DSR_P_MAX else "fail"),
+                  note=f"{n_txt}; {note}" if note else n_txt)
+
+
+def _deflate(nightly: M.NightlyRef, oos_returns) -> tuple:
+    """(dsr_p, n_trials, pbo, note): the nightly row's own DSR when it is in the last scan, else this candidate's
+    OOS series deflated with the latest run's N and cross-trial Sharpe variance; else unavailable."""
+    pbo, n = nightly.pbo, nightly.n_trials
+    if nightly.in_last_scan and nightly.dsr_p is not None:
+        return nightly.dsr_p, n, pbo, "from the latest nightly scan"
+    funnel = store.read_latest("funnel")
+    var = finite(funnel[0].get("sharpe_var")) if funnel and isinstance(funnel[0], dict) else None
+    if n and var is not None and oos_returns is not None and len(oos_returns) > 2:
+        from stats import selection
+        dsr = selection.dsr_from_returns(np.asarray(oos_returns, dtype=float), int(n), var)
+        if dsr is not None and np.isfinite(dsr):
+            return float(1.0 - dsr), n, pbo, "this candidate deflated with the latest nightly run's N and Sharpe variance"
+    return None, n, pbo, "no stored nightly run to take N from"
+
+
+def _gates(cr, nightly: M.NightlyRef, dsr_p=None, n_trials=None, pbo=None, dsr_note=None) -> list[M.Gate]:
     thr_trades = float(config.MIN_TRADES_OOS)
     ho = (cr.holdout or {}).get("total_return") if cr.holdout_frozen else None
     g = [
@@ -106,6 +135,11 @@ def _gates(cr, nightly: M.NightlyRef) -> list[M.Gate]:
         g.append(M.Gate(key="bh", name=f"Beats random entry (q <= {config.FDR_ALPHA:g})", value=None,
                         threshold=config.FDR_ALPHA, comparator="<=", unit="probability", gating=True,
                         status="unavailable", note=f"{nightly.label}; {null_note}"))
+    g.append(_dsr_gate(dsr_p, n_trials, dsr_note))
+    g.append(M.Gate(key="pbo", name="Probability of backtest overfitting (advisory)", value=finite(pbo),
+                    threshold=None, comparator="<=", unit="probability", gating=False,
+                    status="recorded" if pbo is not None else "unavailable",
+                    note="advisory: CSCV over the whole run's trials, reported and never gated"))
     g += [
         M.Gate(key="holdout", name="Hold-out return >= 0", value=finite(ho), threshold=0.0, comparator=">=",
                unit="fraction", gating=True,
@@ -121,13 +155,20 @@ def _gates(cr, nightly: M.NightlyRef) -> list[M.Gate]:
     return g
 
 
+def _nightly_sharpe_var():
+    from services.scan import _nightly_sharpe_var as f
+    return f()
+
+
 def candidate(provider: DataProvider, symbol: str, pattern: str) -> M.CandidateResponse:
     df = require_data(provider.ohlcv(symbol, config.RESEARCH_LOOKBACK_DAYS), symbol)
     fn = PATTERN_REGISTRY[pattern]
     holdout_store = _holdout_store()
     try:
         results = validation.evaluate_candidates({symbol: df}, {pattern: fn}, executable_variant=True,
-                                                 holdout_store=holdout_store)
+                                                 holdout_store=holdout_store,
+                                                 min_trials=validation.universe_trials(),
+                                                 sharpe_var_floor=_nightly_sharpe_var())
     finally:
         if holdout_store is not None:
             holdout_store.close()
@@ -198,7 +239,8 @@ def candidate(provider: DataProvider, symbol: str, pattern: str) -> M.CandidateR
 
     last, prev = float(df["Close"].iloc[-1]), float(df["Close"].iloc[-2]) if len(df) > 1 else None
     nightly = _nightly(symbol, pattern)
-    gates = _gates(cr, nightly)
+    dsr_p, n_trials, pbo, dsr_note = _deflate(nightly, wf.oos_returns)
+    gates = _gates(cr, nightly, dsr_p, n_trials, pbo, dsr_note)
     failed = sum(1 for g in gates if g.gating and g.status != "pass")
     o = cr.oos or {}
     note = ("Out-of-sample = walk-forward test windows before the hold-out; the hold-out is read once per strategy "

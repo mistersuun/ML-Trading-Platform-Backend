@@ -44,7 +44,7 @@ ML: {len(results.get('ml', []))}</p>
     if all_signals:
         html += "<h2>🔧 Technical & ML Signals (out-of-sample)</h2>"
         html += (f'<p class="meta">All statistics are walk-forward out-of-sample (before the hold-out start '
-                 f'{config.HOLDOUT_START}); in-sample figures are not shown. Only <b>oos_validated</b> signals '
+                 f'{config.HOLDOUT_START}); in-sample figures are not shown. Only <b>deflated_validated</b> signals '
                  f'are order-eligible.</p><table>')
         html += ("<tr><th>Dir</th><th>Symbol</th><th>Pattern</th><th>Validation</th><th>OOS Win Rate</th>"
                  "<th>OOS PF</th><th>OOS Return</th><th>OOS Drawdown</th><th>OOS Sharpe</th>"
@@ -63,7 +63,7 @@ ML: {len(results.get('ml', []))}</p>
         html += "</table>"
 
     if pairs:
-        html += "<h2>📈 Pairs / Stat-Arb Signals (alert-only, in-sample backtest)</h2><table>"
+        html += "<h2>📈 Pairs / Stat-Arb Signals (alert-only, walk-forward out-of-sample backtest)</h2><table>"
         html += ("<tr><th>Dir</th><th>Pair</th><th>Z-Score</th><th>Half-Life</th><th>BH-adj. p</th>"
                  "<th>Win Rate</th><th>PF</th><th>Return</th><th>Sharpe</th></tr>")
         for p in pairs:

@@ -302,6 +302,33 @@ def test_ml_signal_confidence_is_directional(client, patch_fetch, fast_ml):
         assert s["confidence"] == pytest.approx(expect)
 
 
+def test_ml_predict_reports_calibration_and_abstain_reasons(client, patch_fetch, fast_ml):
+    body = strict(client.post("/api/ml/predict", json={"symbol": "SPY", "period_days": 1500}))
+    assert {"calibrated", "model_selected", "abstain_reasons", "last_abstain_reason"} <= set(body)
+    assert isinstance(body["abstain_reasons"], dict)
+    assert all(isinstance(k, str) and isinstance(v, int) for k, v in body["abstain_reasons"].items())
+    assert body["calibrated"] in (True, False, None)
+    assert all(0.0 <= s["p_up"] <= 1.0 for s in body["signals"])
+
+
+def test_latest_technical_carries_the_dsr_funnel_and_candidate_fields(client, monkeypatch, tmp_path):
+    from results import store
+    monkeypatch.setattr(store, "RESULTS_DIR", tmp_path)
+    row = {"symbol": "SPY", "pattern": "ema_crossover", "signal": "BUY", "signal_date": "2026-10-02", "days_ago": 0,
+           "price": 500.0, "validation_status": "deflated_validated", "dsr": 0.99, "dsr_p": 0.01, "pbo": 0.4, "n_trials": 780}
+    store.write_result("technical", [row], root=tmp_path)
+    funnel = {"tested": 780, "min_trades": 120, "oos_positive": 60, "psr": 20, "bh": 3, "dsr": 1, "orders": 1,
+              "n_trials": 780, "pbo": 0.4, "sharpe_var": 0.0004, "run_id": "tech-x"}
+    store.write_result("funnel", funnel, root=tmp_path)
+    body = strict(client.get("/api/results/technical/latest"))
+    assert body["funnel"] == funnel
+    assert body["payload"][0]["dsr_p"] == 0.01 and body["payload"][0]["pbo"] == 0.4
+    # a result stored before Phase 4 has no dsr stage: null, not zero
+    store.write_result("funnel", {k: funnel[k] for k in ("tested", "min_trades", "oos_positive", "psr", "bh", "orders")},
+                       root=tmp_path)
+    assert strict(client.get("/api/results/technical/latest"))["funnel"].get("dsr") is None
+
+
 def test_research_views_label_the_holdout_and_can_exclude_it(client, patch_fetch, long_frame):
     patch_fetch.overrides["LONG"] = long_frame
     req = {"symbol": "LONG", "pattern_name": "ema_crossover"}

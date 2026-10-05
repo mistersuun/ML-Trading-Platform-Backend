@@ -165,7 +165,7 @@ def test_planted_one_bar_ahead_signal_is_validated_and_dies_with_delay():
     by = {r.pattern: r for r in res}
     pl = by["planted"]
     assert pl.null_p < 0.01, pl.null_p
-    assert pl.validation_status == "oos_validated", pl.rejected_reasons
+    assert pl.validation_status == "deflated_validated", pl.rejected_reasons
     assert pl.n_trials == 2 and pl.n_oos_trades >= config.MIN_TRADES_OOS
     assert by["ema_5_20"].validation_status == "unvalidated"
     # +5 bars of delay: the edge (and its significance) is gone
@@ -250,7 +250,7 @@ def test_random_walks_100_seeds_no_edge_after_selection_and_bh():
         ins.append(wf.in_sample_sharpe)
         oos.append(wf.oos_sharpe)
         res = V.evaluate_candidates({"RW": df}, PATTERNS, GRID, draws=200)
-        v = sum(r.validation_status == "oos_validated" for r in res)
+        v = sum(r.validation_status in ("oos_validated", "deflated_validated") for r in res)
         n_validated += v
         n_total += len(res)
         n_runs_with_any += v > 0

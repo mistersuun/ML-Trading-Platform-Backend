@@ -109,6 +109,9 @@ class TechnicalCandidate(ScanSignal):
     bh_adjusted_p: OptF = None
     n_trials: int = 0
     null_p: OptF = None
+    dsr: OptF = None                         # Deflated Sharpe (probability) with N = every trial of the run
+    dsr_p: OptF = None                       # 1 - dsr; the order gate is dsr_p < DSR_P_MAX
+    pbo: OptF = None                         # CSCV probability of backtest overfitting: ADVISORY, never gated
     rejected_reasons: list[str] = Field(default_factory=list)
 
 
@@ -228,6 +231,10 @@ class MLPredictResponse(_Base):
     feature_importance: list[FeatureImportance]
     signals: list[MLSignal]
     total_signals: int
+    calibrated: Optional[bool] = None        # p_up is sigmoid-calibrated on a time-ordered validation block
+    model_selected: Optional[str] = None
+    abstain_reasons: dict[str, int] = Field(default_factory=dict)   # OOS rows with no signal, by reason
+    last_abstain_reason: Optional[str] = None                      # reason on the latest bar ('' / None = none)
     metrics: dict[str, Any]
     metrics_display: dict[str, Any]
     equity_curve: list[EquityPoint]
@@ -330,7 +337,12 @@ class Funnel(_Base):
     oos_positive: int
     psr: int
     bh: int
+    dsr: Optional[int] = None                # survives Deflated Sharpe (None for results stored before Phase 4)
     orders: int
+    n_trials: Optional[int] = None           # N: every evaluation of the run, valid or not
+    pbo: OptF = None                         # advisory CSCV PBO of the run
+    sharpe_var: OptF = None                  # cross-trial variance of per-period Sharpe used by the DSR
+    run_id: Optional[str] = None
 
 
 class LatestTechnicalResult(_LatestResult):
@@ -623,6 +635,9 @@ class NightlyRef(_Base):
     bh_adjusted_p: OptF = None
     validation_status: Optional[str] = None
     tested: Optional[int] = None
+    dsr_p: OptF = None
+    n_trials: Optional[int] = None
+    pbo: OptF = None
     label: str
 
 

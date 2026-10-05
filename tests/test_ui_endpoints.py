@@ -438,12 +438,15 @@ def test_candidate_happy_path(app_client, fast_validation, tmp_results):
     assert b["oos_return"] == pytest.approx(b["oos_curve"][-1]["value"], abs=1e-6)
     assert b["n_oos_trades"] == len(b["oos_trade_returns"])
     keys = [g["key"] for g in b["gates"]]
-    assert keys == ["oos_trades", "psr", "bh", "holdout", "cost", "delay"]
+    assert keys == ["oos_trades", "psr", "bh", "dsr", "pbo", "holdout", "cost", "delay"]
     g = {x["key"]: x for x in b["gates"]}
     assert g["oos_trades"]["threshold"] == config.MIN_TRADES_OOS and g["oos_trades"]["value"] == b["n_oos_trades"]
     assert g["oos_trades"]["status"] == ("pass" if b["n_oos_trades"] >= config.MIN_TRADES_OOS else "fail")
     assert g["psr"]["threshold"] == config.OOS_PSR_MIN
     assert g["delay"]["status"] == "recorded" and g["delay"]["gating"] is False
+    assert g["dsr"]["gating"] is True and g["dsr"]["threshold"] == config.DSR_P_MAX and g["dsr"]["comparator"] == "<"
+    assert g["dsr"]["status"] == "unavailable" and g["dsr"]["value"] is None       # no nightly run to take N from
+    assert g["pbo"]["gating"] is False and "advisory" in g["pbo"]["name"] and "advisory" in (g["pbo"]["note"] or "")
     assert g["bh"]["status"] == "unavailable" and "not in last scan" in g["bh"]["note"]   # no nightly file
     assert b["nightly"]["in_last_scan"] is False and b["nightly"]["label"].startswith("not in last scan")
     assert b["verdict"] == "alert_only" and b["gates_failed"] >= 1      # BH gate unavailable can never validate
@@ -468,16 +471,24 @@ def test_candidate_happy_path(app_client, fast_validation, tmp_results):
 def test_candidate_uses_nightly_bh_q_when_present(app_client, fast_validation, tmp_results):
     pat = _pattern()
     store.write_result("technical", [{"symbol": "SPY", "pattern": pat, "bh_adjusted_p": 0.31,
-                                      "validation_status": "unvalidated", "n_trials": 780}])
-    store.write_result("funnel", {"tested": 780, "min_trades": 120, "oos_positive": 60, "psr": 20, "bh": 3, "orders": 0})
+                                      "validation_status": "unvalidated", "n_trials": 780, "dsr_p": 0.42}])
+    store.write_result("funnel", {"tested": 780, "min_trades": 120, "oos_positive": 60, "psr": 20, "bh": 3, "dsr": 0,
+                                  "orders": 0, "n_trials": 780, "pbo": 0.55, "sharpe_var": 0.0004})
     b = strict(app_client(FakeProvider(n=LONG_N, start=LONG_START)).get(f"/api/scanner/candidate?symbol=SPY&pattern={pat}"))
     g = {x["key"]: x for x in b["gates"]}
     assert g["bh"]["value"] == 0.31 and g["bh"]["status"] == "fail" and g["bh"]["threshold"] == config.FDR_ALPHA
     assert b["nightly"]["in_last_scan"] is True and b["nightly"]["tested"] == 780
+    assert g["dsr"]["value"] == 0.42 and g["dsr"]["status"] == "fail" and "N = 780" in g["dsr"]["note"]
+    assert g["pbo"]["value"] == 0.55 and g["pbo"]["status"] == "recorded" and g["pbo"]["gating"] is False
+    assert b["nightly"]["dsr_p"] == 0.42 and b["nightly"]["n_trials"] == 780 and b["nightly"]["pbo"] == 0.55
     assert b["verdict"] == "alert_only"
     # a different symbol is not in that scan
     b2 = strict(app_client(FakeProvider(n=LONG_N, start=LONG_START)).get(f"/api/scanner/candidate?symbol=QQQ&pattern={pat}"))
     assert b2["nightly"]["in_last_scan"] is False and b2["nightly"]["label"].startswith("no stored q")
+    # not in the scan: deflated against the latest run's N and cross-trial Sharpe variance
+    g2 = {x["key"]: x for x in b2["gates"]}
+    assert g2["dsr"]["status"] in ("pass", "fail") and g2["dsr"]["value"] is not None
+    assert "latest nightly run" in g2["dsr"]["note"] and "N = 780" in g2["dsr"]["note"]
 
 
 def test_candidate_errors(app_client, tmp_results):
@@ -510,23 +521,39 @@ def test_candidate_service_reuses_a_frozen_holdout_read(monkeypatch, tmp_path):
 
 # ================================================================ funnel
 class _R:
-    def __init__(self, n, tot, psr, bh, status):
+    def __init__(self, n, tot, psr, bh, status, dsr_p=None, n_trials=6, pbo=None):
         self.n_oos_trades, self.oos, self.oos_psr = n, {"total_return": tot}, psr
         self.bh_significant, self.validation_status = bh, status
+        self.dsr_p, self.n_trials, self.pbo = dsr_p, n_trials, pbo
+
+
+_FUNNEL_STAGES = ("tested", "min_trades", "oos_positive", "psr", "bh", "dsr", "orders")
 
 
 def test_funnel_counts_are_sequential():
-    rs = [_R(5, 0.1, 0.99, True, "unvalidated"),        # too few trades
-          _R(40, -0.1, 0.99, True, "unvalidated"),      # negative OOS
-          _R(40, 0.1, 0.90, True, "unvalidated"),       # PSR too low
-          _R(40, 0.1, 0.99, False, "unvalidated"),      # BH fails
-          _R(40, 0.1, 0.99, True, "unvalidated"),       # fails hold-out / cost
-          _R(40, 0.1, 0.99, True, "oos_validated")]
-    assert scan.funnel_counts(rs) == {"tested": 6, "min_trades": 5, "oos_positive": 4, "psr": 3, "bh": 2, "orders": 1}
-    assert scan.funnel_counts([]) == {k: 0 for k in ("tested", "min_trades", "oos_positive", "psr", "bh", "orders")}
+    rs = [_R(5, 0.1, 0.99, True, "unvalidated", 0.01),        # too few trades
+          _R(40, -0.1, 0.99, True, "unvalidated", 0.01),      # negative OOS
+          _R(40, 0.1, 0.90, True, "unvalidated", 0.01),       # PSR too low
+          _R(40, 0.1, 0.99, False, "unvalidated", 0.01),      # BH fails
+          _R(40, 0.1, 0.99, True, "oos_validated", 0.30),     # BH passes, does not survive the deflated Sharpe
+          _R(40, 0.1, 0.99, True, "unvalidated", 0.01),       # survives DSR, fails hold-out / cost
+          _R(40, 0.1, 0.99, True, "deflated_validated", 0.01, pbo=0.4)]
+    f = scan.funnel_counts(rs)
+    assert {k: f[k] for k in _FUNNEL_STAGES} == {"tested": 7, "min_trades": 6, "oos_positive": 5, "psr": 4, "bh": 3,
+                                                  "dsr": 2, "orders": 1}
+    assert f["n_trials"] == 6 and f["pbo"] == 0.4
+    empty = scan.funnel_counts([])
+    assert {k: empty[k] for k in _FUNNEL_STAGES} == {k: 0 for k in _FUNNEL_STAGES}
+    assert empty["n_trials"] == 0 and empty["pbo"] is None
 
 
-def test_technical_scan_reports_funnel(monkeypatch):
+def test_oos_validated_without_deflation_is_not_an_order():
+    """A candidate that clears every OOS gate but not the DSR must not count as an order (D15)."""
+    f = scan.funnel_counts([_R(40, 0.1, 0.99, True, "oos_validated", 0.30)])
+    assert f["bh"] == 1 and f["dsr"] == 0 and f["orders"] == 0
+
+
+def test_technical_scan_reports_funnel(monkeypatch, tmp_path):
     prov = FakeProvider(n=LONG_N, start=LONG_START)
     import validation
     orig = validation.evaluate_candidates
@@ -536,10 +563,30 @@ def test_technical_scan_reports_funnel(monkeypatch):
     pats = [_pattern()]
     funnel: dict = {}
     scan.scan_technical({"SPY": prov.frame("SPY")}, pats, funnel_out=funnel)
-    assert set(funnel) == {"tested", "min_trades", "oos_positive", "psr", "bh", "orders"}
+    assert set(funnel) == set(_FUNNEL_STAGES) | {"n_trials", "pbo", "run_id", "sharpe_var"}
     assert funnel["tested"] == 1
-    vals = [funnel[k] for k in ("tested", "min_trades", "oos_positive", "psr", "bh", "orders")]
+    vals = [funnel[k] for k in _FUNNEL_STAGES]
     assert vals == sorted(vals, reverse=True)
+    # ONE registry per run (1 trial recorded); N is floored at the full nightly universe (a narrowed scan is not
+    # deflated less than the full one); its parquet exists, and nothing touched trading.db
+    assert funnel["run_id"].startswith("tech-") and funnel["n_trials"] == validation.universe_trials() > 1
+    assert (tmp_path / "trials" / f"{funnel['run_id']}.parquet").is_file()
+    assert (tmp_path / "state" / "trials.sqlite").is_file()
+    assert not (tmp_path / "state" / "trading.db").exists()
+
+
+def test_registry_failure_fails_closed(monkeypatch):
+    """If the trial registry cannot be built nothing is order-eligible (like the hold-out store)."""
+    prov = FakeProvider(n=LONG_N, start=LONG_START)
+    monkeypatch.setattr(scan.sess_mod, "_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan, "_holdout_store", lambda: None)
+
+    def boom(run_id):
+        raise RuntimeError("no registry")
+    monkeypatch.setattr(scan.trial_runs, "new_registry", boom)
+    funnel: dict = {}
+    scan.scan_technical({"SPY": prov.frame("SPY")}, [_pattern()], funnel_out=funnel)
+    assert funnel["tested"] == 0 and funnel["orders"] == 0
 
 
 @pytest.fixture

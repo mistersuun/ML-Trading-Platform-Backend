@@ -28,6 +28,7 @@ from ml_patterns import MLPatternDetector, ml_scan_candidate
 from patterns import PATTERN_REGISTRY
 from services import pairs as pairs_service
 from services import session as sess_mod
+from services import trial_runs
 from services.common import clean, finite, require_data
 from services.models import (LatestSignal, PatternDetectResponse, PatternScanResponse, PricePoint, ScanFailure,
                              ScanSignal, TechnicalCandidate)
@@ -107,6 +108,7 @@ def _oos_display(cr) -> dict:
         "expectancy": _num(o.get("expectancy_equity"), 4),
         "total_trades": cr.n_oos_trades, "oos_psr": cr.oos_psr, "holdout_return": ho.get("total_return"),
         "bh_adjusted_p": cr.bh_adjusted_p, "n_trials": cr.n_trials, "null_p": cr.null_p,
+        "dsr": cr.dsr, "dsr_p": cr.dsr_p, "pbo": cr.pbo,
         "rejected_reasons": list(cr.rejected_reasons),
     }
 
@@ -289,13 +291,48 @@ class _Hit:
     bar_date: Optional[str]
 
 
-def _validate(data: dict, registry: dict) -> list:
+def _sharpe_var(reg) -> Optional[float]:
+    """Cross-trial variance of per-period Sharpe over the run's trials (what the DSR used), stored with the funnel
+    so a single-candidate view can deflate against the same N and variance. None when it is not defined."""
+    try:
+        from stats import selection
+        v = float(selection.sharpe_variance(reg.returns_matrix()))
+        return v if v == v and abs(v) != float("inf") else None
+    except Exception:
+        return None
+
+
+def _nightly_sharpe_var() -> Optional[float]:
+    """Cross-trial Sharpe variance of the last full nightly run (floor for narrowed scans); None when unknown."""
+    try:
+        from results import store
+        funnel = store.read_latest("funnel")
+        v = finite(funnel[0].get("sharpe_var")) if funnel and isinstance(funnel[0], dict) else None
+        return v if v is not None and v > 0 else None
+    except Exception:
+        return None
+
+
+def _validate(data: dict, registry: dict, run_info: Optional[dict] = None) -> list:
+    """Validate every candidate of the run against ONE trial registry (N = every evaluation, valid or not).
+
+    The registry is built inside the guard: if it cannot be built or flushed, nothing from this scan is
+    order-eligible (fail closed), exactly like a hold-out store failure. `run_info` (when given) receives
+    the run id and the registry's trial count."""
     store = _holdout_store()
     try:
+        reg = trial_runs.new_registry(trial_runs.new_run_id("tech"))
+        if run_info is not None:
+            run_info["run_id"] = reg.run_id
         # Validate the variant execution can trade (long-only, ATR exits) and freeze the first hold-out read.
         # Fail closed: without a working hold-out store nothing validates (reason holdout_store_unavailable).
         results = validation.evaluate_candidates(data, registry, executable_variant=True,
-                                                 holdout_store=store, require_holdout_store=True)
+                                                 holdout_store=store, require_holdout_store=True,
+                                                 trials=reg, min_trials=validation.universe_trials(),
+                                                 sharpe_var_floor=_nightly_sharpe_var(), run_info=run_info)
+        if run_info is not None:
+            run_info["n_trials"] = int(reg.n_trials)
+            run_info.setdefault("sharpe_var", _sharpe_var(reg))
     except Exception as e:
         logger.error(f"validation failed ({type(e).__name__}: {e}); nothing from this scan is order-eligible")
         results = []
@@ -314,16 +351,20 @@ def _validate(data: dict, registry: dict) -> list:
 
 def funnel_counts(results: list) -> dict:
     """Sequential gate funnel over every candidate a validation run tested (each stage is a subset of the last):
-    tested -> enough OOS trades -> positive OOS return -> OOS PSR above the bar -> BH-significant -> may become an
-    order (validated: also hold-out and cost-stress gates)."""
+    tested -> enough OOS trades -> positive OOS return -> OOS PSR above the bar -> BH-significant -> survives the
+    Deflated Sharpe (p < DSR_P_MAX with N = every trial of the run) -> may become an order (deflated_validated:
+    also hold-out and cost-stress gates). Also reports the run's N and its advisory PBO (never a gate)."""
     tested = list(results)
     min_trades = [r for r in tested if r.n_oos_trades >= config.MIN_TRADES_OOS]
     oos_pos = [r for r in min_trades if ((r.oos or {}).get("total_return") or 0.0) > 0]
     psr = [r for r in oos_pos if r.oos_psr is not None and r.oos_psr > config.OOS_PSR_MIN]
     bh = [r for r in psr if r.bh_significant]
-    orders = [r for r in bh if r.validation_status in config.ORDER_ELIGIBLE_STATUSES]
+    dsr = [r for r in bh if r.dsr_p is not None and r.dsr_p < config.DSR_P_MAX]
+    orders = [r for r in dsr if r.validation_status in config.ORDER_ELIGIBLE_STATUSES]
     return {"tested": len(tested), "min_trades": len(min_trades), "oos_positive": len(oos_pos),
-            "psr": len(psr), "bh": len(bh), "orders": len(orders)}
+            "psr": len(psr), "bh": len(bh), "dsr": len(dsr), "orders": len(orders),
+            "n_trials": max((int(r.n_trials) for r in tested), default=0),
+            "pbo": next((r.pbo for r in tested if r.pbo is not None), None)}
 
 
 def orderable_frame(df: pd.DataFrame, bar_date: Optional[str]) -> bool:
@@ -342,9 +383,12 @@ def _technical_hits(data: dict, patterns: Optional[list], recency_days: Optional
                     funnel_out: Optional[dict] = None) -> list[_Hit]:
     pattern_list = [p for p in (patterns or list(PATTERN_REGISTRY.keys())) if p in PATTERN_REGISTRY]
     registry = {p: PATTERN_REGISTRY[p] for p in pattern_list}
-    results = _validate(data, registry)
+    run_info: dict = {}
+    results = _validate(data, registry, run_info)
     if funnel_out is not None:
         funnel_out.update(funnel_counts(results))
+        funnel_out["run_id"] = run_info.get("run_id")
+        funnel_out["sharpe_var"] = run_info.get("sharpe_var")
     hits: list[_Hit] = []
     for symbol, df in data.items():
         logger.info(f"\n─── {symbol} ({len(df)} bars) ───")
@@ -373,7 +417,8 @@ def _technical_hits(data: dict, patterns: Optional[list], recency_days: Optional
                     "signal_bar_date": bar_date, "orderable_direction": direction,
                     "oos": cr.oos, "holdout": cr.holdout, "n_oos_trades": cr.n_oos_trades,
                     "oos_psr": cr.oos_psr, "bh_adjusted_p": cr.bh_adjusted_p, "n_trials": cr.n_trials,
-                    "null_p": cr.null_p, "rejected_reasons": list(cr.rejected_reasons)}))
+                    "null_p": cr.null_p, "dsr": cr.dsr, "dsr_p": cr.dsr_p, "pbo": cr.pbo,
+                    "rejected_reasons": list(cr.rejected_reasons)}))
                 hits.append(_Hit(cand, cr, df, signals_df, recent, direction, bar_date))
             except Exception as e:
                 logger.warning(f"  {pat_name}: error — {e}")
@@ -441,6 +486,9 @@ def scan_technical(
                           f"\nValidation: {cr.validation_status} "
                           f"(BH-adjusted p={_num(cr.bh_adjusted_p, 3)} over {cr.n_trials} candidates"
                           + (f"; failed: {', '.join(cr.rejected_reasons)}" if cr.rejected_reasons else "")
+                          + (f"; not order-eligible: {cr.deflation_reason}"
+                             + (f" (DSR p={_num(cr.dsr_p, 3)}, N={cr.n_trials})" if cr.dsr_p is not None else "")
+                             if getattr(cr, "deflation_reason", None) else "")
                           + f") | Mode: {config.TRADING_MODE} (no orders without validation)")
             sess_mod._alert(alert_msg, kind="signal",
                             dedup_key=f"signal:{symbol}:{pat_name}:{h.recent}:{h.bar_date or df.index[-1]}")
@@ -470,13 +518,13 @@ def scan_pairs(data: dict, paper_trade: bool = False) -> list[dict]:
     logger.info("\n📈 PAIRS TRADING SCAN")
     logger.info("=" * 50)
 
-    results = pairs_service.scan_pairs_data(data)
+    results = pairs_service.scan_pairs_data(data, trials=pairs_service.pairs_registry(data) if data else None)
     triggered = [r for r in results if r.get("has_signal")]
 
     for r in triggered:
         safe = {k: (0 if v is None else v) for k, v in r.items()}   # None (no losses / no half-life) -> 0 for the template
         msg = format_pairs_alert(safe) + (
-            f"\nValidation: {UNVALIDATED} (pairs are alert-only, D3). Backtest figures above are in-sample; "
+            f"\nValidation: {UNVALIDATED} (pairs are alert-only, D3). Backtest figures above are walk-forward out-of-sample (formation 252, trade 63); "
             f"cointegration BH-adjusted p={_num(r.get('adj_pvalue'), 3)} over {r.get('n_tested', '?')} pairs.")
         sess_mod._alert(msg, kind="signal",
                         dedup_key=f"pairs:{r.get('symbol_a')}/{r.get('symbol_b')}:{r.get('signal_direction')}:"

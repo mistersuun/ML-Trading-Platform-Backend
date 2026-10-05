@@ -17,3 +17,4 @@ results/*/
 models/
 state/holdings*.csv
 state/ibkr_snapshot*.json
+data/trials/

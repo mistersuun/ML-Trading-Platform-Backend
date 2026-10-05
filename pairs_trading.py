@@ -36,12 +36,16 @@ Conventions (read before trusting a number)
   registry's ``bars_per_year`` (252 equities, 365 crypto).
 * Time stop: ``ceil(PAIRS_TIME_STOP_HALF_LIVES * half_life)`` bars.  It lives in ``backtest_pair``
   (not in the signal) because it needs the full-sample half-life from ``analyze_pair``; keeping it
-  out of ``generate_pair_signals`` keeps the signals causal.  Phase 4 replaces the full-sample
-  half-life with a walk-forward estimate.
+  out of ``generate_pair_signals`` keeps the signals causal.  This single-window path is IN-SAMPLE
+  (full-sample half-life, signal-close fills, daily-rebalanced legs): the WS4.5 ``walk_forward_pairs``
+  engine at the end of this module is the OOS one (walk-forward half-life, next-open fills, fixed-share
+  legs, rolling cointegration guard) and is what scan / analyze report.
 * Pairs are a diagnostic only (D3: nothing is shortable).  Legs that are not executable
   equities/ETFs are labelled ``non_executable``.
 """
 
+import contextlib
+import contextvars
 import logging
 import math
 from dataclasses import dataclass, field
@@ -492,17 +496,39 @@ def backtest_pair(
 
 
 # ----------------------------------------------------------------------------- scan
+_ACTIVE_TRIALS: contextvars.ContextVar = contextvars.ContextVar("pairs_active_trials", default=None)
+
+
+@contextlib.contextmanager
+def record_trials(registry):
+    """Within the block, ``scan_all_pairs`` / ``walk_forward_pairs`` called WITHOUT an explicit ``trials``
+    record into ``registry`` (keeps the two-argument ``scan_all_pairs(data, pairs)`` call shape intact)."""
+    token = _ACTIVE_TRIALS.set(registry)
+    try:
+        yield registry
+    finally:
+        _ACTIVE_TRIALS.reset(token)
+
+
 def scan_all_pairs(
     data: dict[str, pd.DataFrame],
     pairs: Optional[list[tuple]] = None,
+    trials=None,
 ) -> list[dict]:
     """Scan pairs (default: instruments.default_pairs()) and return the VALID ones.
 
     Multiple-testing control: Benjamini-Hochberg at config.FDR_ALPHA across EVERY pair that had
     enough aligned bars (valid or not).  ``is_cointegrated`` on a scanned analysis is the BH
     decision.  Results carry ``adj_pvalue`` and ``n_tested``.
+
+    WS4.5: every analysed pair is walk-forward backtested (``walk_forward_pairs``) and, when ``trials`` is
+    given, its OOS return series is recorded as one trial (valid or not, so N is honest).  A pair is valid
+    only if the cointegration screen above passes AND ``is_valid_oos``; the ``backtest`` numbers it reports
+    are the stitched OOS ones (never the full-sample in-sample backtest).  Pairs stay alert-only (D3).
     """
     pairs = list(pairs) if pairs else instruments.default_pairs()
+    if trials is None:
+        trials = _ACTIVE_TRIALS.get()
     analysed: list[tuple[PairAnalysis, pd.DataFrame, pd.DataFrame]] = []
 
     for sym_a, sym_b in pairs:
@@ -528,18 +554,27 @@ def scan_all_pairs(
     for (analysis, df_a, df_b), rej, padj in zip(analysed, reject, adj):
         analysis.is_cointegrated = bool(rej)
         analysis.adj_pvalue = float(padj)
-        if not is_valid_pair(analysis):
-            logger.info("  %s/%s: NOT valid (p=%.4f adj=%.4f hl=%s corr=%.3f)", analysis.symbol_a, analysis.symbol_b,
-                        analysis.coint_pvalue, padj, analysis.half_life, analysis.correlation)
-            continue
         try:
-            signals = generate_pair_signals(df_a, df_b, analysis)
-            bt = backtest_pair(signals, analysis)
+            wf = walk_forward_pairs(df_a, df_b, analysis.symbol_a, analysis.symbol_b, trials=trials)
+        except InsufficientData:
+            continue
         except Exception as e:
-            logger.warning("  Error backtesting %s/%s: %s", analysis.symbol_a, analysis.symbol_b, e)
+            if trials is not None:
+                raise                                   # a registry failure must not drop a trial silently
+            logger.warning("  Error walk-forwarding %s/%s: %s", analysis.symbol_a, analysis.symbol_b, e)
             continue
-        if "error" in bt:
+        if not is_valid_pair(analysis) or not is_valid_oos(wf):
+            logger.info("  %s/%s: NOT valid (p=%.4f adj=%.4f hl=%s corr=%.3f oos_blocks=%d)", analysis.symbol_a,
+                        analysis.symbol_b, analysis.coint_pvalue, padj, analysis.half_life, analysis.correlation,
+                        wf.n_blocks)
             continue
+        bt = dict(wf.backtest)
+        bt["half_life"] = _f(analysis.half_life)
+        bt["correlation"] = _f(analysis.correlation)
+        bt["coint_pvalue"] = _f(analysis.coint_pvalue)
+        bt["bars_per_year"] = int(analysis.bars_per_year)
+        bt["non_executable"] = bool(analysis.non_executable)
+        bt["current_zscore"] = _f(analysis.current_zscore)  # last causal z (the live alert), not an OOS number
         z = bt["current_zscore"]
         bt["has_signal"] = bool(z is not None and abs(z) > config.PAIRS_ZSCORE_ENTRY
                                 and abs(z) < config.PAIRS_ZSCORE_STOP)
@@ -550,4 +585,385 @@ def scan_all_pairs(
         bt["hedge_ratio"] = float(analysis.hedge_ratio)
         bt["non_executable_reason"] = analysis.non_executable_reason
         results.append(bt)
+    if trials is not None and trials.n_trials:
+        trials.flush()
     return results
+
+
+# ============================================================================= walk-forward (WS4.5)
+# Walk-forward pairs engine (WS4.5, the D11-deferred pairs accounting).
+#
+# Blocks: ``formation`` bars fit the parameters, the next ``trade`` bars trade them OUT OF SAMPLE, the
+# window then advances by ``step`` (``step >= trade`` so OOS windows never overlap).  Everything a block
+# uses is frozen from its formation window: hedge ratio (beta, alpha), half-life, z lookback
+# (``clamp(round(PAIRS_Z_LOOKBACK_HL_MULT * hl), 20, 120)``), time stop (``PAIRS_TIME_STOP_HALF_LIVES * hl``)
+# and the tradable flag (formation Engle-Granger max-p < PAIRS_COINT_PVALUE, half-life in band, return
+# correlation).  A block only reads bars up to its own last trade bar, so later data cannot change an
+# earlier block; the OOS return series is the stitched trade windows (days with no position are 0).
+#
+# Execution: the signal at the close of bar t is filled at the OPEN of bar t+1 (``Open`` column, ``Close``
+# if absent).  Legs are FIXED SHARES set at the fill (dollar weights ``1/(1+|b|)`` and ``|b|/(1+|b|)`` of
+# ``gross_fraction * equity``), never rebalanced; costs ``commission + slippage`` are charged on both legs
+# at entry and exit.  Equity is cash plus shares marked at the close, so dollar P&L is a sum of
+# ``shares * price change`` (invariant to an additive shift of the price level for given shares).  A trade
+# still open on the last bar of a block is closed at that bar's close (``block_end``) and a signal on that
+# bar is never opened.
+#
+# Breakdown guard: every ``PAIRS_RETEST_EVERY`` bars an Engle-Granger re-test (both orderings, max p) and a
+# half-life are computed on the trailing ``retest_window`` bars.  A block is HEALTHY at the start iff its
+# formation is tradable.  Healthy -> unhealthy when p > PAIRS_BREAK_PVALUE (0.15) or the half-life leaves
+# its band; unhealthy -> healthy only when p < PAIRS_COINT_PVALUE (0.05) and the half-life is back in band
+# (hysteresis).  Unhealthy forces an open trade out (``coint_break``) and blocks entries.  A ``time_stop``
+# exit means the frozen parameters did not revert in time and blocks further entries in that block.
+PAIRS_BREAK_PVALUE = 0.15         # re-test p above this breaks a trade (hysteresis vs PAIRS_COINT_PVALUE)
+PAIRS_RETEST_EVERY = 5            # bars between rolling EG re-tests
+PAIRS_RETEST_WINDOW = 252         # trailing bars used by the re-test (EG has little power below ~250 bars)
+PAIRS_Z_LOOKBACK_HL_MULT = 2.0    # z lookback = clamp(round(mult * half_life), MIN, MAX)
+PAIRS_Z_LOOKBACK_MIN = 20
+PAIRS_Z_LOOKBACK_MAX = 120
+WF_FORMATION, WF_TRADE, WF_STEP = 252, 63, 63
+WF_PATTERN = "pairs_wf"
+
+
+def z_lookback_for(half_life: Optional[float]) -> int:
+    """Rolling-z lookback tied to the half-life, clamped to [20, 120] (120 when the half-life is unknown)."""
+    if half_life is None or not math.isfinite(half_life) or half_life <= 0:
+        return PAIRS_Z_LOOKBACK_MAX
+    return int(min(PAIRS_Z_LOOKBACK_MAX, max(PAIRS_Z_LOOKBACK_MIN, round(PAIRS_Z_LOOKBACK_HL_MULT * half_life))))
+
+
+def fixed_share_pnl(shares_a: float, shares_b: float, entry_a: float, entry_b: float,
+                    exit_a: float, exit_b: float) -> float:
+    """Gross dollar P&L of fixed-share legs: ``sa*(Pa_exit-Pa_entry) + sb*(Pb_exit-Pb_entry)`` (signed shares).
+
+    Depends only on price DIFFERENCES, so adding a constant to a price series leaves it unchanged."""
+    return float(shares_a * (exit_a - entry_a) + shares_b * (exit_b - entry_b))
+
+
+def fixed_share_value_path(shares_a: float, shares_b: float, close_a, close_b, entry_a: float, entry_b: float):
+    """Mark-to-market gross P&L path (dollars, vs the entry fills) of fixed-share legs on each close."""
+    ca = np.asarray(close_a, dtype=float)
+    cb = np.asarray(close_b, dtype=float)
+    return shares_a * (ca - entry_a) + shares_b * (cb - entry_b)
+
+
+def _eg_pvalue(la, lb) -> float:
+    """Max Engle-Granger p over both orderings; 1.0 when the test cannot be run."""
+    try:
+        return float(max(coint(la, lb)[1], coint(lb, la)[1]))
+    except Exception as e:  # degenerate window: treat as not cointegrated, never as a pass
+        logger.debug("EG re-test failed: %s", e)
+        return 1.0
+
+
+def _hl_in_band(hl: Optional[float]) -> bool:
+    return hl is not None and config.PAIRS_MIN_HALF_LIFE <= hl <= config.PAIRS_MAX_HALF_LIFE
+
+
+def _spread_half_life(la, lb) -> tuple[Optional[float], float, float]:
+    """OLS fit of la on lb -> (half-life of the residual, alpha, beta)."""
+    fit = OLS(la, add_constant(lb)).fit()
+    alpha, beta = float(fit.params[0]), float(fit.params[1])
+    return compute_half_life(pd.Series(la - alpha - beta * lb)), alpha, beta
+
+
+@dataclass
+class WalkForwardResult:
+    symbol_a: str
+    symbol_b: str
+    formation: int
+    trade: int
+    step: int
+    blocks: list = field(default_factory=list)       # one dict per block (frozen parameters + OOS stats)
+    trades: list = field(default_factory=list)       # OOS trades, all blocks
+    returns: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))   # dated OOS daily returns
+    equity: pd.Series = field(default_factory=lambda: pd.Series(dtype=float))    # stitched OOS equity
+    backtest: dict = field(default_factory=dict)     # JSON-safe, same keys as backtest_pair, OOS only
+    params: dict = field(default_factory=dict)       # the trial's parameters (registry)
+    strategy_version: str = ""
+    data_hash: str = ""
+
+    @property
+    def n_blocks(self) -> int:
+        return len(self.blocks)
+
+
+def _wf_strategy_version(params: dict) -> str:
+    import hashlib
+    import json
+    return hashlib.sha1(json.dumps(params, sort_keys=True, default=str).encode()).hexdigest()[:16]
+
+
+def _run_block(k, s, e_form, e_trade, idx, la, lb, oa, ob, ca, cb, equity0, gf, rate, retest_every, retest_window,
+               max_hold_mult):
+    """Trade one block. Returns (block_info, trades, daily_returns, daily_equity, equity_end)."""
+    F = slice(s, e_form)
+    fa, fb = la[F], lb[F]
+    hl, alpha, beta = _spread_half_life(fa, fb)
+    p_form = _eg_pvalue(fa, fb)
+    ra, rb = np.diff(fa), np.diff(fb)
+    corr = float(np.corrcoef(ra, rb)[0, 1]) if ra.std() > 0 and rb.std() > 0 else 0.0
+    corr = corr if math.isfinite(corr) else 0.0
+    why = []
+    if not p_form < config.PAIRS_COINT_PVALUE:
+        why.append("formation_not_cointegrated")
+    if not _hl_in_band(hl):
+        why.append("half_life_out_of_band")
+    if abs(corr) < MIN_RETURN_CORR:
+        why.append("returns_uncorrelated")
+    tradable = not why
+    L = z_lookback_for(hl)
+    max_hold = max(1, int(math.ceil(max_hold_mult * hl))) if hl else 0
+    info = {
+        "block": int(k), "formation_start": str(idx[s]), "formation_end": str(idx[e_form - 1]),
+        "trade_start": str(idx[e_form]), "trade_end": str(idx[e_trade - 1]),
+        "coint_pvalue": p_form, "half_life": _f(hl), "hedge_beta": beta, "hedge_alpha": alpha,
+        "correlation": corr, "z_lookback": L, "max_hold": max_hold, "tradable": tradable,
+        "untradable_reason": ";".join(why), "n_trades": 0, "pnl_abs": 0.0, "n_retests": 0, "n_breaks": 0,
+        "health": [],        # one [bar_idx, eg_pvalue, half_life, healthy_after_retest] per re-test
+    }
+
+    n_t = e_trade - e_form
+    rets = np.zeros(n_t)
+    eq = np.full(n_t, float(equity0))
+    trades: list = []
+    if not tradable:
+        return info, trades, rets, eq, float(equity0)
+
+    spread = la[s:e_trade] - beta * lb[s:e_trade]       # frozen hedge ratio; block-local indexing
+    entry_z, exit_z, stop_z = config.PAIRS_ZSCORE_ENTRY, config.PAIRS_ZSCORE_EXIT, config.PAIRS_ZSCORE_STOP
+    healthy, blocked = True, False
+    pos = 0
+    sa = sb = 0.0
+    cash = float(equity0)
+    pend = None            # ("enter", dir) | ("exit", reason), decided at the previous close
+    held = 0
+    tr = None
+    m_e = s_e = 0.0
+    last_close_eq = float(equity0)
+
+    def _close_trade(t_i, px_a, px_b, reason):
+        nonlocal pos, sa, sb, cash, tr
+        gross = fixed_share_pnl(sa, sb, tr["entry_px_a"], tr["entry_px_b"], px_a, px_b)
+        cost_exit = rate * (abs(sa) * px_a + abs(sb) * px_b)
+        cash += sa * px_a + sb * px_b - cost_exit
+        net = gross - tr["cost_entry"] - cost_exit
+        tr.update({"exit_idx": int(t_i), "exit_date": idx[t_i].isoformat(), "bars_held": int(t_i - tr["entry_idx"]),
+                   "exit_reason": reason, "gross_pnl_abs": gross, "cost_abs": tr["cost_entry"] + cost_exit,
+                   "pnl_abs": net, "pnl_pct": net / tr["gross_notional"]})
+        trades.append(tr)
+        pos, sa, sb, tr = 0, 0.0, 0.0, None
+
+    for j in range(n_t):
+        t = e_form + j                       # global bar index; spread local index is t - s
+        li = t - s
+        # ---- fills decided at the previous close, executed at this open
+        if pend is not None:
+            kind, arg = pend
+            pend = None
+            if kind == "enter" and pos == 0:
+                gross_n = gf * last_close_eq
+                abs_b = abs(beta)
+                wa, wb = 1.0 / (1.0 + abs_b), abs_b / (1.0 + abs_b)
+                sgn_b = 1.0 if beta >= 0 else -1.0
+                px_a, px_b = oa[t], ob[t]
+                sa = arg * gross_n * wa / px_a
+                sb = -arg * sgn_b * gross_n * wb / px_b
+                cost_in = rate * (abs(sa) * px_a + abs(sb) * px_b)
+                cash = last_close_eq - sa * px_a - sb * px_b - cost_in
+                pos, held = arg, 0
+                tr = {"block": int(k), "entry_idx": int(t), "entry_date": idx[t].isoformat(), "direction": int(arg),
+                      "hedge_beta": beta, "shares_a": sa, "shares_b": sb, "entry_px_a": float(px_a),
+                      "entry_px_b": float(px_b), "cost_entry": cost_in, "gross_notional": gross_n,
+                      "capital_before": last_close_eq}
+            elif kind == "exit" and pos != 0:
+                _close_trade(t, oa[t], ob[t], arg)
+        equity_close = cash + sa * ca[t] + sb * cb[t] if pos != 0 else cash
+        # ---- rolling re-test (causal: trailing bars ending at t)
+        if j % retest_every == 0 and t - retest_window + 1 >= s:
+            w = slice(t - retest_window + 1, t + 1)
+            p_now = _eg_pvalue(la[w], lb[w])
+            hl_now, _, _ = _spread_half_life(la[w], lb[w])
+            info["n_retests"] += 1
+            if healthy and (p_now > PAIRS_BREAK_PVALUE or not _hl_in_band(hl_now)):
+                healthy = False
+                info["n_breaks"] += 1
+            elif not healthy and not blocked and p_now < config.PAIRS_COINT_PVALUE and _hl_in_band(hl_now):
+                healthy = True
+            info["health"].append([int(t), float(p_now), _f(hl_now), bool(healthy)])
+        # ---- decisions at this close (executed next open; the last bar closes the book)
+        last_bar = j == n_t - 1
+        if pos != 0:
+            held += 1
+            zf = (spread[li] - m_e) / s_e
+            reason = None
+            if not healthy:
+                reason = "coint_break"
+            elif (pos == 1 and zf < -stop_z) or (pos == -1 and zf > stop_z):
+                reason = "stop_z"
+            elif (pos == 1 and zf >= -exit_z) or (pos == -1 and zf <= exit_z):
+                reason = "reversion"
+            elif held >= max_hold:
+                reason = "time_stop"
+                blocked = True
+            if last_bar:
+                _close_trade(t, ca[t], cb[t], reason or "block_end")
+                equity_close = cash
+            elif reason is not None:
+                pend = ("exit", reason)
+        elif healthy and not blocked and not last_bar and li - L >= 0:
+            win = spread[li - L:li]
+            sd = win.std(ddof=1)
+            if sd > _EPS:
+                z = (spread[li] - win.mean()) / sd
+                if entry_z < abs(z) < stop_z:
+                    pend = ("enter", 1 if z < 0 else -1)
+                    m_e, s_e = float(win.mean()), float(sd)
+        rets[j] = equity_close / last_close_eq - 1.0 if last_close_eq > 0 else 0.0
+        eq[j] = equity_close
+        last_close_eq = equity_close
+    info["n_trades"] = len(trades)
+    info["pnl_abs"] = float(sum(x["pnl_abs"] for x in trades))
+    return info, trades, rets, eq, float(eq[-1])
+
+
+def walk_forward_pairs(
+    df_a: pd.DataFrame,
+    df_b: pd.DataFrame,
+    symbol_a: str = "A",
+    symbol_b: str = "B",
+    formation: int = WF_FORMATION,
+    trade: int = WF_TRADE,
+    step: int = WF_STEP,
+    *,
+    initial_capital: float = config.BACKTEST_INITIAL_CAPITAL,
+    commission: float = config.COMMISSION_PCT,
+    slippage: float = config.SLIPPAGE_PCT,
+    gross_fraction: Optional[float] = None,
+    bars_per_year: Optional[int] = None,
+    retest_every: int = PAIRS_RETEST_EVERY,
+    retest_window: int = PAIRS_RETEST_WINDOW,
+    trials=None,
+) -> WalkForwardResult:
+    """Walk-forward pairs backtest (see the notes above). Only COMPLETE blocks are traded.
+
+    ``trials`` is an optional trial registry (``trials.TrialRegistry``): the stitched OOS daily return
+    series is recorded as ONE trial (pattern ``pairs_wf``), whether or not the pair is valid.
+    """
+    if formation < 60 or trade < 1 or step < trade:
+        raise ValueError("need formation >= 60, trade >= 1 and step >= trade (non-overlapping OOS windows)")
+    retest_window = min(int(retest_window), int(formation))
+    df_a, df_b = _align(df_a, df_b)
+    pa, pb = df_a["Close"].astype(float), df_b["Close"].astype(float)
+    if len(pa) and not ((pa > 0).all() and (pb > 0).all() and np.isfinite(pa).all() and np.isfinite(pb).all()):
+        raise InsufficientData("non-positive or non-finite prices")
+    n = len(pa)
+    idx = df_a.index
+    la, lb = np.log(pa.to_numpy()), np.log(pb.to_numpy())
+    ca, cb = pa.to_numpy(), pb.to_numpy()
+    oa = df_a["Open"].astype(float).to_numpy() if "Open" in df_a.columns else ca
+    ob = df_b["Open"].astype(float).to_numpy() if "Open" in df_b.columns else cb
+    gf = float(config.MAX_POSITION_SIZE_PCT if gross_fraction is None else gross_fraction)
+    bpy = int(bars_per_year or pair_bars_per_year(symbol_a, symbol_b))
+    rate = float(commission) + float(slippage)
+
+    params = {"formation": int(formation), "trade": int(trade), "step": int(step),
+              "z_entry": config.PAIRS_ZSCORE_ENTRY, "z_exit": config.PAIRS_ZSCORE_EXIT,
+              "z_stop": config.PAIRS_ZSCORE_STOP, "coint_p": config.PAIRS_COINT_PVALUE,
+              "break_p": PAIRS_BREAK_PVALUE, "retest_every": int(retest_every), "retest_window": int(retest_window),
+              "hl_band": [config.PAIRS_MIN_HALF_LIFE, config.PAIRS_MAX_HALF_LIFE],
+              "time_stop_hl": config.PAIRS_TIME_STOP_HALF_LIVES, "z_lookback_hl_mult": PAIRS_Z_LOOKBACK_HL_MULT,
+              "z_lookback_clamp": [PAIRS_Z_LOOKBACK_MIN, PAIRS_Z_LOOKBACK_MAX], "gross_fraction": gf,
+              "cost_rate": rate}
+    res = WalkForwardResult(symbol_a, symbol_b, int(formation), int(trade), int(step), params=params,
+                            strategy_version=_wf_strategy_version({"v": 1, **params}))
+
+    equity = float(initial_capital)
+    dates, rets_all, eq_all = [], [], []
+    k, s = 0, 0
+    while s + formation + trade <= n:
+        e_form, e_trade = s + formation, s + formation + trade
+        info, trades, rets, eq, equity = _run_block(
+            k, s, e_form, e_trade, idx, la, lb, oa, ob, ca, cb, equity, gf, rate, int(retest_every),
+            int(retest_window), config.PAIRS_TIME_STOP_HALF_LIVES)
+        res.blocks.append(info)
+        res.trades.extend(trades)
+        dates.extend(idx[e_form:e_trade])
+        rets_all.extend(rets)
+        eq_all.extend(eq)
+        k += 1
+        s += step
+
+    res.returns = pd.Series(rets_all, index=pd.DatetimeIndex(dates), dtype=float, name=f"{symbol_a}/{symbol_b}")
+    res.equity = pd.Series(eq_all, index=pd.DatetimeIndex(dates), dtype=float)
+    res.backtest = _wf_backtest_dict(res, float(initial_capital), bpy, symbol_a, symbol_b)
+    res.backtest["oos_significant"] = oos_significant(res)
+    if trials is not None:
+        from trials.registry import data_hash as _dh
+        res.data_hash = _dh(pd.DataFrame({"a": pa, "b": pb}))
+        trials.record(symbol=f"{symbol_a}/{symbol_b}", pattern=WF_PATTERN, params=params, returns=res.returns,
+                      strategy_version=res.strategy_version, data_hash=res.data_hash)
+    return res
+
+
+def _wf_backtest_dict(res: WalkForwardResult, initial_capital: float, bpy: int, sym_a: str, sym_b: str) -> dict:
+    """OOS-only metrics in the shape of ``backtest_pair`` (plus ``oos`` markers); plain Python values."""
+    trades = res.trades
+    pnls = [t["pnl_pct"] for t in trades]
+    wins = [p for p in pnls if p > 0]
+    losses = [p for p in pnls if p <= 0]
+    eq = res.equity.to_numpy() if len(res.equity) else np.array([initial_capital])
+    m = metrics.summary(eq, pnls, [t["pnl_abs"] for t in trades], [t["capital_before"] for t in trades],
+                        initial_capital, bpy)
+    reasons: dict = {}
+    for t in trades:
+        reasons[t["exit_reason"]] = reasons.get(t["exit_reason"], 0) + 1
+    tradable = [b for b in res.blocks if b["tradable"]]
+    last = res.blocks[-1] if res.blocks else None
+    return {
+        "symbol_a": sym_a, "symbol_b": sym_b,
+        "oos": True, "oos_blocks": len(res.blocks), "oos_blocks_tradable": len(tradable),
+        "oos_status": "ok" if res.blocks else "insufficient_history",
+        "oos_start": res.blocks[0]["trade_start"] if res.blocks else None,
+        "oos_end": res.blocks[-1]["trade_end"] if res.blocks else None,
+        "latest_block_tradable": bool(last["tradable"]) if last else False,
+        "oos_significant": False,
+        "total_trades": len(trades), "winning_trades": len(wins), "losing_trades": len(losses),
+        "win_rate": (len(wins) / len(pnls)) if pnls else 0.0,
+        "avg_win": float(np.mean(wins)) if wins else 0.0,
+        "avg_loss": float(np.mean(losses)) if losses else 0.0,
+        "profit_factor": m["profit_factor"], "total_return": m["total_return"], "max_drawdown": m["max_drawdown"],
+        "sharpe_ratio": m["sharpe"], "cagr": m["cagr"], "psr": m["psr"],
+        "half_life": _f(last["half_life"]) if last else None,
+        "correlation": _f(last["correlation"]) if last else None,
+        "coint_pvalue": _f(last["coint_pvalue"]) if last else None,
+        "current_zscore": None,
+        "bars_per_year": bpy, "n_bars": int(len(res.returns)), "exit_reasons": reasons,
+        "non_executable": True,
+        "formation": res.formation, "trade_bars": res.trade, "step": res.step,
+        "blocks": res.blocks, "trades": trades,
+    }
+
+
+PAIRS_OOS_REQUIRE_TRADABLE = False   # True: the LATEST block's formation must also be tradable (see is_valid_oos)
+
+
+def oos_significant(wf: WalkForwardResult) -> bool:
+    """Informational: enough OOS trades and OOS PSR strictly above OOS_PSR_MIN (never a gate for alerts)."""
+    bt = wf.backtest
+    return bool(bt.get("total_trades", 0) >= config.MIN_TRADES_OOS and bt.get("psr") is not None
+                and bt["psr"] > config.OOS_PSR_MIN)
+
+
+def is_valid_oos(wf: WalkForwardResult, require_tradable: Optional[bool] = None) -> bool:
+    """OOS-side validity of a pair, from walk-forward output only (no full-sample statistic).
+
+    Default: at least one COMPLETE OOS block exists, i.e. the pair has an out-of-sample record to display.
+    With ``require_tradable`` (default ``PAIRS_OOS_REQUIRE_TRADABLE``) the LATEST block's formation window
+    (data strictly before its OOS bars) must also be tradable: Engle-Granger p < 0.05 on 252 bars, half-life in
+    band, correlated returns.  Whether the pair deserves attention on OOS economics is exposed separately
+    (``oos_significant``, ``latest_block_tradable``, PSR in ``wf.backtest``).  Pairs stay alert-only (D3)."""
+    if not wf.blocks:
+        return False
+    req = PAIRS_OOS_REQUIRE_TRADABLE if require_tradable is None else require_tradable
+    return bool(wf.blocks[-1]["tradable"]) if req else True

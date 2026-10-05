@@ -242,7 +242,8 @@ def test_shuffled_labels_give_auc_near_half(synth):
 @pytest.mark.slow
 def test_random_walk_oos_sharpe_about_zero_over_50_seeds(synth):
     import backtester
-    sharpes, net_sharpes, viol = [], [], 0
+    sharpes, net_sharpes, traded, viol = [], [], [], 0
+    n_abstain = n_oos_bars = 0
     for seed in range(50):
         df = synth.gbm_ohlc(n=700, seed=1000 + seed, mu=0.0)
         det = MLPatternDetector(n_estimators=20)
@@ -250,6 +251,8 @@ def test_random_walk_oos_sharpe_about_zero_over_50_seeds(synth):
         nz = out.index[(out["signal"] != 0).to_numpy()]
         viol += int((nz < det.oos_start).sum())
         oos = out.loc[out["oos"]]
+        n_abstain += int((oos["signal"] == 0).sum())
+        n_oos_bars += len(oos)
         # Gross, no stop/target: the synthetic wicks are drawn independently of the close path, which
         # biases stop/target touches (see BT-5 notes), so the no-skill check isolates the model.
         bt = backtester.classic_backtest(oos, "RW", "ml_ensemble", stop_loss=None, take_profit=None,
@@ -257,13 +260,55 @@ def test_random_walk_oos_sharpe_about_zero_over_50_seeds(synth):
         net = backtester.classic_backtest(oos, "RW", "ml_ensemble")
         sharpes.append(bt.sharpe_ratio)
         net_sharpes.append(net.sharpe_ratio)
+        traded.append(bool(net.total_trades))
     sharpes = np.array(sharpes)
+    abstain_rate = n_abstain / max(n_oos_bars, 1)
     n_oos = 700 - int(700 * config.ML_TRAIN_TEST_SPLIT)
     thresh = 1.645 * np.sqrt(252 / n_oos)  # 95% one-sided null threshold for annualised Sharpe
     assert viol == 0
+    # Explicit abstain accounting (the Sharpe checks below are trivially true when nothing trades): on a driftless
+    # walk the calibrated detector must abstain on the large majority of OOS bars.
+    assert abstain_rate > 0.8, abstain_rate
     assert abs(sharpes.mean()) < 0.5, sharpes.mean()
     assert (sharpes > thresh).mean() < 0.05, (sharpes > thresh).mean()
-    assert np.mean(net_sharpes) < sharpes.mean()  # costs only hurt a no-skill strategy
+    # Costs only hurt a no-skill strategy: never better per seed, strictly worse wherever it traded. (Since WS4.4
+    # the calibrated detector often abstains on a driftless walk; with no trades gross == net == 0.)
+    net_arr = np.array(net_sharpes)
+    assert (net_arr <= sharpes + 1e-12).all()
+    assert all(n < g for n, g, t in zip(net_arr, sharpes, traded) if t)
+    assert np.mean(net_sharpes) <= sharpes.mean()
+
+
+def _ar1_frame(n: int, seed: int, phi: float = 0.5, sigma: float = 0.01):
+    from tests.fixtures import synthetic
+    rng = np.random.default_rng(seed)
+    r = np.zeros(n)
+    e = rng.normal(0, sigma, n)
+    for t in range(1, n):
+        r[t] = phi * r[t - 1] + e[t]
+    close = 100.0 * np.exp(np.cumsum(r))
+    return synthetic._ohlc_from_close(close, rng, synthetic._bdays(n), intraday_vol=sigma)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("seed", [11, 12, 13])
+def test_pipeline_trades_a_real_edge_out_of_sample_positive_control(seed):
+    """Positive control for the calibrated pipeline: an AR(1) close (phi=0.5) is a real, learnable edge, so the
+    detector must NOT abstain everywhere: it trades OOS (>= MIN_TRADES_OOS), costs hurt (net < gross), and no
+    signal precedes oos_start. A no-trade regression would pass every random-walk test but fails this."""
+    import backtester
+    df = _ar1_frame(1500, seed)
+    det = MLPatternDetector(n_estimators=20)
+    out = det.walk_forward_predict(df)
+    assert not (out.index[(out["signal"] != 0).to_numpy()] < det.oos_start).any()
+    oos = out.loc[out["oos"]]
+    assert (oos["signal"] != 0).sum() > 0
+    # same exits, with and without costs: costs only hurt
+    gross = backtester.classic_backtest(oos, "AR1", "ml_ensemble", commission=0.0, slippage=0.0)
+    net = backtester.classic_backtest(oos, "AR1", "ml_ensemble")
+    assert net.total_trades >= config.MIN_TRADES_OOS, net.total_trades
+    assert net.sharpe_ratio < gross.sharpe_ratio
+    assert net.sharpe_ratio > 0, net.sharpe_ratio
 
 
 def test_walk_forward_training_rows_resolve_before_block_start_minus_embargo(tiny, gbm_frame, monkeypatch):

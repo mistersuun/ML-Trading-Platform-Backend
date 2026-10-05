@@ -57,6 +57,14 @@ def _isolated_state_paths(tmp_path, monkeypatch):
     monkeypatch.delenv("KILL_SWITCH", raising=False)
 
 
+@pytest.fixture(autouse=True)
+def _isolated_trials_dir(tmp_path, monkeypatch):
+    """Trial-registry parquet files (data/trials/) go to tmp_path, never the real data dir."""
+    import trials.registry as _reg
+
+    monkeypatch.setattr(_reg, "default_trials_dir", lambda: tmp_path / "trials")
+
+
 @pytest.fixture
 def frozen_now():
     return FROZEN_NOW

@@ -19,7 +19,8 @@ Conventions
   at least the real one). Statistic = mean net ``pnl_pct`` per trade; p = (1 + #{null >= observed}) / (1 + draws).
 * ``evaluate_candidates`` tests every (symbol x pattern x stop/target) combination as a FIXED candidate,
   applies Benjamini-Hochberg at ``config.FDR_ALPHA`` over the null p-values of ALL of them, and sets
-  ``validation_status``. ``n_trials`` is recorded for deflated Sharpe (advisory value reported too).
+  ``validation_status``. ``n_trials`` (the registry's count when given) feeds the Deflated Sharpe gate:
+  ``deflated_validated`` = oos_validated AND DSR p < ``config.DSR_P_MAX``; PBO (CSCV) is advisory only.
 * Executable variant (``evaluate_candidates(executable_variant=True)``): what execution can actually trade
   (D3/D5/D10) is LONG-ONLY (a -1 signal is an exit) with ATR exits (stop ``ATR_STOP_MULT`` x ATR, target
   ``TAKE_PROFIT_ATR_MULT`` x ATR, levels anchored on the signal bar's close, as execution submits them).
@@ -48,10 +49,12 @@ import pandas as pd
 import config
 import engine
 import metrics
+from stats import selection
 
 logger = logging.getLogger(__name__)
 
 OOS_VALIDATED = "oos_validated"
+DEFLATED_VALIDATED = "deflated_validated"
 UNVALIDATED = "unvalidated"
 DEFAULT_GRID = ((config.STOP_LOSS_PCT, config.TAKE_PROFIT_PCT),)
 _FALLBACK_HOLD = 10
@@ -212,9 +215,13 @@ class CandidateResult:
     delay_return: Optional[float] = None
     bh_significant: bool = False
     bh_adjusted_p: Optional[float] = None
-    deflated_sharpe: Optional[float] = None   # advisory (Phase 4 gates on it)
+    deflated_sharpe: Optional[float] = None   # DSR probability (kept for compatibility; == dsr)
+    dsr: Optional[float] = None               # Deflated Sharpe (probability) with N = trial count
+    dsr_p: Optional[float] = None             # 1 - dsr: the gate is dsr_p < config.DSR_P_MAX
+    pbo: Optional[float] = None               # CSCV probability of backtest overfitting, run-level, ADVISORY
     validation_status: str = UNVALIDATED
     rejected_reasons: list = field(default_factory=list)
+    deflation_reason: Optional[str] = None    # why an oos_validated result is NOT deflated_validated (not order-eligible)
 
     def to_dict(self) -> dict:
         return _clean(asdict(self))
@@ -648,11 +655,13 @@ def _eval_one(symbol: str, df: pd.DataFrame, cand: Candidate, sigs: dict, draws:
               train: int, test: int, step: int, end, commission: float, slippage: float,
               cost_mult: float, family_size: int = 1, alpha: float = config.FDR_ALPHA,
               store=None, pattern_fn: Optional[Callable] = None, bpy: int = 252,
-              store_required: bool = False
+              store_required: bool = False, series_sink: Optional[list] = None
               ) -> tuple[CandidateResult, np.ndarray]:
     cr = CandidateResult(symbol=symbol, pattern=cand.pattern, params=cand.params())
     wf = walk_forward(df, [cand], signals=sigs, train=train, test=test, step=step, end=end,
                       commission=commission, slippage=slippage)
+    if series_sink is not None:      # trial registry: the dated OOS return series, valid or not
+        series_sink.append(wf.oos_returns)
     cr.n_folds = len(wf.folds)
     cr.n_oos_bars = len(wf.oos_returns)
     cr.n_oos_trades = wf.n_oos_trades
@@ -697,14 +706,28 @@ def evaluate_candidates(frames_by_symbol: dict[str, pd.DataFrame], patterns: dic
                         slippage: float = config.SLIPPAGE_PCT, cost_mult: float = config.COST_STRESS_MULT,
                         alpha: float = config.FDR_ALPHA, min_trades: int = config.MIN_TRADES_OOS,
                         psr_min: float = config.OOS_PSR_MIN, executable_variant: bool = False,
-                        holdout_store=None, require_holdout_store: bool = False) -> list[CandidateResult]:
+                        holdout_store=None, require_holdout_store: bool = False,
+                        trials=None, min_trials: Optional[int] = None,
+                        sharpe_var_floor: Optional[float] = None,
+                        run_info: Optional[dict] = None) -> list[CandidateResult]:
     """Walk-forward + hold-out + null + stresses for every (symbol x pattern x (stop, target)) candidate,
     then BH across ALL null p-values of the run and the final ``validation_status``.
 
     ``executable_variant=True`` validates only what execution can trade (long-only, ATR exits; ``grid`` is
     ignored). ``holdout_store`` (state.holdout.HoldoutStore-like: get / put) freezes the first hold-out read;
-    ``require_holdout_store=True`` makes a missing / failing store fail closed (nothing validates)."""
+    ``require_holdout_store=True`` makes a missing / failing store fail closed (nothing validates).
+    ``trials`` (trials.TrialRegistry) records EVERY evaluation (valid or not) with its OOS return series and
+    flushes the (date x trial) parquet at the end; a registry failure raises (no gate behaviour changes).
+    ``min_trials`` floors N (use ``universe_trials()``: a narrowed scan must not be deflated less than the full
+    nightly universe) and ``sharpe_var_floor`` floors the cross-trial Sharpe variance (the last nightly run's).
+    When the variance is still 0 (fewer than 2 usable trials) the DSR collapses to the PSR, so nothing is
+    deflated_validated (``deflation_reason='dsr_variance_unavailable'``). A narrowed run (fewer trials than
+    ``min_trials``) with no ``sharpe_var_floor`` has only its own few trials to estimate Var[SR] from (two similar
+    trials give a near-zero variance and SR0 ~ 0), so it is not deflatable either
+    (``deflation_reason='no_nightly_variance'``). ``run_info`` (when given) receives the effective ``sharpe_var``."""
     import instruments
+    if trials is not None:
+        from trials import data_hash as _data_hash
 
     prepared = []
     for symbol in sorted(frames_by_symbol):
@@ -717,31 +740,99 @@ def evaluate_candidates(frames_by_symbol: dict[str, pd.DataFrame], patterns: dic
     family = sum(len(c) for *_, c in prepared)
     results: list[CandidateResult] = []
     returns: list[np.ndarray] = []
+    series: list[pd.Series] = []
     for symbol, df, sigs, cands in prepared:
         bpy = instruments.bars_per_year(symbol)
+        dhash = _data_hash(df) if trials is not None else ""
         for cand in cands:
+            sink: list = []
             cr, r = _eval_one(symbol, df, cand, sigs, draws, seed, train, test, step, end, commission,
                               slippage, cost_mult, family_size=family, alpha=alpha, store=holdout_store,
                               store_required=require_holdout_store,
-                              pattern_fn=patterns.get(cand.pattern), bpy=bpy)
+                              pattern_fn=patterns.get(cand.pattern), bpy=bpy,
+                              series_sink=sink)
             results.append(cr)
             returns.append(r)
+            series.append(sink[0])
+            if trials is not None:
+                trials.record(symbol=symbol, pattern=cand.pattern, params=cand.params(), returns=sink[0],
+                              strategy_version=strategy_version(patterns.get(cand.pattern), cand, end,
+                                                                commission, slippage),
+                              data_hash=dhash)
+    if trials is not None:
+        trials.flush()
     n = len(results)
     rejected, q = benjamini_hochberg([c.null_p for c in results], alpha)
-    srs = np.array([metrics.sharpe(r, bars_per_year=1) if len(r) > 2 else 0.0 for r in returns])
-    var_sr = float(np.var(srs, ddof=1)) if n > 1 else 0.0
-    for cr, r, rej, qq, sr in zip(results, returns, rejected, q, srs):
-        cr.n_trials = n
+    # Deflated Sharpe: N = the registry's trial count (every evaluation, valid or not); the cross-trial Sharpe
+    # variance comes from the (date x trial) returns matrix. PBO (CSCV) is run-level and advisory only.
+    if trials is not None:
+        n_trials = int(trials.n_trials)
+        matrix = trials.returns_matrix()
+    else:
+        n_trials = n
+        matrix = pd.concat(series, axis=1, keys=range(n)) if series else pd.DataFrame()
+    narrowed = False
+    if min_trials:
+        narrowed = n_trials < int(min_trials)
+        n_trials = max(n_trials, int(min_trials))
+    var_sr = selection.sharpe_variance(matrix)
+    has_floor = sharpe_var_floor is not None and bool(np.isfinite(sharpe_var_floor)) and sharpe_var_floor > 0
+    if has_floor:
+        var_sr = max(var_sr, float(sharpe_var_floor))
+    no_nightly_var = narrowed and not has_floor and var_sr > 0
+    if run_info is not None:
+        run_info["sharpe_var"] = float(var_sr) if np.isfinite(var_sr) and var_sr > 0 else None
+    pbo = _run_pbo(matrix)
+    for cr, r, rej, qq in zip(results, returns, rejected, q):
+        cr.n_trials = n_trials
         cr.bh_significant = bool(rej)
         cr.bh_adjusted_p = float(qq)
+        cr.pbo = pbo
         if len(r) > 2:
-            sk, ku = metrics.skew_kurt(r)
-            cr.deflated_sharpe = _opt(metrics.deflated_sharpe(float(sr), n, var_sr, len(r), sk, ku))
-        _decide(cr, min_trades, psr_min)
+            cr.dsr = _opt(selection.dsr_from_returns(r, n_trials, var_sr))
+            cr.deflated_sharpe = cr.dsr
+            cr.dsr_p = None if cr.dsr is None else _opt(1.0 - cr.dsr)
+        _decide(cr, min_trades, psr_min, deflatable=var_sr > 0 and not no_nightly_var,
+                no_nightly_var=no_nightly_var)
     return results
 
 
-def _decide(cr: CandidateResult, min_trades: int, psr_min: float) -> None:
+def universe_trials() -> int:
+    """Size of the full nightly universe: distinct watchlist symbols x registered patterns (executable variant)."""
+    from patterns import PATTERN_REGISTRY
+    syms = {s for group in config.WATCHLIST.values() for s in group}
+    return len(syms) * len(PATTERN_REGISTRY)
+
+
+def _run_pbo(matrix: pd.DataFrame) -> Optional[float]:
+    """Advisory CSCV PBO over the run's trials; None when the matrix cannot be cut into PBO_S blocks.
+
+    The run matrix is a union of dates across calendars (crypto 7-day, equities 5-day) and history lengths, and
+    a missing date is NOT a flat day: CSCV runs on one calendar group (the larger of weekend-trading /
+    weekday-only columns) restricted to the dates where every kept trial has data (short-history trials are
+    dropped first if that intersection is too small)."""
+    need = 2 * config.PBO_S
+    if matrix is None or matrix.shape[1] < 2 or matrix.shape[0] < need:
+        return None
+    usable = matrix.loc[:, matrix.notna().sum() > 2]
+    if usable.shape[1] < 2:
+        return None
+    idx = pd.DatetimeIndex(usable.index)
+    wk = (usable.notna() & (idx.dayofweek >= 5)[:, None]).any(axis=0)
+    group = usable.loc[:, wk] if wk.sum() >= (~wk).sum() else usable.loc[:, ~wk]
+    cover = group.notna().sum()
+    for keep_frac in (0.0, 0.5, 0.8, 0.95):
+        cols = group.loc[:, cover >= keep_frac * cover.max()]
+        if cols.shape[1] < 2:
+            break
+        full = cols.dropna(how="any")
+        if len(full) >= need:
+            return _opt(selection.pbo_cscv(full.to_numpy(), S=config.PBO_S))
+    return None
+
+
+def _decide(cr: CandidateResult, min_trades: int, psr_min: float, deflatable: bool = True,
+            no_nightly_var: bool = False) -> None:
     reasons = list(cr.rejected_reasons)
     if "insufficient_history" not in reasons:
         if not cr.bh_significant:
@@ -757,4 +848,13 @@ def _decide(cr: CandidateResult, min_trades: int, psr_min: float) -> None:
         if not cr.cost_ok:
             reasons.append("cost_stress_fails")
     cr.rejected_reasons = reasons
-    cr.validation_status = OOS_VALIDATED if not reasons else UNVALIDATED
+    if reasons:
+        cr.validation_status = UNVALIDATED
+    elif not deflatable:
+        cr.validation_status = OOS_VALIDATED            # DSR would equal PSR (Var[SR]=0): cannot deflate
+        cr.deflation_reason = "no_nightly_variance" if no_nightly_var else "dsr_variance_unavailable"
+    elif cr.dsr_p is not None and cr.dsr_p < config.DSR_P_MAX:
+        cr.validation_status = DEFLATED_VALIDATED       # oos_validated AND significant after N-trial deflation
+    else:
+        cr.validation_status = OOS_VALIDATED            # clears every OOS gate but not the deflation: not order-eligible
+        cr.deflation_reason = "dsr_not_significant"

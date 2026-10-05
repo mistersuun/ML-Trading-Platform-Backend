@@ -428,7 +428,7 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
     if not inst.executable or inst.research_only or not inst.alpaca_trade_symbol:
         return reject("not_executable")
     if intent.validation_status not in config.ORDER_ELIGIBLE_STATUSES:
-        return reject("not_validated")
+        return reject("not_deflated" if intent.validation_status == "oos_validated" else "not_validated")
     tsym = inst.alpaca_trade_symbol
     side = _side(intent.direction)
     key = signal_key(intent.symbol, side, intent.signal_bar_date)

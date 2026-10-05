@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 import pandas as pd
 
@@ -46,6 +47,8 @@ def predict(provider: DataProvider, symbol: str, period_days: int = 730,
         })
 
     bt = backtester.classic_backtest(oos, symbol, "ml_ensemble")
+    om = detector.oos_metrics or {}
+    last_reason = str(oos["abstain_reason"].iloc[-1]) if len(oos) and "abstain_reason" in oos else None
 
     return MLPredictResponse.model_validate(clean({
         "symbol": symbol,
@@ -53,6 +56,10 @@ def predict(provider: DataProvider, symbol: str, period_days: int = 730,
         "feature_importance": importance,
         "signals": signals,
         "total_signals": len(signals),
+        "calibrated": om.get("calibrated"),
+        "model_selected": om.get("model_selected"),
+        "abstain_reasons": om.get("abstain_reasons") or {},
+        "last_abstain_reason": last_reason or None,
         "metrics": bt.metrics_payload(),
         "metrics_display": bt.summary(),
         "equity_curve": equity_points(bt.equity_curve),
@@ -100,7 +107,7 @@ def train_and_predict(df: pd.DataFrame, symbol: str) -> MLTrainRun:
         return MLTrainRun({"error": "insufficient_data"}, detector._empty(df),
                           backtester.classic_backtest(detector._empty(df), symbol, "ml_ensemble"))
     metrics = meta.get("metrics", {})
-    pred_df = detector.predict(df)
+    pred_df = detector.predict(df, now=datetime.now(timezone.utc))   # last bar older than a week -> 'stale'
     return MLTrainRun(metrics, pred_df, backtester.classic_backtest(pred_df, symbol, "ml_ensemble"))
 
 

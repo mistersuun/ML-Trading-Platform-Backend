@@ -120,7 +120,7 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
                                           for r in rows], root=results_root)
                 summary[kind] = len(rows)
                 if kind == "technical":
-                    # funnel counts {tested, min_trades, oos_positive, psr, bh, orders} of the same validation run
+                    # funnel counts {tested, min_trades, oos_positive, psr, bh, dsr, orders} + n_trials, pbo, run_id of the same validation run
                     funnel = results.get("technical_funnel") or {}
                     if funnel:
                         store.write_result(FUNNEL_KIND, funnel, root=results_root)

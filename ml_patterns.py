@@ -10,11 +10,20 @@ Leakage controls (WS2.5):
     only those OOS predictions are ever backtested (oos_start is reported)
   * metrics: log-loss, Brier, AUC, accuracy minus the majority-class rate
 
-Models: Random Forest, XGBoost, LightGBM (soft-voting ensemble of whichever are installed).
+Models (WS4.4): baseline-first. Logistic regression, shallow LightGBM and an RF+LGBM ensemble are compared
+under the same purged CV (ml.select); the ensemble is used only if it beats the best single model by more than
+one fold std of log-loss, and any model must beat the training base rate or the detector abstains
+('no_skill'). Probabilities are sigmoid-calibrated on a time-ordered validation block (ml.calibrate), the
+long/short cuts are chosen on that block for expected value after costs (an abstain band sits between them;
+this replaces the fixed 0.60/0.40), and a drift guard (ml.drift) abstains with reason 'drift', 'stale' or
+'nan'. Without LightGBM installed (or with select_models=False) the legacy soft-voting ensemble of the
+installed models with the fixed `min_confidence` band is used. ML stays alert-only (status ml_oos_candidate
+at best).
 """
 
 import logging
 import re
+from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 from typing import Optional
@@ -39,8 +48,10 @@ except ImportError:
 
 import config
 from features import prepare_ml_data, compute_features, get_feature_columns, horizon_from_target
-from ml import store
+from ml import calibrate, drift, store
+from ml import select as mlselect
 from ml.labels import make_labels
+from ml.select import ConstantClassifier
 from ml.splits import PurgedTimeSeriesSplit
 
 logger = logging.getLogger(__name__)
@@ -48,17 +59,7 @@ logger = logging.getLogger(__name__)
 MIN_TRAIN_ROWS = 100
 
 
-class _ConstantClassifier:
-    """Used when a training window contains a single class: explicit p_up in {0, 1}."""
-
-    def __init__(self, cls: int):
-        self.classes_ = np.array([cls])
-
-    def predict_proba(self, X):
-        return np.ones((len(X), 1))
-
-    def predict(self, X):
-        return np.full(len(X), self.classes_[0])
+_ConstantClassifier = ConstantClassifier   # backwards-compatible name
 
 
 def p_up(model, X) -> np.ndarray:
@@ -129,6 +130,20 @@ class MLPatternDetector:
         self.feature_importances: Optional[pd.Series] = None
         self.oos_start = None
         self.oos_metrics: dict = {}
+        # WS4.4 state (pipeline mode)
+        self.select_models = True
+        self.t_long: Optional[float] = None      # None -> legacy fixed band (min_confidence)
+        self.t_short: Optional[float] = None
+        self.drift_ref: Optional[dict] = None
+        self.selection: dict = {}
+        self.calibrated = False
+        self.model_abstain = ""                  # '' | 'no_skill' | 'no_validation'
+        self.trained_at: Optional[datetime] = None
+
+    @property
+    def pipeline_mode(self) -> bool:
+        """Baseline-first selection + calibration + thresholds + drift guard (needs LightGBM)."""
+        return bool(self.select_models and HAS_LGBM and mlselect.HAS_LGBM)
 
     # ------------------------------------------------------------------ models
     @property
@@ -190,17 +205,58 @@ class MLPatternDetector:
             return None
 
     # ------------------------------------------------------------------ training
+    def _forward_returns(self, df: pd.DataFrame, index) -> pd.Series:
+        return make_labels(df, self.horizon)["fwd_ret"].reindex(index)
+
+    def _clear_guard(self) -> None:
+        self.t_long = self.t_short = None
+        self.drift_ref = None
+        self.selection = {}
+        self.calibrated = False
+        self.model_abstain = ""
+
+    def _select(self, X: pd.DataFrame, y: pd.Series) -> dict:
+        """Baseline-first model choice under the purged CV on (X, y)."""
+        splitter = PurgedTimeSeriesSplit(self.n_splits, self.cv_test_bars, self.horizon, self.embargo,
+                                         MIN_TRAIN_ROWS)
+        folds = list(splitter.split(X))
+        cv = mlselect.cv_predictions(list(mlselect.CANDIDATES), X, y, folds, self.gap,
+                                     n_estimators=self.n_estimators)
+        sel = mlselect.select_model(cv)
+        sel["cv"] = cv
+        sel["folds"] = folds
+        return sel
+
+    def _adopt(self, fit: "mlselect.PipelineFit", sel: dict, X_train: pd.DataFrame) -> None:
+        self.model = fit.model
+        self.model_names = list(mlselect.MODEL_NAMES[fit.name])
+        self.t_long, self.t_short = fit.t_long, fit.t_short
+        self.calibrated = fit.calibrated
+        self.drift_ref = drift.reference(X_train)
+        self.selection = {k: v for k, v in sel.items() if k not in ("cv", "folds")}
+        self.model_abstain = "no_skill" if sel.get("abstain") else fit.reason
+
     def train(self, df: pd.DataFrame, compute_importance: bool = True) -> dict:
         """Purged walk-forward CV, then fit the final model on all labelled rows.
 
         Returns CV metrics (mean/std over folds). Note: the final model has seen every row
         of `df`; never score it on `df`.
+
+        Pipeline mode: the CV compares logistic regression, shallow LightGBM and the RF+LGBM ensemble as
+        calibrated pipelines (baseline-first, see ml.select); the chosen one is fitted on the early part of all
+        rows, sigmoid-calibrated on the time-ordered tail, and gets its thresholds there. Metrics are those of
+        the chosen model's folds.
         """
         X, y, cols = prepare_ml_data(df, self.target_col, horizon=self.horizon)
         self.feature_cols = list(cols)
         if len(X) < MIN_TRAIN_ROWS:
             logger.warning("Insufficient data for ML training")
             return {"error": "insufficient_data"}
+        self._clear_guard()
+        self.trained_at = datetime.now(timezone.utc)
+
+        if self.pipeline_mode:
+            return self._train_pipeline(df, X, y, compute_importance)
 
         splitter = PurgedTimeSeriesSplit(self.n_splits, self.cv_test_bars, self.horizon,
                                          self.embargo, MIN_TRAIN_ROWS)
@@ -219,7 +275,10 @@ class MLPatternDetector:
             self.feature_importances = self._importance(last_model, *last_block)
 
         self.model = self._fit(X, y)
+        self.drift_ref = drift.reference(X)
+        return self._cv_summary(folds, len(X))
 
+    def _cv_summary(self, folds: list[dict], n_samples: int) -> dict:
         def col(k):
             return [f[k] for f in folds]
 
@@ -237,7 +296,7 @@ class MLPatternDetector:
             "mean_cv_acc_minus_majority": am_m, "std_cv_acc_minus_majority": am_s,
             "n_folds": len(folds),
             "n_features": len(self.feature_cols),
-            "n_samples": len(X),
+            "n_samples": n_samples,
             "model_type": self.model_type,
             "top_features": (self.feature_importances.head(10).to_dict()
                              if self.feature_importances is not None else {}),
@@ -245,39 +304,97 @@ class MLPatternDetector:
         logger.info("ML CV: acc=%.3f auc=%s over %d folds", acc_m, auc_m, len(folds))
         return metrics
 
+    def _train_pipeline(self, df: pd.DataFrame, X: pd.DataFrame, y: pd.Series, compute_importance: bool) -> dict:
+        sel = self._select(X, y)
+        cv = sel["cv"][sel["chosen"]]
+        if not cv:
+            return {"error": "insufficient_data_for_cv", "n_samples": len(X)}
+        folds = []
+        for (tr, _), (yt, pt) in zip(sel["folds"], cv):
+            folds.append(classification_metrics(yt, pt, int(y.iloc[tr].mean() >= 0.5)))
+        ret = self._forward_returns(df, X.index)
+        fit = mlselect.fit_pipeline(sel["chosen"], X, y, ret, self.gap, n_estimators=self.n_estimators)
+        self._adopt(fit, sel, X)
+        if compute_importance and fit.n_val >= 10:
+            self.feature_importances = self._importance(fit.model, X.iloc[-fit.n_val:], y.iloc[-fit.n_val:])
+        m = self._cv_summary(folds, len(X))
+        m["selection"] = {k: (v if k != "logloss" else {n: {"mean": d["mean"], "std": d["std"]}
+                                                      for n, d in v.items()})
+                          for k, v in self.selection.items()}
+        m["thresholds"] = {"t_long": self.t_long, "t_short": self.t_short,
+                           "long": fit.threshold_info.get("long"), "short": fit.threshold_info.get("short"),
+                           "cost": fit.threshold_info.get("cost"), "n_val": fit.n_val}
+        m["calibrated"] = self.calibrated
+        m["abstain"] = self.model_abstain or None
+        return m
+
     # ------------------------------------------------------------------ prediction
     def _empty(self, df: pd.DataFrame) -> pd.DataFrame:
         out = df.copy()
         out["signal"] = 0
         out["ml_confidence"] = 0.0
         out["oos"] = False
+        out["abstain_reason"] = ""
         return out
 
-    def _signals(self, p: pd.Series) -> pd.Series:
+    def _signals(self, p: pd.Series, t_long: Optional[float] = None, t_short: Optional[float] = None) -> pd.Series:
+        """+1 / -1 outside the abstain band. Pipeline mode: p >= t_long / p <= t_short (the validation-chosen
+        cuts, +/-inf = never). Legacy: strictly beyond min_confidence / 1 - min_confidence."""
         s = pd.Series(0, index=p.index)
-        s[p > self.min_confidence] = 1
-        s[p < 1 - self.min_confidence] = -1
+        if t_long is None and t_short is None:
+            t_long, t_short = self.t_long, self.t_short
+        if t_long is None and t_short is None:
+            s[p > self.min_confidence] = 1
+            s[p < 1 - self.min_confidence] = -1
+        else:
+            s[p >= t_long] = 1
+            s[p <= t_short] = -1
         return s
 
-    def predict(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Signals from the trained model for every row of `df` with valid features.
+    def _apply_guard(self, out: pd.DataFrame, p: pd.Series, reasons: pd.Series, t_long, t_short,
+                     model_abstain: str) -> None:
+        """Write signal / abstain_reason for the rows of `p` (the finite-feature rows) and `reasons`
+        (every row of the block). Precedence: stale, nan, drift, model abstain, band."""
+        sig = self._signals(p, t_long, t_short)
+        why = reasons.copy()
+        free = why == ""
+        if model_abstain:
+            why[free] = model_abstain
+        in_band = (sig == 0).reindex(why.index, fill_value=False) & (why == "")
+        why[in_band] = "band"
+        sig = sig.reindex(why.index).fillna(0).astype(int)
+        sig[why.isin(list(drift.REASONS) + ["no_skill", "no_validation"])] = 0
+        out.loc[why.index, "signal"] = sig
+        out.loc[why.index, "abstain_reason"] = why
+
+    def predict(self, df: pd.DataFrame, now: Optional[datetime] = None) -> pd.DataFrame:
+        """Signals from the trained model for every row of `df`.
 
         The model was trained on its own training frame; rows inside it are IN-SAMPLE.
         Use walk_forward_predict for anything that gets backtested.
+
+        Every row carries `abstain_reason`: 'nan' (a feature is missing), 'drift' (PSI of the trailing
+        ml.drift.WINDOW bars against the training quantiles), 'stale' (model older than
+        ml.drift.MAX_MODEL_AGE_DAYS, or, when `now` is given, last bar older than MAX_BAR_AGE_DAYS: the last
+        row only), 'no_skill' / 'no_validation' (model-level), 'band' (probability inside the abstain band),
+        or '' (a signal is allowed). Abstained rows have signal 0; ml_confidence still holds p_up when it
+        could be computed.
         """
         if self.model is None:
             raise ValueError("Model not trained. Call train() first.")
         feat = compute_features(df, include_targets=False)
-        X = feat[self.feature_cols]
-        X = X.copy()
+        X = feat[self.feature_cols].copy()
         X[X.columns[X.isna().all()]] = 0.0  # zero-volume instruments: constant volume columns
-        X = X.dropna()
         out = self._empty(df)
         if X.empty:
             return out
-        p = pd.Series(p_up(self.model, X), index=X.index)
-        out.loc[p.index, "ml_confidence"] = p
-        out.loc[p.index, "signal"] = self._signals(p)
+        st = drift.stale_reason(model_created=self.trained_at, last_bar=df.index[-1], now=now)
+        reasons = drift.abstain_reasons(X, self.drift_ref, stale_all=st["model"], stale_last=st["bar"])
+        ok = np.isfinite(X.to_numpy(float)).all(axis=1)
+        p = pd.Series(p_up(self.model, X[ok]), index=X.index[ok]) if ok.any() else pd.Series(dtype=float)
+        if len(p):
+            out.loc[p.index, "ml_confidence"] = p
+        self._apply_guard(out, p, reasons, self.t_long, self.t_short, self.model_abstain)
         return out
 
     def walk_forward_predict(
@@ -291,6 +408,10 @@ class MLPatternDetector:
         The first model trains on rows whose labels resolved before bar `split_idx - gap`;
         every `retrain_every` bars it is refit on strictly earlier (purged) rows. Bars before
         `oos_start` get signal 0. Returned frame adds `oos` (bool); backtest only oos rows.
+
+        Pipeline mode: the model family is re-selected on every block's training rows (baseline-first, ml.select, so a
+        'no_skill' abstain is re-evaluated as data grows); every retrain re-fits the chosen family, re-calibrates on the tail of its training rows, re-chooses
+        the thresholds and re-stores the feature quantiles, and the drift guard of that block applies to its bars.
         """
         retrain_every = retrain_every or self.retrain_days
         n = len(df)
@@ -311,30 +432,58 @@ class MLPatternDetector:
         x_pos = pos.loc[X.index].to_numpy()
         self.oos_start = df.index[split_idx]
         out["oos"] = np.arange(n) >= split_idx
+        self._clear_guard()
+        self.trained_at = None
+        pipeline = self.pipeline_mode
+        ret = self._forward_returns(df, X.index) if pipeline else None
 
         probs = {}
-        first_model, last_model = None, None
+        first_model, last_model, sel = None, None, None
         for a in range(split_idx, n, retrain_every):
             b = min(a + retrain_every, n)
             tr = x_pos <= a - self.gap - 1
             if tr.sum() < MIN_TRAIN_ROWS:
                 continue
-            model = self._fit(X[tr], y[tr])
-            Xc = feat.iloc[a:b].dropna()
-            if not Xc.empty:
-                for idx, val in zip(Xc.index, p_up(model, Xc)):
-                    probs[idx] = val
+            if pipeline:
+                Xtr, ytr = X[tr], y[tr]
+                sel = self._select(Xtr, ytr)      # re-selected every retrain: a 'no_skill' verdict is re-earned as data grows
+                fit = mlselect.fit_pipeline(sel["chosen"], Xtr, ytr, ret[tr], self.gap,
+                                            n_estimators=self.n_estimators)
+                self._adopt(fit, sel, Xtr)
+                model = fit.model
+                blk = feat.iloc[a:b]
+                ok = blk.notna().all(axis=1)
+                ctx = feat.iloc[max(0, a - drift.WINDOW + 1):b]
+                reasons = drift.abstain_reasons(ctx, self.drift_ref).loc[blk.index]
+                p = pd.Series(p_up(model, blk[ok]), index=blk.index[ok]) if ok.any() else pd.Series(dtype=float)
+                probs.update(p.to_dict())
+                if len(p):
+                    out.loc[p.index, "ml_confidence"] = p
+                self._apply_guard(out, p, reasons, fit.t_long, fit.t_short, self.model_abstain)
+            else:
+                model = self._fit(X[tr], y[tr])
+                Xc = feat.iloc[a:b].dropna()
+                if not Xc.empty:
+                    for idx, val in zip(Xc.index, p_up(model, Xc)):
+                        probs[idx] = val
             last_model = model
             if first_model is None:
                 first_model = model
         if not probs:
             return out
         p = pd.Series(probs).sort_index()
-        out.loc[p.index, "ml_confidence"] = p
-        out.loc[p.index, "signal"] = self._signals(p)
+        if not pipeline:
+            out.loc[p.index, "ml_confidence"] = p
+            out.loc[p.index, "signal"] = self._signals(p)
         self.model = last_model
         self._oos_metrics(df, p)
-        # model_type reflects the models actually used (names set by the last _fit)
+        if pipeline:
+            oos_reasons = out.loc[out["oos"], "abstain_reason"].value_counts()
+            self.oos_metrics.update({
+                "abstain_reasons": {str(k): int(v) for k, v in oos_reasons.items() if k},
+                "model_selected": self.selection.get("chosen"), "calibrated": self.calibrated,
+                "t_long": self.t_long, "t_short": self.t_short})
+        # model_type reflects the models actually used (names set by the last fit)
         if first_model is not None:
             oos_idx = p.index.intersection(X.index)
             self.feature_importances = self._importance(first_model, feat.loc[oos_idx], y.loc[oos_idx]) \
@@ -363,24 +512,40 @@ class MLPatternDetector:
             raise ValueError("Model not trained. Call train() first.")
         bundle = {"model": self.model, "feature_cols": self.feature_cols, "target_col": self.target_col,
                   "min_confidence": self.min_confidence, "model_names": self.model_names,
-                  "n_estimators": self.n_estimators}
+                  "n_estimators": self.n_estimators,
+                  "t_long": self.t_long, "t_short": self.t_short, "calibrated": self.calibrated,
+                  "drift_reference": self.drift_ref, "selection": self.selection,
+                  "model_abstain": self.model_abstain}
+        calibration = {"t_long": self.t_long, "t_short": self.t_short, "calibrated": self.calibrated,
+                       "selection": {k: (v if k != "logloss" else {n: {"mean": d["mean"], "std": d["std"]}
+                                                                  for n, d in v.items()})
+                                     for k, v in self.selection.items()},
+                       "model_abstain": self.model_abstain}
         label_spec = {"target_col": self.target_col, "horizon": self.horizon, "embargo": self.embargo,
                       "gap": self.gap}
         m = dict(metrics or {})
         if self.oos_metrics:
             m.setdefault("oos", self.oos_metrics)
         return store.save(symbol, bundle, feature_cols=self.feature_cols, df=df,
-                          label_spec=label_spec, metrics=m, root=root)
+                          label_spec=label_spec, metrics=m, root=root,
+                          drift_reference=self.drift_ref, calibration=calibration)
 
     def load(self, path) -> dict:
         """Load a version directory; raises ml.store.ModelStoreError on a major library or feature
         schema mismatch. Returns the stored metadata."""
         bundle, meta = store.load(path, current_schema_hash())
-        self._apply(bundle)
+        self._apply(bundle, meta)
         return meta
 
-    def _apply(self, bundle: dict) -> None:
+    def _apply(self, bundle: dict, meta: Optional[dict] = None) -> None:
         self.model = bundle["model"]
+        self.t_long, self.t_short = bundle.get("t_long"), bundle.get("t_short")   # None: legacy fixed band
+        self.calibrated = bool(bundle.get("calibrated", False))
+        self.drift_ref = bundle.get("drift_reference")
+        self.selection = bundle.get("selection") or {}
+        self.model_abstain = bundle.get("model_abstain", "")
+        if meta and meta.get("created_utc"):
+            self.trained_at = datetime.fromisoformat(meta["created_utc"])
         self.feature_cols = list(bundle["feature_cols"])
         self.target_col = bundle["target_col"]
         self.horizon = horizon_from_target(self.target_col)
@@ -393,7 +558,7 @@ class MLPatternDetector:
         if found is None:
             return None
         bundle, meta, _ = found
-        self._apply(bundle)
+        self._apply(bundle, meta)
         return meta
 
     def load_or_train(self, df: pd.DataFrame, symbol: str, root=None, force: bool = False) -> dict:
@@ -428,7 +593,7 @@ def ml_pattern_signal(df: pd.DataFrame) -> pd.DataFrame:
     return MLPatternDetector().walk_forward_predict(df)
 
 
-def ml_scan_candidate(df: pd.DataFrame, symbol: str) -> dict:
+def ml_scan_candidate(df: pd.DataFrame, symbol: str, now: Optional[datetime] = None) -> dict:
     """Walk-forward OOS evaluation + latest signal for the scan.
 
     Returns dict(direction, confidence, oos_auc, baseline_auc, oos_backtest_summary,
@@ -436,6 +601,8 @@ def ml_scan_candidate(df: pd.DataFrame, symbol: str) -> dict:
     direction is 1 (long), -1 (short) or 0 (no recent signal / insufficient data);
     confidence is the model probability for that direction (p_up if long, 1-p_up if short).
     oos_validated = OOS AUC above baseline AND >= MIN_TRADES_OOS OOS trades AND PSR > OOS_PSR_MIN.
+    Abstentions (ml.drift reasons, 'no_skill', 'band') are counted in oos_metrics['abstain_reasons']; when `now`
+    is given and the last bar is older than ml.drift.MAX_BAR_AGE_DAYS, direction is forced to 0 ('stale').
     """
     import backtester
 
@@ -460,6 +627,8 @@ def ml_scan_candidate(df: pd.DataFrame, symbol: str) -> dict:
         p = float(nz["ml_confidence"].iloc[-1])
         res["direction"] = d
         res["confidence"] = p if d == 1 else 1.0 - p
+        if drift.stale_reason(last_bar=df.index[-1], now=now)["bar"]:
+            res["direction"], res["confidence"], res["abstain_reason"] = 0, 0.0, "stale"
     psr = getattr(bt, "psr", None)
     res["oos_validated"] = bool(m.get("auc_above_baseline") and bt.total_trades >= config.MIN_TRADES_OOS
                                 and psr is not None and psr > config.OOS_PSR_MIN)

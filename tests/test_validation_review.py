@@ -109,8 +109,9 @@ def _short_edge_pattern(df_full, fwd=5, thr=0.03):
 def test_short_only_edge_is_not_validated_for_the_executable_long_only_variant():
     df = make_frame(21)
     pats = {"short_edge": _short_edge_pattern(df)}
-    both = V.evaluate_candidates({"S": df}, pats, ((0.02, 0.04),), draws=200)[0]
-    assert both.validation_status == "oos_validated", both.rejected_reasons     # edge is real, via shorts
+    # one trial has no cross-trial variance (DSR == PSR, cannot deflate): supply a nightly-style variance floor
+    both = V.evaluate_candidates({"S": df}, pats, ((0.02, 0.04),), draws=200, sharpe_var_floor=1e-4)[0]
+    assert both.validation_status == "deflated_validated", both.rejected_reasons     # edge is real, via shorts
     exe = V.evaluate_candidates({"S": df}, pats, draws=200, executable_variant=True)[0]
     assert exe.validation_status == "unvalidated" and exe.n_oos_trades == 0
     assert exe.params["long_only"] is True and exe.params["stop_atr"] == config.ATR_STOP_MULT
@@ -216,7 +217,7 @@ def test_bh_can_reject_one_planted_candidate_among_780():
     top = [r for r in res if r.bh_significant]
     assert [(r.symbol, r.pattern) for r in top] == [("P0", "planted")]
     assert top[0].null_draws >= 100_000 and top[0].null_p < 6.4e-5
-    assert top[0].validation_status == "oos_validated", top[0].rejected_reasons
+    assert top[0].validation_status == "deflated_validated", top[0].rejected_reasons
 
 
 # ------------------------------------------------------------------ hold-out: read once per strategy version

@@ -108,8 +108,13 @@ def _jsonable(o: Any):
 
 def save(symbol: str, bundle: dict, *, feature_cols, df: Optional[pd.DataFrame] = None,
          label_spec: Optional[dict] = None, metrics: Optional[dict] = None,
+         drift_reference: Optional[dict] = None, calibration: Optional[dict] = None,
          root=None, now: Optional[datetime] = None) -> Path:
-    """Write a new version atomically and return its directory."""
+    """Write a new version atomically and return its directory.
+
+    `drift_reference`: per-feature quantile edges / bin shares of the training rows (ml.drift.reference), kept
+    in the metadata so the drift guard can be inspected without unpickling; `calibration`: model choice,
+    thresholds and calibration facts (JSON)."""
     sdir = _symbol_dir(root or default_root(), symbol)
     sdir.mkdir(parents=True, exist_ok=True)
     ts = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
@@ -132,6 +137,8 @@ def save(symbol: str, bundle: dict, *, feature_cols, df: Optional[pd.DataFrame] 
         "label_spec": label_spec or {},
         "seeds": {"seed": config.SEED},
         "metrics": metrics or {},
+        "drift_reference": drift_reference,
+        "calibration": calibration or {},
     }
     tmp = Path(tempfile.mkdtemp(prefix=".tmp-", dir=sdir))
     try:
@@ -199,6 +206,11 @@ def load_latest_valid(symbol: str, expected_schema_hash: Optional[str] = None,
         except ModelStoreError as e:
             logger.warning("skipping model %s: %s", p, e)
     return None
+
+
+def drift_reference(meta: dict) -> Optional[dict]:
+    """Training feature quantiles from a version's metadata (None for versions saved before WS4.4)."""
+    return meta.get("drift_reference")
 
 
 def age_days(meta: dict, now: Optional[datetime] = None) -> float:

@@ -37,7 +37,7 @@ def env(monkeypatch, tmp_path):
 
 def mk(**kw) -> OrderIntent:
     d = dict(symbol="AAPL", direction=1, signal_bar_date="2024-06-03", strategy_key="s1", confidence=1.0,
-             validation_status="oos_validated", atr=1.0, price=100.0)
+             validation_status="deflated_validated", atr=1.0, price=100.0)
     d.update(kw)
     return OrderIntent(**d)
 

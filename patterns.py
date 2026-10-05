@@ -42,10 +42,10 @@ def triple_ema(df: pd.DataFrame, fast: int = 5, mid: int = 13, slow: int = 34) -
     return out
 
 
-def macd_crossover(df: pd.DataFrame) -> pd.DataFrame:
+def macd_crossover(df: pd.DataFrame, fast: int = 12, slow: int = 26, sign: int = 9) -> pd.DataFrame:
     """MACD line vs signal line crossover."""
     out = df.copy()
-    m = trend.MACD(out["Close"])
+    m = trend.MACD(out["Close"], window_slow=slow, window_fast=fast, window_sign=sign)
     ml, ms = m.macd(), m.macd_signal()
     out["signal"] = 0
     out.loc[(ml > ms) & (ml.shift(1) <= ms.shift(1)), "signal"] = 1
@@ -64,10 +64,10 @@ def macd_histogram_reversal(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def sma_200_trend(df: pd.DataFrame) -> pd.DataFrame:
+def sma_200_trend(df: pd.DataFrame, window: int = 200) -> pd.DataFrame:
     """Price crosses 200 SMA — long-term trend change."""
     out = df.copy()
-    sma = out["Close"].rolling(200).mean()
+    sma = out["Close"].rolling(window).mean()
     out["signal"] = 0
     out.loc[(out["Close"] > sma) & (out["Close"].shift(1) <= sma.shift(1)), "signal"] = 1
     out.loc[(out["Close"] < sma) & (out["Close"].shift(1) >= sma.shift(1)), "signal"] = -1
@@ -171,14 +171,15 @@ def bollinger_squeeze(df: pd.DataFrame, window: int = 20, squeeze_pct: float = 0
     return out
 
 
-def stochastic_crossover(df: pd.DataFrame, k: int = 14, d: int = 3) -> pd.DataFrame:
+def stochastic_crossover(df: pd.DataFrame, k: int = 14, d: int = 3,
+                         oversold: float = 30, overbought: float = 70) -> pd.DataFrame:
     """Stochastic %K/%D crossover in extreme zones."""
     out = df.copy()
     s = momentum.StochasticOscillator(out["High"], out["Low"], out["Close"], window=k, smooth_window=d)
     sk, sd = s.stoch(), s.stoch_signal()
     out["signal"] = 0
-    out.loc[(sk > sd) & (sk.shift(1) <= sd.shift(1)) & (sk < 30), "signal"] = 1
-    out.loc[(sk < sd) & (sk.shift(1) >= sd.shift(1)) & (sk > 70), "signal"] = -1
+    out.loc[(sk > sd) & (sk.shift(1) <= sd.shift(1)) & (sk < oversold), "signal"] = 1
+    out.loc[(sk < sd) & (sk.shift(1) >= sd.shift(1)) & (sk > overbought), "signal"] = -1
     return out
 
 
@@ -351,6 +352,32 @@ PATTERN_REGISTRY: dict[str, Callable] = {
     "mean_rev_composite":     mean_reversion_composite,
     "trend_momentum_combo":   trend_momentum_combo,
     "confluence":             confluence_signal,
+}
+
+
+# ══════════════════════════════════════════════════════════════
+#  PARAMETER NEIGHBOURHOODS (WS4.3)
+# ══════════════════════════════════════════════════════════════
+# pattern name -> {parameter: ascending values}. Every axis contains the pattern's default (the centre of
+# the neighbourhood); the grid is the cartesian product, small on purpose (<= 9 points). robustness.py
+# evaluates each point through the same walk-forward validation and records every point as a trial (N).
+# Patterns without exposed parameters (ichimoku, inside bar, composites) have no entry.
+PARAM_GRIDS: dict[str, dict[str, list]] = {
+    "ema_crossover":      {"fast": [7, 9, 11], "slow": [17, 21, 25]},
+    "triple_ema":         {"mid": [11, 13, 15], "slow": [29, 34, 39]},
+    "macd_crossover":     {"fast": [10, 12, 14], "slow": [24, 26, 28]},
+    "sma_200_trend":      {"window": [160, 180, 200, 220, 240]},
+    "adx_trend":          {"window": [12, 14, 16], "threshold": [20, 25, 30]},
+    "rsi_reversal":       {"oversold": [25, 30, 35], "overbought": [65, 70, 75]},
+    "rsi_divergence":     {"window": [12, 14, 16], "lookback": [15, 20, 25]},
+    "bollinger_bounce":   {"window": [15, 20, 25], "std_dev": [1.5, 2.0, 2.5]},
+    "bollinger_squeeze":  {"window": [16, 20, 24]},
+    "stochastic_cross":   {"k": [11, 14, 17], "oversold": [25, 30, 35]},
+    "keltner_reversion":  {"window": [16, 20, 24]},
+    "donchian_breakout":  {"window": [10, 15, 20, 25, 30]},
+    "volume_breakout":    {"price_window": [15, 20, 25], "vol_mult": [1.5, 2.0, 2.5]},
+    "atr_breakout":       {"window": [10, 14, 18], "mult": [1.25, 1.5, 1.75]},
+    "confluence":         {"min_agree": [2, 3, 4]},
 }
 
 

@@ -279,17 +279,17 @@ def test_unreadable_broker_refuses_the_session_and_seeds_no_baseline(monkeypatch
 
 # ---------------------------------------------------------------- Phase 2: validation wiring
 def test_technical_scan_uses_one_validation_run_and_reports_oos_status(monkeypatch, scan_stubs):
-    scan_stubs.results = [_cand("AAPL", status="oos_validated", n_trials=2), _cand("MSFT", n_oos_trades=5)]
+    scan_stubs.results = [_cand("AAPL", status="deflated_validated", n_trials=2), _cand("MSFT", n_oos_trades=5)]
     intents: list = []
     got = scan_svc.scan_technical({"AAPL": _frame(), "MSFT": _frame()}, intents=intents)
     # ONE evaluate_candidates call over every symbol (so BH spans the whole run)
     assert scan_stubs.evaluate_calls == [(["AAPL", "MSFT"], ["stub"])]
     # MSFT has too few OOS trades to be reported even informationally; AAPL is validated
     assert [g["symbol"] for g in got] == ["AAPL"]
-    assert got[0]["validation_status"] == "oos_validated"
-    assert [(i.symbol, i.validation_status) for i in intents] == [("AAPL", "oos_validated")]
+    assert got[0]["validation_status"] == "deflated_validated"
+    assert [(i.symbol, i.validation_status) for i in intents] == [("AAPL", "deflated_validated")]
     alert = next(m for k, m in scan_stubs if k == "signal")
-    assert "OUT-OF-SAMPLE" in alert and "oos_validated" in alert and "BH-adjusted" in alert
+    assert "OUT-OF-SAMPLE" in alert and "deflated_validated" in alert and "BH-adjusted" in alert
 
 
 def test_unvalidated_but_oos_positive_signal_is_reported_as_unvalidated(scan_stubs):
@@ -451,3 +451,19 @@ def test_heartbeat_ok_is_silent_and_failure_alerts_and_exits_nonzero(monkeypatch
     assert _run(["heartbeat", "--max-age-hours", "12"]) == 1
     assert sent and sent[0][0] == "heartbeat" and "no nightly run" in sent[0][1]
     assert "heartbeat" in __import__("alerts").ALERT_KINDS
+
+
+def test_nightly_pairs_scan_gets_its_own_trial_registry(monkeypatch, tmp_path):
+    """scan_pairs passes a fresh registry (own run id, own trials.sqlite, never trading.db) to the pairs scan."""
+    seen = {}
+
+    def fake_scan(data, pairs=None, trials=None):
+        seen["trials"] = trials
+        return []
+
+    monkeypatch.setattr(scan_svc.pairs_service, "scan_pairs_data", fake_scan)
+    scan_svc.scan_pairs({"AAPL": _frame(), "MSFT": _frame()})
+    reg = seen["trials"]
+    assert reg is not None and reg.run_id.startswith("pairs-") and reg.n_trials == 0
+    assert (tmp_path / "state" / "trials.sqlite").is_file()
+    assert not (tmp_path / "state" / "trading.db").exists()
