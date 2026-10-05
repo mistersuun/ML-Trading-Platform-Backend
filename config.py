@@ -169,3 +169,50 @@ PAPER_TRADE_MAX_ORDER_VALUE = 1000  # Max $ per paper trade order
 TRADING_MODE = os.getenv("TRADING_MODE", "off").strip().lower()
 if TRADING_MODE not in ("off", "paper"):
     TRADING_MODE = "off"
+
+# ══════════════════════════════════════════════════════════════
+#  PHASE 1 — EXECUTION, RISK STATE, SIGNAL SLEEVE (docs/decisions.md D5)
+#  These replace the placeholders above for anything that reaches the broker.
+#  The core/trend allocation is NOT traded through here (D1: proposals only).
+# ══════════════════════════════════════════════════════════════
+
+def _f(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, default))
+    except (TypeError, ValueError):
+        return default
+
+STATE_DB_PATH = os.getenv("STATE_DB_PATH", str(Path(__file__).parent / "state" / "trading.db"))
+KILL_SWITCH_FILE = os.getenv("KILL_SWITCH_FILE", str(Path(__file__).parent / "state" / "KILL"))
+
+# Signal-sleeve equity is a configured dollar amount, never derived from broker equity.
+SIGNAL_SLEEVE_EQUITY = _f("SIGNAL_SLEEVE_EQUITY", 10_000.0)
+RISK_PER_TRADE_PCT = 0.005          # 0.5% of sleeve risked to the stop (allowed 0.25-1.0%)
+ATR_PERIOD = 20
+ATR_STOP_MULT = 2.0                 # initial stop = 2 x ATR(20) from the fill
+MAX_SYMBOL_PCT = 0.10               # max notional per symbol, fraction of sleeve
+MAX_GROSS_EXPOSURE_PCT = 1.00       # no leverage
+MAX_PORTFOLIO_HEAT_PCT = 0.04       # total open risk-to-stop
+MAX_OPEN_POSITIONS = 8
+MAX_POSITIONS_PER_CLUSTER = 2
+MAX_ORDERS_PER_DAY = 5
+MAX_ORDER_NOTIONAL = _f("MAX_ORDER_NOTIONAL", 1000.0)   # absolute $ cap; order cap = min(this, MAX_SYMBOL_PCT*sleeve)
+DAILY_LOSS_STOP_PCT = 0.015         # no new entries for the day
+WEEKLY_LOSS_STOP_PCT = 0.03         # no new entries for the week
+DRAWDOWN_LADDER = ((0.05, 0.5), (0.08, 0.25))   # (drawdown from sleeve peak, risk multiplier)
+DRAWDOWN_HALT_PCT = 0.10            # persisted hard halt; manual `risk resume --confirm`
+CANCEL_ON_HALT = os.getenv("CANCEL_ON_HALT", "true").lower() == "true"
+
+# Correlation clusters for MAX_POSITIONS_PER_CLUSTER (symbols not listed are their own cluster)
+CLUSTERS = {
+    "us_index": ["SPY", "QQQ", "IWM", "DIA"],
+    "mega_tech": ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOG", "AMD", "TSLA"],
+    "banks": ["JPM", "GS", "BAC"],
+    "energy": ["XOM", "CVX"],
+}
+
+# Signal eligibility for orders (D6). Phase 1 has no OOS validation yet, so nothing is eligible.
+ORDER_ELIGIBLE_STATUSES = ("oos_validated", "deflated_validated")
+
+# Pairs excluded from the default scan (D3)
+RESEARCH_ONLY_PAIRS = [("GC=F", "SI=F"), ("CL=F", "NG=F")]
