@@ -15,3 +15,5 @@ state/KILL
 data/bars/
 results/*/
 models/
+state/holdings*.csv
+state/ibkr_snapshot*.json
