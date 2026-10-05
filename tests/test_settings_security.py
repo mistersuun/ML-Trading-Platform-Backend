@@ -131,11 +131,12 @@ def test_cors_from_settings():
 
 def test_secrets_redacted_in_logs(monkeypatch, caplog):
     import logging_setup
-    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", "sk-ant-abcdefghijklmnop1234567890")
+    fake_key = "FAKE-anthropic-key-" + "x" * 12   # built at runtime so secret scanners don't flag a fixture
+    monkeypatch.setattr(config, "ANTHROPIC_API_KEY", fake_key)
     f = logging_setup.install_redaction()
-    rec = logging.LogRecord("x", logging.INFO, __file__, 1, "key=%s", ("sk-ant-abcdefghijklmnop1234567890",), None)
+    rec = logging.LogRecord("x", logging.INFO, __file__, 1, "key=%s", (fake_key,), None)
     f.filter(rec)
-    assert "sk-ant-abcdefghijklmnop1234567890" not in rec.getMessage()
+    assert fake_key not in rec.getMessage()
 
 
 def test_server_import_validates_risk_config(monkeypatch):
