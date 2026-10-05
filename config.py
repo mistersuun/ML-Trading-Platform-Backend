@@ -165,3 +165,7 @@ CLAUDE_MODEL = "claude-sonnet-4-20250514"
 
 PAPER_TRADE_ENABLED = os.getenv("PAPER_TRADE_ENABLED", "false").lower() == "true"
 PAPER_TRADE_MAX_ORDER_VALUE = 1000  # Max $ per paper trade order
+# Emergency interlock (WS0.4): orders only when TRADING_MODE=paper AND PAPER_TRADE_ENABLED=true
+TRADING_MODE = os.getenv("TRADING_MODE", "off").strip().lower()
+if TRADING_MODE not in ("off", "paper"):
+    TRADING_MODE = "off"

@@ -4,6 +4,7 @@ Bridges the gap between backtesting and real money.
 """
 
 import logging
+import math
 from typing import Optional
 
 import config
@@ -71,12 +72,12 @@ def submit_order(
     """
     Submit a paper trade order to Alpaca.
     """
-    client = _get_client()
-    if client is None:
+    if not trading_allowed():
+        logger.warning("Paper trading is disabled in config")
         return None
 
-    if not config.PAPER_TRADE_ENABLED:
-        logger.warning("Paper trading is disabled in config")
+    client = _get_client()
+    if client is None:
         return None
 
     try:
@@ -146,6 +147,9 @@ def get_positions() -> list[dict]:
 
 def close_position(symbol: str) -> Optional[dict]:
     """Close a specific paper trading position."""
+    if not trading_allowed():
+        logger.warning("close_position blocked: trading is disabled")
+        return None
     client = _get_client()
     if client is None:
         return None
@@ -158,31 +162,101 @@ def close_position(symbol: str) -> Optional[dict]:
         return None
 
 
+def trading_allowed() -> bool:
+    return config.TRADING_MODE == "paper" and bool(config.PAPER_TRADE_ENABLED)
+
+
+MIN_PRICE = 1.0          # prices below this are treated as bad data
+MAX_ORDER_QTY = 10_000   # absolute share ceiling regardless of config/price
+
+
+def _symbol_rejected(symbol: str) -> bool:
+    s = str(symbol).upper()
+    return (not s) or "=" in s or "^" in s or s.endswith("-USD")
+
+
 def execute_signal(
     symbol: str, direction: int, confidence: float = 1.0,
     current_price: float = 0.0,
 ) -> Optional[dict]:
     """
-    Execute a trading signal via paper trading.
-    direction: 1 = buy, -1 = sell/short
+    Execute a trading signal via paper trading (emergency interlocks, WS0.4).
+    direction: 1 = buy, -1 = sell (close/reduce a long only; shorts are off).
+    Fails closed: any lookup error or invalid input -> no order.
     """
-    if not config.PAPER_TRADE_ENABLED:
+    if not trading_allowed():
+        logger.info(f"dry-run: {symbol} dir={direction} (TRADING_MODE={config.TRADING_MODE}, "
+                    f"PAPER_TRADE_ENABLED={config.PAPER_TRADE_ENABLED}) - no order sent")
         return None
 
-    acct = get_account()
-    if acct is None:
+    if _symbol_rejected(symbol):
+        logger.warning(f"Rejected non-equity symbol for broker: {symbol}")
+        return None
+    if direction not in (1, -1):
+        return None
+    try:
+        confidence = float(confidence)
+        current_price = float(current_price)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(confidence) or not math.isfinite(current_price) or current_price < MIN_PRICE:
+        logger.warning(f"Rejected invalid confidence/price for {symbol}")
+        return None
+    confidence = min(1.0, max(0.0, confidence))
+
+    client = _get_client()
+    if client is None:
+        return None
+    try:
+        acct = client.get_account()
+        equity = float(acct.equity)
+        positions = client.get_all_positions()
+        open_orders = client.get_orders()
+    except Exception as e:
+        logger.error(f"Broker lookup failed, failing closed: {e}")
+        return None
+    if not math.isfinite(equity) or equity <= 0:
         return None
 
-    # Position sizing
-    max_value = min(
-        config.PAPER_TRADE_MAX_ORDER_VALUE,
-        acct["buying_power"] * config.MAX_POSITION_SIZE_PCT
-    )
+    held = 0.0
+    for p in positions:
+        if p.symbol == symbol and "short" not in str(p.side).lower():
+            held += float(p.qty)
 
-    if current_price <= 0:
+    max_value = min(config.PAPER_TRADE_MAX_ORDER_VALUE, equity * config.MAX_POSITION_SIZE_PCT)
+    qty = int(min(MAX_ORDER_QTY, math.floor(max_value * confidence / current_price)))
+    if qty <= 0:
+        logger.info(f"Rejected {symbol}: computed qty 0")
         return None
 
-    qty = max(1, int(max_value * max(0.5, confidence) / current_price))
-    side = "buy" if direction == 1 else "sell"
+    if direction == 1:
+        if held > 0:
+            logger.info(f"Skip BUY {symbol}: long position already held")
+            return None
+        for o in open_orders:
+            if o.symbol == symbol and "buy" in str(o.side).lower():
+                logger.info(f"Skip BUY {symbol}: open buy order exists")
+                return None
+        side = "buy"
+    else:
+        if held <= 0:
+            logger.info(f"Rejected SELL {symbol}: no long position (shorts off)")
+            return None
+        pending_sells = 0.0
+        for o in open_orders:
+            if o.symbol == symbol and "sell" in str(o.side).lower():
+                try:
+                    pending_sells += float(o.qty)
+                except (TypeError, ValueError):
+                    logger.info(f"Rejected SELL {symbol}: open sell order with unknown qty")
+                    return None
+        available = held - pending_sells
+        if available <= 0:
+            logger.info(f"Rejected SELL {symbol}: open sell orders already cover the position")
+            return None
+        qty = int(min(qty, math.floor(available)))
+        if qty <= 0:
+            return None
+        side = "sell"
 
     return submit_order(symbol, qty, side)

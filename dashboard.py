@@ -34,6 +34,9 @@ from risk_manager import RiskManager
 
 logger = logging.getLogger(__name__)
 
+st.warning("FROZEN LEGACY UI: this dashboard shows pre-fix metrics (known backtest/ranking "
+           "bugs, see docs/research/robustness-roadmap.md). Do not use it for decisions.")
+
 # ══════════════════════════════════════════════════════════════
 #  STYLING
 # ══════════════════════════════════════════════════════════════

@@ -56,11 +56,10 @@ def check_recent_signal(df: pd.DataFrame, window: int = config.VALIDATION_WINDOW
     if "signal" not in df.columns or len(df) < 2:
         return 0
     recent = df.tail(window)["signal"]
-    if (recent == 1).any():
-        return 1
-    elif (recent == -1).any():
-        return -1
-    return 0
+    nz = recent[recent != 0].dropna()
+    if nz.empty:
+        return 0
+    return 1 if nz.iloc[-1] > 0 else -1
 
 
 # ══════════════════════════════════════════════════════════════
@@ -120,8 +119,7 @@ def scan_technical(
 
                 # Paper trade execution
                 if paper_trade:
-                    confidence = result.win_rate * result.profit_factor
-                    execute_signal(symbol, recent, confidence, current_price)
+                    execute_signal(symbol, recent, 1.0, current_price)
 
                 logger.info(f"  ✅ {pat_name}: {summary['direction']} "
                           f"WR={summary['win_rate']} PF={summary['profit_factor']}")
@@ -198,7 +196,11 @@ def scan_ml(
                 continue
 
             # Get confidence for most recent signal
-            recent_conf = float(pred_df["ml_confidence"].iloc[-1])
+            # (taken from the bar that produced the latest non-zero signal)
+            win = pred_df.tail(config.VALIDATION_WINDOW_DAYS)
+            nz_idx = win.index[(win["signal"] != 0).to_numpy()]
+            recent_conf = float(pred_df.loc[nz_idx[-1], "ml_confidence"]) if len(nz_idx) \
+                else float(pred_df["ml_confidence"].iloc[-1])
 
             # Backtest the ML signals
             bt_result = classic_backtest(pred_df, symbol, "ml_ensemble")
@@ -224,7 +226,7 @@ def scan_ml(
                        f"conf={recent_conf:.2f} WR={bt_result.win_rate:.1%}")
 
             if paper_trade:
-                execute_signal(symbol, recent, recent_conf, float(df["Close"].iloc[-1]))
+                execute_signal(symbol, recent, max(recent_conf, 1 - recent_conf), float(df["Close"].iloc[-1]))
 
         except Exception as e:
             logger.warning(f"  ML scan failed for {symbol}: {e}")

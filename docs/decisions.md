@@ -42,3 +42,7 @@ Each decision lists when to revisit it. The sources are `docs/research/robustnes
 ## D8 — Tests before fixes
 - **Decision:** Every known bug is pinned by a test marked `xfail(strict=True, raises=AssertionError)` and written against today's public interface. A fix must flip its test to passing and remove the marker in the same commit.
 - **Baseline:** a frozen data snapshot and a metrics report act as the baseline. Every Phase 2 change attaches a before/after diff of that report.
+
+
+## D9 — SIG-1 fixed early (WS0.4)
+The check_recent_signal fix (latest non-zero signal wins) landed in Phase 0 rather than WS1.5 because order direction depends on it; it also changes alert direction. ML order confidence is taken from the bar of that signal. Risk-free-rate and uninvested-cash yield convention for Sharpe is still open (decide in WS2.2 before BT-5 is flipped).
