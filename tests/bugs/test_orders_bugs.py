@@ -125,20 +125,24 @@ def test_ORD_5_sell_without_position_rejected(paper_env):
 
 # --------------------------------------------------------------------------- ORD-6
 def test_ORD_6_ml_sell_confidence_at_least_half(monkeypatch, fake_broker):
+    # Phase 2 (WS2.5/2.7): scan_ml evaluates through ml_scan_candidate (purged walk-forward, OOS rows only);
+    # only the stub plumbing changed here, the assertions below are untouched.
+    oos = _frame(n=250, last_signal=0)
+    oos["signal"] = 0
+    oos["ml_confidence"] = 0.5
+    oos.iloc[-1, oos.columns.get_loc("signal")] = -1
+    oos.iloc[-1, oos.columns.get_loc("ml_confidence")] = 0.15  # prob_up -> strong SELL
+
     class StubDetector:
         def train(self, df):
             return {"mean_cv_accuracy": 0.6, "top_features": {}}
 
-        def predict(self, df):
-            out = df.copy()
-            out["signal"] = 0
-            out["ml_confidence"] = 0.5
-            out.iloc[-1, out.columns.get_loc("signal")] = -1
-            out.iloc[-1, out.columns.get_loc("ml_confidence")] = 0.15  # prob_up -> strong SELL
-            return out
-
+    cand = {"symbol": "AAPL", "direction": -1, "confidence": 0.85, "oos_auc": 0.62, "baseline_auc": 0.53,
+            "oos_start": str(oos.index[0].date()), "oos_validated": True, "oos_frame": oos,
+            "oos_backtest_summary": {"win_rate": 0.6, "profit_factor": 1.5, "total_trades": 40}}
     intents = []
     monkeypatch.setattr(main, "MLPatternDetector", StubDetector)
+    monkeypatch.setattr(main, "ml_scan_candidate", lambda df, sym: cand)
     monkeypatch.setattr(main, "classic_backtest", lambda df, s, p: _fake_result(profit_factor=1.5))
     main.scan_ml({"AAPL": _frame(n=250, last_signal=0)}, paper_trade=True, intents=intents)
     assert len(intents) == 1 and intents[0].direction == -1

@@ -14,7 +14,8 @@ import config
 from execution import OrderIntent
 
 # Lowest to highest. Only tiers in config.ORDER_ELIGIBLE_STATUSES may reach a broker.
-VALIDATION_TIERS = ("unvalidated", "oos_validated", "deflated_validated")
+ML_CANDIDATE = "ml_oos_candidate"   # clears the ML-only gates; deliberately NOT in config.ORDER_ELIGIBLE_STATUSES
+VALIDATION_TIERS = ("unvalidated", ML_CANDIDATE, "oos_validated", "deflated_validated")
 UNVALIDATED = "unvalidated"
 
 
@@ -87,3 +88,31 @@ def _rank(c: OrderIntent) -> tuple:
     # larger tuple wins; strategy_key compares inverted via negated ordinals for a stable alphabetical tie-break
     return (_tier(c.validation_status), c.confidence, 1 if c.direction == -1 else 0,
             tuple(-ord(ch) for ch in c.strategy_key) + (1,))
+
+
+# ---------------------------------------------------------------- validation helpers (WS2.3)
+def _field(obj, name, default=None):
+    return obj.get(name, default) if isinstance(obj, dict) else getattr(obj, name, default)
+
+
+def best_validation_status(results: Iterable, symbol: str, pattern: str) -> str:
+    """Highest validation tier among validation.CandidateResult objects (or their dicts) for one
+    (symbol, pattern). 'unvalidated' when none match. Never infers a tier from backtest statistics."""
+    best = UNVALIDATED
+    for r in results:
+        if _field(r, "symbol") == symbol and _field(r, "pattern") == pattern:
+            st = _field(r, "validation_status", UNVALIDATED)
+            if _tier(st) > _tier(best):
+                best = st
+    return best
+
+
+def validation_index(results: Iterable) -> dict[tuple[str, str], str]:
+    """{(symbol, pattern): highest validation_status} for a whole validation run."""
+    out: dict[tuple[str, str], str] = {}
+    for r in results:
+        k = (_field(r, "symbol"), _field(r, "pattern"))
+        st = _field(r, "validation_status", UNVALIDATED)
+        if k not in out or _tier(st) > _tier(out[k]):
+            out[k] = st
+    return out

@@ -18,6 +18,7 @@ The old flat flags (python main.py --mode pairs, --paper, ...) still work and me
 """
 
 import argparse
+import html as html_lib
 import json
 import logging
 import sys
@@ -33,6 +34,7 @@ import config
 import execution
 import instruments
 import signals
+import validation
 from alerts import (
     format_pairs_alert, format_signal_alert,
     send_alert, send_daily_summary,
@@ -41,7 +43,7 @@ from backtester import classic_backtest
 from claude_integration import check_llm, generate_briefing
 from data_fetcher import fetch_ohlcv, fetch_watchlist
 from logging_setup import install_redaction
-from ml_patterns import MLPatternDetector
+from ml_patterns import MLPatternDetector, ml_scan_candidate
 from pairs_trading import scan_all_pairs
 from patterns import PATTERN_REGISTRY
 from risk_manager import RiskManager
@@ -55,6 +57,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+ML_CANDIDATE = signals.ML_CANDIDATE
 UNVALIDATED = "unvalidated"  # Phase 2 upgrades this per signal; nothing is eligible before then
 
 
@@ -213,6 +216,80 @@ def dispatch_intents(candidates: list, session: Optional[ExecSession] = None) ->
 
 
 # ══════════════════════════════════════════════════════════════
+#  VALIDATION HELPERS
+# ══════════════════════════════════════════════════════════════
+
+def fetch_research(data: dict[str, pd.DataFrame]) -> dict[str, pd.DataFrame]:
+    """Long-history frames (config.RESEARCH_LOOKBACK_DAYS) for walk-forward / hold-out validation.
+
+    A symbol whose long fetch fails keeps its short frame; it then fails validation for lack of history
+    (never silently validated on less data)."""
+    out = {}
+    for sym, short in data.items():
+        try:
+            df = fetch_ohlcv(sym, period_days=config.RESEARCH_LOOKBACK_DAYS)
+        except Exception as e:
+            logger.warning(f"research fetch failed for {sym} ({type(e).__name__}); using the short frame")
+            df = None
+        if df is None or df.empty:
+            logger.warning(f"no research-length history for {sym}; it cannot validate")
+            df = short
+        out[sym] = df
+    return out
+
+
+def _holdout_store():
+    """Persistent first-read hold-out store; None (with an error log) if it cannot be opened."""
+    try:
+        from state.holdout import HoldoutStore
+        return HoldoutStore()
+    except Exception as e:
+        logger.error(f"hold-out store unavailable ({type(e).__name__}: {e}); hold-out reads are not frozen")
+        return None
+
+
+def _pct(x, digits: int = 1) -> str:
+    return "n/a" if x is None else f"{x:.{digits}%}"
+
+
+def _num(x, digits: int = 2) -> str:
+    return "n/a" if x is None else f"{x:.{digits}f}"
+
+
+def _oos_display(cr) -> dict:
+    """Out-of-sample metrics of a validation.CandidateResult, formatted for alerts / the report."""
+    o = cr.oos or {}
+    ho = cr.holdout or {}
+    return {
+        "win_rate": _pct(o.get("win_rate")), "profit_factor": _num(o.get("profit_factor")),
+        "total_return": _pct(o.get("total_return")), "max_drawdown": _pct(o.get("max_drawdown")),
+        "sharpe": _num(o.get("sharpe")), "sortino": _num(o.get("sortino")),
+        "expectancy": _num(o.get("expectancy_equity"), 4),
+        "total_trades": cr.n_oos_trades, "oos_psr": cr.oos_psr, "holdout_return": ho.get("total_return"),
+        "bh_adjusted_p": cr.bh_adjusted_p, "n_trials": cr.n_trials, "null_p": cr.null_p,
+        "rejected_reasons": list(cr.rejected_reasons),
+    }
+
+
+def _best_result(results: list, symbol: str, pattern: str):
+    """The strongest CandidateResult for (symbol, pattern): highest tier, then highest OOS PSR."""
+    rank = {st: i for i, st in enumerate(signals.VALIDATION_TIERS)}
+    best, best_key = None, None
+    for r in results:
+        if r.symbol == symbol and r.pattern == pattern:
+            key = (rank.get(r.validation_status, -1), r.oos_psr if r.oos_psr is not None else -1.0)
+            if best is None or key > best_key:
+                best, best_key = r, key
+    return best
+
+
+def _oos_positive(cr) -> bool:
+    """Informational tier: enough OOS trades and positive OOS Sharpe, but not validated."""
+    sh = (cr.oos or {}).get("sharpe")
+    return bool(sh is not None and sh > 0 and cr.n_oos_trades >= config.MIN_TRADES_OOS)
+
+
+# ══════════════════════════════════════════════════════════════
 #  TECHNICAL PATTERN SCAN
 # ══════════════════════════════════════════════════════════════
 
@@ -223,69 +300,99 @@ def scan_technical(
     paper_trade: bool = False,
     intents: list | None = None,
 ) -> list[dict]:
-    """Scan all symbols with all technical patterns.
+    """Scan all symbols with all technical patterns, validating every (symbol x pattern) candidate.
+
+    `data` should hold research-length history (see fetch_research). validation.evaluate_candidates runs the
+    walk-forward, fixed hold-out, random-entry null and cost stress for ALL candidates and applies
+    Benjamini-Hochberg across the whole run; each intent carries that run's validation_status.
+    Reported (alert + order candidate) are signals that are validated, or OOS-positive with enough OOS trades
+    (labelled unvalidated, so they can never reach a broker). Alert statistics are OUT-OF-SAMPLE.
 
     Order candidates are appended to `intents` when given (the caller dispatches them); otherwise,
     with paper_trade, they are dispatched at the end of this scan."""
     logger.info("\n🔧 TECHNICAL PATTERN SCAN")
     logger.info("=" * 50)
 
-    pattern_list = patterns or list(PATTERN_REGISTRY.keys())
+    pattern_list = [p for p in (patterns or list(PATTERN_REGISTRY.keys())) if p in PATTERN_REGISTRY]
+    registry = {p: PATTERN_REGISTRY[p] for p in pattern_list}
     all_triggered = []
     candidates = intents if intents is not None else []
+
+    store = _holdout_store()
+    try:
+        # Validate the variant execution can trade (long-only, ATR exits) and freeze the first hold-out read.
+        # Fail closed: without a working hold-out store nothing validates (reason holdout_store_unavailable).
+        results = validation.evaluate_candidates(data, registry, executable_variant=True,
+                                                 holdout_store=store, require_holdout_store=True)
+    except Exception as e:
+        logger.error(f"validation failed ({type(e).__name__}: {e}); nothing from this scan is order-eligible")
+        results = []
+    finally:
+        close = getattr(store, "close", None)
+        if callable(close):
+            try:
+                close()
+            except Exception:
+                pass
+    n_valid = sum(1 for r in results if r.validation_status != UNVALIDATED)
+    logger.info(f"Validated {n_valid}/{len(results)} candidates (BH alpha={config.FDR_ALPHA}, "
+                f"hold-out from {config.HOLDOUT_START})")
 
     for symbol, df in data.items():
         logger.info(f"\n─── {symbol} ({len(df)} bars) ───")
 
         for pat_name in pattern_list:
-            if pat_name not in PATTERN_REGISTRY:
-                continue
-
-            pat_func = PATTERN_REGISTRY[pat_name]
-
             try:
-                signals_df = pat_func(df)
-                result = classic_backtest(signals_df, symbol, pat_name)
-
-                if not result.is_valid:
-                    continue
-
+                signals_df = registry[pat_name](df)
                 recent = check_recent_signal(signals_df)
                 if recent == 0:
                     continue
+                cr = _best_result(results, symbol, pat_name) or validation.CandidateResult(
+                    symbol=symbol, pattern=pat_name, params={})
+                if not (cr.validation_status != UNVALIDATED or _oos_positive(cr)):
+                    # Legacy informational tier (to be retired in Phase 3): the in-sample display heuristic.
+                    # Such a signal is still labelled unvalidated, so it can never reach a broker.
+                    if not classic_backtest(signals_df, symbol, pat_name).is_valid:
+                        continue
 
-                # Valid + recently triggered
                 current_price = float(df["Close"].iloc[-1])
-                direction, bar_date = signals.latest_signal(signals_df)
-                summary = result.summary()
+                # D12: only a signal on the LAST bar is orderable, i.e. exactly the timing the executable variant validated
+                # (entry at the next open); a one-bar-late signal is alert-only.
+                direction, bar_date = signals.latest_signal(signals_df, max_staleness_bars=0)
+                summary = {"symbol": symbol, "pattern": pat_name, **_oos_display(cr)}
                 summary["direction"] = "🟢 BUY" if recent == 1 else "🔴 SELL"
                 summary["current_price"] = current_price
                 summary["signal_value"] = recent
-                summary["validation_status"] = UNVALIDATED
+                summary["validation_status"] = cr.validation_status
                 summary["signal_bar_date"] = bar_date
+                summary["oos"] = cr.oos
+                summary["holdout"] = cr.holdout
 
-                # Optional stress test
                 if run_stress:
-                    stress = full_stress_test(df, symbol, pat_func, pat_name)
+                    stress = full_stress_test(df, symbol, registry[pat_name], pat_name)
                     summary["stress_test"] = stress.get("assessment", {})
                     summary["monte_carlo"] = stress.get("monte_carlo", {})
 
                 all_triggered.append(summary)
 
                 alert_msg = format_signal_alert(summary, summary["direction"], current_price)
-                alert_msg += f"\nValidation: {UNVALIDATED} | Mode: {config.TRADING_MODE} (no orders without validation)"
+                alert_msg += (f"\nStats above are OUT-OF-SAMPLE (walk-forward before {config.HOLDOUT_START}, "
+                              f"{cr.n_oos_trades} OOS trades; hold-out return {_pct(summary['holdout_return'])})."
+                              f"\nValidation: {cr.validation_status} "
+                              f"(BH-adjusted p={_num(cr.bh_adjusted_p, 3)} over {cr.n_trials} candidates"
+                              + (f"; failed: {', '.join(cr.rejected_reasons)}" if cr.rejected_reasons else "")
+                              + f") | Mode: {config.TRADING_MODE} (no orders without validation)")
                 _alert(alert_msg, kind="signal",
                        dedup_key=f"signal:{symbol}:{pat_name}:{recent}:{bar_date or df.index[-1]}")
 
-                # Order candidate (stale signals have direction 0 and are alert-only)
                 if direction != 0:
                     candidates.append(execution.OrderIntent(
                         symbol=symbol, direction=direction, signal_bar_date=bar_date,
                         strategy_key=f"technical:{pat_name}", confidence=1.0,
-                        validation_status=UNVALIDATED, atr=signals.latest_atr(df), price=current_price))
+                        validation_status=cr.validation_status, atr=signals.latest_atr(df), price=current_price))
 
-                logger.info(f"  ✅ {pat_name}: {summary['direction']} "
-                            f"WR={summary['win_rate']} PF={summary['profit_factor']}")
+                logger.info(f"  ✅ {pat_name}: {summary['direction']} [{cr.validation_status}] "
+                            f"OOS Sharpe={summary['sharpe']} trades={cr.n_oos_trades}")
 
             except Exception as e:
                 logger.warning(f"  {pat_name}: error — {e}")
@@ -311,7 +418,11 @@ def scan_pairs(
     triggered = [r for r in results if r.get("has_signal")]
 
     for r in triggered:
-        _alert(format_pairs_alert(r), kind="signal",
+        safe = {k: (0 if v is None else v) for k, v in r.items()}   # None (no losses / no half-life) -> 0 for the template
+        msg = format_pairs_alert(safe) + (
+            f"\nValidation: {UNVALIDATED} (pairs are alert-only, D3). Backtest figures above are in-sample; "
+            f"cointegration BH-adjusted p={_num(r.get('adj_pvalue'), 3)} over {r.get('n_tested', '?')} pairs.")
+        _alert(msg, kind="signal",
                dedup_key=f"pairs:{r.get('symbol_a')}/{r.get('symbol_b')}:{r.get('signal_direction')}:"
                          f"{datetime.now(timezone.utc).date().isoformat()}")
         if paper_trade:
@@ -331,78 +442,100 @@ def scan_ml(
     paper_trade: bool = False,
     intents: list | None = None,
 ) -> list[dict]:
-    """Run ML models on all symbols (candidates handled as in scan_technical)."""
+    """Run the ML models on all symbols (candidates handled as in scan_technical).
+
+    Per symbol: ml_patterns.ml_scan_candidate runs the purged walk-forward and returns the OOS AUC, the
+    baseline AUC, the latest OOS signal and the OOS backtest; the CV is run on rows BEFORE oos_start only.
+    A signal is reported only when OOS AUC > baseline AUC. validation_status is at best "ml_oos_candidate"
+    (NOT order-eligible): the candidate's own gates pass (AUC above baseline, >= MIN_TRADES_OOS OOS trades,
+    PSR > OOS_PSR_MIN) AND Benjamini-Hochberg across the ML candidates of this run (p = 1 - OOS PSR) rejects."""
     logger.info("\n🤖 ML PATTERN SCAN")
     logger.info("=" * 50)
 
-    all_signals = []
     candidates = intents if intents is not None else []
+    evaluated = []   # one entry per symbol with an OOS evaluation
 
     for symbol, df in data.items():
         if len(df) < 200:
             continue
-
         try:
             logger.info(f"\n─── {symbol} ───")
-            detector = MLPatternDetector()
-            metrics = detector.train(df)
-
-            mean_acc = metrics.get("mean_cv_accuracy", 0)
-            logger.info(f"  Model accuracy: {mean_acc:.3f}")
-
-            if mean_acc < 0.52:
-                logger.info("  Skipping — accuracy too low")
+            cand = ml_scan_candidate(df, symbol)
+            oos_start = cand.get("oos_start")
+            if oos_start is None or cand.get("oos_frame") is None:
+                logger.info("  Skipping — not enough data for an out-of-sample evaluation")
                 continue
+            oos_df = cand["oos_frame"]
 
-            # Predict on full data (walk-forward)
-            pred_df = detector.predict(df)
+            # CV diagnostics on the rows before the OOS block only (feature ranking for the alert)
+            train_df = df.loc[df.index < pd.Timestamp(oos_start)]
+            metrics = MLPatternDetector().train(train_df)
 
-            recent = check_recent_signal(pred_df)
-            if recent == 0:
-                continue
+            recent = check_recent_signal(oos_df)
+            bt_result = classic_backtest(oos_df, symbol, "ml_ensemble")      # OOS rows only (3 positional args)
+            psr = getattr(bt_result, "psr", None)
+            evaluated.append({"symbol": symbol, "df": df, "cand": cand, "bt": bt_result, "recent": recent,
+                              "metrics": metrics, "oos_df": oos_df,
+                              "p": 1.0 - psr if psr is not None else 1.0})
+        except Exception as e:
+            logger.warning(f"  ML scan failed for {symbol}: {e}")
 
-            # Get confidence for most recent signal
-            # (taken from the bar that produced the latest non-zero signal)
-            win = pred_df.tail(config.VALIDATION_WINDOW_DAYS)
-            nz_idx = win.index[(win["signal"] != 0).to_numpy()]
-            recent_conf = float(pred_df.loc[nz_idx[-1], "ml_confidence"]) if len(nz_idx) \
-                else float(pred_df["ml_confidence"].iloc[-1])
+    bh = {}
+    if evaluated:
+        rejected, q = validation.benjamini_hochberg([e["p"] for e in evaluated], config.FDR_ALPHA)
+        bh = {e["symbol"]: (bool(r), float(qq)) for e, r, qq in zip(evaluated, rejected, q)}
 
-            # Backtest the ML signals
-            bt_result = classic_backtest(pred_df, symbol, "ml_ensemble")
-
-            if bt_result.total_trades < 5:
-                continue
-
-            direction, bar_date = signals.latest_signal(pred_df)
+    all_signals = []
+    for e in evaluated:
+        symbol, cand, bt_result, df = e["symbol"], e["cand"], e["bt"], e["df"]
+        auc, base = cand.get("oos_auc"), cand.get("baseline_auc")
+        beats_baseline = auc is not None and base is not None and auc > base
+        bh_sig, bh_q = bh.get(symbol, (False, None))
+        # ML never reaches ORDER_ELIGIBLE_STATUSES (no random-entry null, 2x-cost or fixed hold-out gate, and
+        # its BH family is separate from the technical one): a candidate that clears its own gates is only
+        # an "ml_oos_candidate" (alert-only) until ML passes the full WS2.3 gate set (Phase 3).
+        status = ML_CANDIDATE if (cand.get("oos_validated") and bh_sig) else UNVALIDATED
+        logger.info(f"  {symbol}: OOS AUC={_num(auc, 3)} baseline={_num(base, 3)} status={status}")
+        if not beats_baseline or e["recent"] == 0:
+            continue
+        try:
+            direction, bar_date = signals.latest_signal(e["oos_df"])
+            # ml_confidence in the OOS frame is p_up; the directional confidence is p_up (BUY) or 1 - p_up (SELL)
+            nz = e["oos_df"][e["oos_df"]["signal"] != 0]
+            if len(nz) and "ml_confidence" in nz:
+                p_up = float(nz["ml_confidence"].iloc[-1])
+            else:
+                c0 = float(cand.get("confidence") or 0.0)
+                p_up = c0 if cand.get("direction", 1) == 1 else 1.0 - c0
+            conf = signals.ml_confidence(p_up, direction)
+            o = cand.get("oos_backtest_summary") or {}      # numeric OOS summary from ml_scan_candidate
             signal_info = {
                 "symbol": symbol,
-                "direction": "🟢 BUY" if recent == 1 else "🔴 SELL",
-                "confidence": f"{recent_conf:.2f}",
-                "model_accuracy": f"{mean_acc:.3f}",
-                "win_rate": f"{bt_result.win_rate:.1%}",
-                "profit_factor": f"{bt_result.profit_factor:.2f}",
-                "total_return": f"{bt_result.total_return_pct:.2%}",
-                "total_trades": bt_result.total_trades,
-                "top_features": list(metrics.get("top_features", {}).keys())[:5],
-                "validation_status": UNVALIDATED,
+                "direction": "🟢 BUY" if e["recent"] == 1 else "🔴 SELL",
+                "confidence": f"{conf:.2f}",
+                "oos_auc": f"{auc:.3f}", "baseline_auc": f"{base:.3f}", "model_accuracy": f"{auc:.3f}",
+                "win_rate": _pct(o.get("win_rate")), "profit_factor": _num(o.get("profit_factor")),
+                "total_return": _pct(o.get("total_return"), 2), "max_drawdown": _pct(o.get("max_drawdown"), 2),
+                "sharpe": _num(o.get("sharpe")),
+                "total_trades": o.get("total_trades", getattr(bt_result, "total_trades", None)),
+                "oos_start": cand["oos_start"], "oos_psr": getattr(bt_result, "psr", None),
+                "bh_adjusted_p": bh_q,
+                "top_features": list(e["metrics"].get("top_features", {}).keys())[:5],
+                "validation_status": status,
                 "signal_bar_date": bar_date,
             }
-
             all_signals.append(signal_info)
-
-            logger.info(f"  ✅ ML Signal: {signal_info['direction']} "
-                        f"conf={recent_conf:.2f} WR={bt_result.win_rate:.1%}")
+            logger.info(f"  ✅ ML Signal: {signal_info['direction']} conf={conf:.2f} [{status}] "
+                        f"OOS WR={signal_info['win_rate']} trades={signal_info['total_trades']}")
 
             if direction != 0:
                 candidates.append(execution.OrderIntent(
                     symbol=symbol, direction=direction, signal_bar_date=bar_date,
-                    strategy_key="ml:ml_ensemble", confidence=signals.ml_confidence(recent_conf, direction),
-                    validation_status=UNVALIDATED, atr=signals.latest_atr(df),
+                    strategy_key="ml:ml_ensemble", confidence=conf,
+                    validation_status=status, atr=signals.latest_atr(df),
                     price=float(df["Close"].iloc[-1])))
-
-        except Exception as e:
-            logger.warning(f"  ML scan failed for {symbol}: {e}")
+        except Exception as ex:
+            logger.warning(f"  ML scan failed for {symbol}: {ex}")
 
     if intents is None and paper_trade:
         dispatch_intents(candidates)
@@ -478,13 +611,14 @@ def _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_tr
 
         results = {"technical": [], "pairs": [], "ml": [], "decisions": []}
         candidates: list = []
+        research = fetch_research(data) if ("technical" in modes or "ml" in modes) else {}
 
         if "technical" in modes:
-            results["technical"] = scan_technical(data, patterns, run_stress, paper_trade, intents=candidates)
+            results["technical"] = scan_technical(research, patterns, run_stress, paper_trade, intents=candidates)
         if "pairs" in modes:
             results["pairs"] = scan_pairs(data, paper_trade)
         if "ml" in modes:
-            results["ml"] = scan_ml(data, paper_trade, intents=candidates)
+            results["ml"] = scan_ml(research, paper_trade, intents=candidates)
 
         if paper_trade:
             results["decisions"] = dispatch_intents(candidates, session=session)
@@ -554,29 +688,42 @@ Pairs: {len(pairs)} |
 ML: {len(results.get('ml', []))}</p>
 """
 
+    def esc(x) -> str:
+        return html_lib.escape(str(x))
+
     if all_signals:
-        html += "<h2>🔧 Technical & ML Signals</h2><table>"
-        html += ("<tr><th>Dir</th><th>Symbol</th><th>Pattern</th><th>Win Rate</th>"
-                "<th>PF</th><th>Return</th><th>Drawdown</th><th>Sharpe</th><th>Trades</th></tr>")
+        html += "<h2>🔧 Technical & ML Signals (out-of-sample)</h2>"
+        html += (f'<p class="meta">All statistics are walk-forward out-of-sample (before the hold-out start '
+                 f'{config.HOLDOUT_START}); in-sample figures are not shown. Only <b>oos_validated</b> signals '
+                 f'are order-eligible.</p><table>')
+        html += ("<tr><th>Dir</th><th>Symbol</th><th>Pattern</th><th>Validation</th><th>OOS Win Rate</th>"
+                 "<th>OOS PF</th><th>OOS Return</th><th>OOS Drawdown</th><th>OOS Sharpe</th>"
+                 "<th>OOS Trades</th><th>Hold-out</th><th>BH q</th></tr>")
         for s in all_signals:
             cls = "buy" if "BUY" in s.get("direction", "") else "sell"
-            html += f"""<tr><td class="{cls}">{s.get('direction','?')}</td>
-            <td>{s.get('symbol','?')}</td><td>{s.get('pattern','?')}</td>
-            <td>{s.get('win_rate','?')}</td><td>{s.get('profit_factor','?')}</td>
-            <td>{s.get('total_return','?')}</td><td>{s.get('max_drawdown','?')}</td>
-            <td>{s.get('sharpe','?')}</td><td>{s.get('total_trades','?')}</td></tr>"""
+            ho, q = s.get("holdout_return"), s.get("bh_adjusted_p")
+            html += f"""<tr><td class="{cls}">{esc(s.get('direction','?'))}</td>
+            <td>{esc(s.get('symbol','?'))}</td><td>{esc(s.get('pattern', 'ml_ensemble'))}</td>
+            <td>{esc(s.get('validation_status', UNVALIDATED))}</td>
+            <td>{esc(s.get('win_rate','n/a'))}</td><td>{esc(s.get('profit_factor','n/a'))}</td>
+            <td>{esc(s.get('total_return','n/a'))}</td><td>{esc(s.get('max_drawdown','n/a'))}</td>
+            <td>{esc(s.get('sharpe','n/a'))}</td><td>{esc(s.get('total_trades','n/a'))}</td>
+            <td>{esc(_pct(ho) if isinstance(ho, (int, float)) else 'n/a')}</td>
+            <td>{esc(_num(q, 3) if isinstance(q, (int, float)) else 'n/a')}</td></tr>"""
         html += "</table>"
 
     if pairs:
-        html += "<h2>📈 Pairs / Stat-Arb Signals</h2><table>"
-        html += ("<tr><th>Dir</th><th>Pair</th><th>Z-Score</th><th>Half-Life</th>"
-                "<th>Win Rate</th><th>PF</th><th>Return</th><th>Sharpe</th></tr>")
+        html += "<h2>📈 Pairs / Stat-Arb Signals (alert-only, in-sample backtest)</h2><table>"
+        html += ("<tr><th>Dir</th><th>Pair</th><th>Z-Score</th><th>Half-Life</th><th>BH-adj. p</th>"
+                 "<th>Win Rate</th><th>PF</th><th>Return</th><th>Sharpe</th></tr>")
         for p in pairs:
-            html += f"""<tr><td>{p.get('signal_direction','?')}</td>
-            <td>{p.get('symbol_a','?')}/{p.get('symbol_b','?')}</td>
-            <td>{p.get('current_zscore',0):.2f}</td><td>{p.get('half_life',0):.1f}d</td>
-            <td>{p.get('win_rate',0):.1%}</td><td>{p.get('profit_factor',0):.2f}</td>
-            <td>{p.get('total_return',0):.2%}</td><td>{p.get('sharpe_ratio',0):.2f}</td></tr>"""
+            hl = p.get("half_life")
+            html += f"""<tr><td>{esc(p.get('signal_direction','?'))}</td>
+            <td>{esc(p.get('symbol_a','?'))}/{esc(p.get('symbol_b','?'))}</td>
+            <td>{esc(_num(p.get('current_zscore')))}</td><td>{esc(_num(hl, 1) + 'd' if hl is not None else 'n/a')}</td>
+            <td>{esc(_num(p.get('adj_pvalue'), 3))}</td>
+            <td>{esc(_pct(p.get('win_rate')))}</td><td>{esc(_num(p.get('profit_factor')))}</td>
+            <td>{esc(_pct(p.get('total_return'), 2))}</td><td>{esc(_num(p.get('sharpe_ratio')))}</td></tr>"""
         html += "</table>"
 
     html += """<p class="meta">⚠️ This is a decision-support tool, not financial advice.
@@ -611,7 +758,7 @@ def cmd_scan(args) -> int:
     if args.stress:
         sym, pat = args.stress
         logger.info(f"Running full stress test: {sym} / {pat}")
-        df = fetch_ohlcv(sym)
+        df = fetch_ohlcv(sym, period_days=config.RESEARCH_LOOKBACK_DAYS)
         if df.empty:
             _err(f"No data for {sym}")
             return 1

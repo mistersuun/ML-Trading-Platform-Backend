@@ -61,6 +61,7 @@ ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
 ALPACA_SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
 ALPACA_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 ALPACA_DATA_URL = "https://data.alpaca.markets"
+ALPACA_FEED = os.getenv("ALPACA_FEED", "iex")  # stock data feed: iex (free) | sip | delayed_sip
 
 ALPHA_VANTAGE_KEY = os.getenv("ALPHA_VANTAGE_KEY", "")
 

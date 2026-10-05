@@ -31,7 +31,6 @@ def fast_ml(monkeypatch):
 
 
 # --------------------------------------------------------------------------- ML-1
-@pytest.mark.xfail(**BUG, reason="BUG-ML-1: target_up_* is 0 (not NaN) on unresolved last rows (features.py:148-149)")
 def test_ML_1_target_up_nan_on_unresolved_rows(gbm_frame):
     feat = compute_features(gbm_frame)
     # last row has no 1d forward return; last 3 rows have no 3d forward return
@@ -42,7 +41,6 @@ def test_ML_1_target_up_nan_on_unresolved_rows(gbm_frame):
 
 
 # --------------------------------------------------------------------------- ML-2
-@pytest.mark.xfail(**BUG, reason="BUG-ML-2: scaler fit on all rows incl. CV test folds (ml_patterns.py:123-130)")
 def test_ML_2_scaler_not_fit_on_test_folds(monkeypatch, fast_ml, gbm_frame):
     from sklearn.preprocessing import StandardScaler
 
@@ -68,7 +66,6 @@ def test_ML_2_scaler_not_fit_on_test_folds(monkeypatch, fast_ml, gbm_frame):
 
 
 # --------------------------------------------------------------------------- ML-3
-@pytest.mark.xfail(**BUG, reason="BUG-ML-3: /api/ml/predict backtests incl. in-sample training rows (ml_routes.py:26,50)")
 def test_ML_3_ml_route_backtests_only_out_of_sample(monkeypatch, fast_ml, patch_fetch):
     import config
     from server import app
@@ -94,7 +91,6 @@ def test_ML_3_ml_route_backtests_only_out_of_sample(monkeypatch, fast_ml, patch_
     assert pd.Timestamp(curve[0]["date"]) >= cutoff
 
 
-@pytest.mark.xfail(**BUG, reason="BUG-ML-3: main.scan_ml trains on full df then backtests the same rows (main.py:184-204)")
 def test_ML_3_scan_ml_backtests_only_out_of_sample(monkeypatch, fast_ml, gbm_frame):
     seen = {}
     orig_train = MLPatternDetector.train

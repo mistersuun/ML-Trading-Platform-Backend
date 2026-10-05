@@ -41,7 +41,6 @@ def with_signals(df, mapping):
 
 
 # --------------------------------------------------------------------------- BT-1
-@pytest.mark.xfail(**BUG, reason="BT-1: entry fills at signal-bar close, not next bar open")
 def test_BT_1_entry_on_next_bar_open():
     df = flat_frame(40, 100.0)
     # from bar 11 on, price is 103 (open and close); the signal bar (10) closes at 100
@@ -55,7 +54,6 @@ def test_BT_1_entry_on_next_bar_open():
 
 
 # --------------------------------------------------------------------------- BT-2
-@pytest.mark.xfail(**BUG, reason="BT-2: stop gap-through fills at stop level instead of the gap open")
 def test_BT_2_stop_gap_through_fills_at_open():
     df = with_signals(gap_through_stop_frame(), {5: 1})  # gap bar iloc[30] opens at 80
     res = classic_backtest(df, "T", "p", **NO_COST)
@@ -67,7 +65,6 @@ def test_BT_2_stop_gap_through_fills_at_open():
 
 
 # --------------------------------------------------------------------------- BT-3
-@pytest.mark.xfail(**BUG, reason="BT-3: equity only changes on exit, not marked to market each bar")
 def test_BT_3_equity_marked_to_market_every_bar():
     n = 30
     df = flat_frame(n, 100.0)
@@ -86,7 +83,6 @@ def test_BT_3_equity_marked_to_market_every_bar():
 
 
 # --------------------------------------------------------------------------- BT-4
-@pytest.mark.xfail(**BUG, reason="BT-4: bars_held computed as i - previous trade's bars_held")
 def test_BT_4_bars_held_is_exit_minus_entry_index():
     df = flat_frame(60, 100.0)
     # long entered bar 5, exited by -1 signal at bar 12 (which also opens a short),
@@ -102,19 +98,24 @@ def test_BT_4_bars_held_is_exit_minus_entry_index():
 
 
 # --------------------------------------------------------------------------- BT-5
+# Rewritten under decision D12 (review round 2): the original fixture (random_walk_ohlc) draws highs/lows
+# independently of the close path, which biases stop/target touches and made the pin unsatisfiable by ANY
+# engine. The correct-behaviour statement is unchanged (a random-entry strategy on a driftless random walk
+# has mean Sharpe ~ 0, rf = 0, no costs) but it is now asserted on a path-consistent walk (open == previous
+# close, high/low from the sub-bar path) with stop/target off, over 100 seeds.
 def _random_entry_sharpe(seed):
-    df = random_walk_ohlc(n=500, seed=seed, step=1.0, start_price=100.0)
+    from tests.test_validation import path_walk
+    df = path_walk(500, seed)
     rng = np.random.default_rng(10_000 + seed)
     df["signal"] = rng.choice([0, 1, -1], size=len(df), p=[0.9, 0.05, 0.05])
-    return classic_backtest(df, "T", "rand", **NO_COST).sharpe_ratio
+    return classic_backtest(df, "T", "rand", stop_loss=0.0, take_profit=0.0, **NO_COST).sharpe_ratio
 
 
-@pytest.mark.xfail(**BUG, reason="BT-5: Sharpe subtracts rf/252 from sparse per-bar returns, biasing it negative")
 def test_BT_5_random_walk_sharpe_near_zero(monkeypatch):
     # rf pinned to 0 so a one-line rf change cannot satisfy this; the engine itself must be unbiased.
-    # (rf / cash-yield convention for the fixed engine is recorded in docs/decisions.md D9.)
+    # (rf / cash-yield convention for the fixed engine is recorded in docs/decisions.md D11.)
     monkeypatch.setattr(config, "RISK_FREE_RATE", 0.0)
-    sharpes = [_random_entry_sharpe(s) for s in range(40)]
+    sharpes = [_random_entry_sharpe(s) for s in range(100)]
     assert abs(float(np.mean(sharpes))) < 0.25, f"mean Sharpe {np.mean(sharpes):.2f}"
 
 
@@ -129,14 +130,38 @@ def _peek_frame(seed=7, n=400):
 
 def test_BT_1a_canary_peeking_signal_is_profitable_today():
     """Characterization: with same-bar-close entry a look-ahead signal prints money (documents the bug)."""
-    res = classic_backtest(_peek_frame(), "T", "peek", **NO_COST)
+    res = classic_backtest(_peek_frame(), "T", "peek", execution="close", **NO_COST)
     assert res.total_return_pct > 0
 
 
-@pytest.mark.xfail(**BUG, reason="BT-1b: look-ahead canary still profitable because entry is at signal-bar close")
+def _overnight_gap_frame(seed, n=400):
+    """Prices move overnight (open = previous close + gap) AND intraday, both part of one random path."""
+    rng = np.random.default_rng(seed)
+    gap, intra = rng.normal(0, 0.8, n), rng.normal(0, 1.0, n)
+    o, c, prev = np.empty(n), np.empty(n), 100.0
+    for t in range(n):
+        o[t] = prev + gap[t]
+        c[t] = o[t] + intra[t]
+        prev = c[t]
+    hi = np.maximum(o, c) + np.abs(rng.normal(0, 0.3, n))
+    lo = np.minimum(o, c) - np.abs(rng.normal(0, 0.3, n))
+    df = pd.DataFrame({"Open": o, "High": hi, "Low": lo, "Close": c, "Volume": 1e6},
+                      index=pd.bdate_range("2024-01-01", periods=n))
+    sig = np.zeros(n, dtype=int)
+    sig[:-1] = np.sign(o[1:] - c[:-1]).astype(int)      # peeks at the NEXT open: sign(open[t+1] - close[t])
+    df["signal"] = sig
+    return df
+
+
 def test_BT_1b_peeking_signal_not_profitable_with_next_bar_entry():
-    res = classic_backtest(_peek_frame(), "T", "peek", **NO_COST)
-    assert res.total_return_pct <= 0.10
+    """Rewritten under decision D12. The original canary peeked at close[t+1] while open[t+1] ~ close[t] in its
+    fixture, so no engine could remove that edge. An overnight-gap canary can: it is only profitable if the
+    entry fills at the signal bar's close (look-ahead), and earns nothing with next-bar-open entry."""
+    close = [classic_backtest(_overnight_gap_frame(s), "T", "gap", execution="close", **NO_COST).total_return_pct
+             for s in range(10)]
+    nxt = [classic_backtest(_overnight_gap_frame(s), "T", "gap", **NO_COST).total_return_pct for s in range(10)]
+    assert min(close) > 0.05, close                       # the canary really has an edge to leak
+    assert max(nxt) <= 0.05 and abs(float(np.mean(nxt))) < 0.02, nxt
 
 
 def test_BT_5b_zero_signal_flat_curve_sharpe_is_zero():
@@ -162,7 +187,6 @@ def test_BT_6_profit_factor_finite_and_capped_with_no_losses():
 
 
 # --------------------------------------------------------------------------- BT-7
-@pytest.mark.xfail(**BUG, reason="BT-7: equity_curve drops the final end-of-data point / is empty for short frames")
 def test_BT_7_equity_curve_covers_every_bar():
     # (a) open position force-closed at end of data: curve must end at final capital
     n = 30
@@ -180,7 +204,6 @@ def test_BT_7_equity_curve_covers_every_bar():
 
 
 # --------------------------------------------------------------------------- WF-1
-@pytest.mark.xfail(**BUG, reason="WF-1: pattern_func only sees the test slice; indicators are not warmed up")
 def test_WF_1_walk_forward_uses_training_window_for_warmup():
     df = gbm_ohlc(400, seed=3)
     seen = []

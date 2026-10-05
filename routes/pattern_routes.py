@@ -1,51 +1,51 @@
 """Pattern detection endpoints."""
 
-import pandas as pd
-from fastapi import APIRouter, Query
-from pydantic import BaseModel
+import logging
 from typing import Optional
-from data_fetcher import fetch_ohlcv
-from patterns import PATTERN_REGISTRY, run_all_patterns
-from routes.helpers import json_response
 
+import pandas as pd
+from fastapi import APIRouter
+from pydantic import BaseModel, Field, field_validator
+
+import config as cfg
+from api.errors import ApiError
+from api.serialize import ok
+from data_fetcher import fetch_ohlcv
+from patterns import PATTERN_REGISTRY
+from routes.helpers import PERIOD_MAX, PERIOD_MIN, check_pattern, check_symbol, finite, require_data
+
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 class PatternRequest(BaseModel):
     symbol: str
     pattern_name: str
-    period_days: int = 730
+    period_days: int = Field(730, ge=PERIOD_MIN, le=PERIOD_MAX)
+
+    _sym = field_validator("symbol")(check_symbol)
+    _pat = field_validator("pattern_name")(check_pattern)
 
 
 @router.get("/list")
 def list_patterns():
     """List all available patterns."""
-    return {"patterns": list(PATTERN_REGISTRY.keys()), "count": len(PATTERN_REGISTRY)}
+    return ok({"patterns": list(PATTERN_REGISTRY.keys()), "count": len(PATTERN_REGISTRY)})
 
 
 @router.post("/detect")
 def detect_pattern(req: PatternRequest):
     """Detect a specific pattern on a symbol."""
-    if req.pattern_name not in PATTERN_REGISTRY:
-        return {"error": f"Unknown pattern: {req.pattern_name}"}
+    df = require_data(fetch_ohlcv(req.symbol, period_days=req.period_days), req.symbol)
+    signals_df = PATTERN_REGISTRY[req.pattern_name](df)
 
-    df = fetch_ohlcv(req.symbol, period_days=req.period_days)
-    if df.empty:
-        return {"error": f"No data for {req.symbol}"}
-
-    func = PATTERN_REGISTRY[req.pattern_name]
-    signals_df = func(df)
-
-    # Extract signal points
-    buys = []
-    sells = []
+    buys, sells = [], []
     for idx, row in signals_df.iterrows():
         if row.get("signal") == 1:
             buys.append({"date": idx.isoformat(), "price": round(float(row["Close"]), 4)})
         elif row.get("signal") == -1:
             sells.append({"date": idx.isoformat(), "price": round(float(row["Close"]), 4)})
 
-    # Get last signal
     last_signals = signals_df[signals_df["signal"] != 0]
     latest = None
     if not last_signals.empty:
@@ -56,78 +56,93 @@ def detect_pattern(req: PatternRequest):
             "price": round(float(last["Close"]), 4),
         }
 
-    return {
+    return ok({
         "symbol": req.symbol,
         "pattern": req.pattern_name,
         "total_signals": len(buys) + len(sells),
         "buys": buys,
         "sells": sells,
         "latest_signal": latest,
-    }
+    })
 
 
 class ScanRequest(BaseModel):
     markets: Optional[list[str]] = None
     patterns: Optional[list[str]] = None
-    recency_days: int = 30
+    recency_days: int = Field(30, ge=1, le=10 ** 7)
+    period_days: Optional[int] = Field(None, ge=PERIOD_MIN, le=PERIOD_MAX)  # None = config.LOOKBACK_DAYS
+
+    @field_validator("patterns")
+    @classmethod
+    def _patterns(cls, v):
+        if v is not None:
+            for name in v:
+                check_pattern(name)
+        return v
 
 
 @router.post("/scan")
 def scan_patterns(req: ScanRequest):
-    """Scan watchlist for pattern signals. Returns detected signals with backtest validation."""
+    """Scan the watchlist for recent pattern signals.
+
+    The statistics attached to each signal are IN-SAMPLE display numbers (validation_status 'unvalidated');
+    only `python main.py scan` runs the out-of-sample validation. Anything that failed is listed in `failed`."""
     from backtester import classic_backtest
 
-    import config as cfg
-
-    # Determine symbols
     markets = req.markets or list(cfg.WATCHLIST.keys())
-    symbols = []
-    for m in markets:
-        symbols.extend(cfg.WATCHLIST.get(m, []))
-
+    unknown = [m for m in markets if m not in cfg.WATCHLIST]
+    if unknown:
+        raise ApiError(f"Unknown market(s): {unknown}", {"markets": unknown, "known": sorted(cfg.WATCHLIST)},
+                       status_code=422, code="unknown_market")
+    symbols = [s for m in markets for s in cfg.WATCHLIST[m]]
     pattern_names = req.patterns or list(PATTERN_REGISTRY.keys())
 
-    results = []
+    results, failed = [], []
     for sym in symbols:
-        df = fetch_ohlcv(sym)
+        try:
+            df = fetch_ohlcv(sym) if req.period_days is None else fetch_ohlcv(sym, period_days=req.period_days)
+        except Exception as e:
+            logger.warning("pattern scan: fetch failed for %s: %s: %s", sym, type(e).__name__, e)
+            failed.append({"symbol": sym, "pattern": None, "error": type(e).__name__, "message": str(e)})
+            continue
         if df.empty:
+            logger.warning("pattern scan: no data for %s", sym)
+            failed.append({"symbol": sym, "pattern": None, "error": "NoData", "message": f"No data for {sym}"})
             continue
 
         for pname in pattern_names:
-            if pname not in PATTERN_REGISTRY:
-                continue
             try:
-                func = PATTERN_REGISTRY[pname]
-                signals = func(df)
+                signals = PATTERN_REGISTRY[pname](df)
                 last_signals = signals[signals["signal"] != 0]
                 if last_signals.empty:
                     continue
-
                 last = last_signals.iloc[-1]
                 days_ago = (pd.Timestamp.now() - last.name).days
                 if days_ago > req.recency_days:
                     continue
 
-                # Quick backtest
                 bt = classic_backtest(signals, sym, pname)
-
+                total_return = finite(bt.total_return_pct)
                 results.append({
                     "symbol": sym,
                     "pattern": pname,
                     "signal": "BUY" if last["signal"] == 1 else "SELL",
                     "signal_date": last.name.isoformat(),
                     "days_ago": days_ago,
-                    "price": round(float(last["Close"]), 4),
-                    "win_rate": round(bt.win_rate, 4),
-                    "profit_factor": round(bt.profit_factor, 2),
-                    "sharpe": round(bt.sharpe_ratio, 2),
-                    "total_return_pct": round(bt.total_return_pct, 2),
+                    "price": float(last["Close"]),
+                    "win_rate": finite(bt.win_rate),
+                    "profit_factor": None if bt.profit_factor_undefined else finite(bt.profit_factor),
+                    "sharpe": finite(bt.sharpe_ratio),
+                    "total_return": total_return,
+                    "total_return_pct": total_return,   # legacy name, same fraction; kept for one release
+                    "max_drawdown": finite(bt.max_drawdown_pct),
                     "total_trades": bt.total_trades,
                     "is_valid": bt.is_valid,
+                    "validation_status": "unvalidated",
                 })
-            except Exception:
-                continue
+            except Exception as e:
+                logger.warning("pattern scan: %s on %s failed: %s: %s", pname, sym, type(e).__name__, e)
+                failed.append({"symbol": sym, "pattern": pname, "error": type(e).__name__, "message": str(e)})
 
-    # Sort by most recent signal first
     results.sort(key=lambda x: x["days_ago"])
-    return json_response({"count": len(results), "signals": results})
+    return ok({"count": len(results), "signals": results, "failed": failed})

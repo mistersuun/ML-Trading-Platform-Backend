@@ -1,7 +1,9 @@
 """Configuration endpoints."""
 
 from fastapi import APIRouter
+
 import config
+from api.serialize import ok
 
 router = APIRouter()
 
@@ -9,7 +11,7 @@ router = APIRouter()
 @router.get("/")
 def get_config():
     """Get current configuration."""
-    return {
+    return ok({
         "watchlist": config.WATCHLIST,
         "pairs": [{"a": a, "b": b} for a, b in config.PAIRS],
         "backtest": {
@@ -39,4 +41,4 @@ def get_config():
             "lookback_bars": config.ML_LOOKBACK_BARS,
             "min_confidence": config.ML_MIN_CONFIDENCE,
         },
-    }
+    })

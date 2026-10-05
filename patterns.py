@@ -37,8 +37,8 @@ def triple_ema(df: pd.DataFrame, fast: int = 5, mid: int = 13, slow: int = 34) -
     bullish = (ef > em) & (em > es)
     bearish = (ef < em) & (em < es)
     out["signal"] = 0
-    out.loc[bullish & ~bullish.shift(1).fillna(False), "signal"] = 1
-    out.loc[bearish & ~bearish.shift(1).fillna(False), "signal"] = -1
+    out.loc[bullish & ~bullish.shift(1, fill_value=False).astype(bool), "signal"] = 1
+    out.loc[bearish & ~bearish.shift(1, fill_value=False).astype(bool), "signal"] = -1
     return out
 
 
@@ -139,8 +139,8 @@ def rsi_divergence(df: pd.DataFrame, window: int = 14, lookback: int = 20) -> pd
         (r > 60)
     )
 
-    out.loc[bull_div & ~bull_div.shift(1).fillna(False), "signal"] = 1
-    out.loc[bear_div & ~bear_div.shift(1).fillna(False), "signal"] = -1
+    out.loc[bull_div & ~bull_div.shift(1, fill_value=False).astype(bool), "signal"] = 1
+    out.loc[bear_div & ~bear_div.shift(1, fill_value=False).astype(bool), "signal"] = -1
     return out
 
 
@@ -161,13 +161,13 @@ def bollinger_squeeze(df: pd.DataFrame, window: int = 20, squeeze_pct: float = 0
     bb = volatility.BollingerBands(out["Close"], window=window, window_dev=2)
     width = (bb.bollinger_hband() - bb.bollinger_lband()) / bb.bollinger_mavg()
 
-    squeeze = width < width.rolling(120).quantile(0.1)
-    expansion = width > width.shift(1)
+    squeeze = (width < width.rolling(120).quantile(0.1)).astype(bool)
+    expansion = (width > width.shift(1)).astype(bool)
 
     out["signal"] = 0
     # Buy: squeeze ends with upward breakout
-    out.loc[squeeze.shift(1) & expansion & (out["Close"] > bb.bollinger_mavg()), "signal"] = 1
-    out.loc[squeeze.shift(1) & expansion & (out["Close"] < bb.bollinger_mavg()), "signal"] = -1
+    out.loc[squeeze.shift(1, fill_value=False).astype(bool) & expansion & (out["Close"] > bb.bollinger_mavg()), "signal"] = 1
+    out.loc[squeeze.shift(1, fill_value=False).astype(bool) & expansion & (out["Close"] < bb.bollinger_mavg()), "signal"] = -1
     return out
 
 
@@ -240,11 +240,11 @@ def inside_bar_breakout(df: pd.DataFrame) -> pd.DataFrame:
     out["signal"] = 0
     # Breakout candle after inside bar
     out.loc[
-        inside.shift(1) & (out["Close"] > out["High"].shift(1)),
+        inside.shift(1, fill_value=False).astype(bool) & (out["Close"] > out["High"].shift(1)),
         "signal"
     ] = 1
     out.loc[
-        inside.shift(1) & (out["Close"] < out["Low"].shift(1)),
+        inside.shift(1, fill_value=False).astype(bool) & (out["Close"] < out["Low"].shift(1)),
         "signal"
     ] = -1
     return out
@@ -266,8 +266,8 @@ def mean_reversion_composite(df: pd.DataFrame) -> pd.DataFrame:
 
     out["signal"] = 0
     # Entry on bounce from oversold
-    out.loc[oversold.shift(1) & (out["Close"] > out["Close"].shift(1)), "signal"] = 1
-    out.loc[overbought.shift(1) & (out["Close"] < out["Close"].shift(1)), "signal"] = -1
+    out.loc[oversold.shift(1, fill_value=False).astype(bool) & (out["Close"] > out["Close"].shift(1)), "signal"] = 1
+    out.loc[overbought.shift(1, fill_value=False).astype(bool) & (out["Close"] < out["Close"].shift(1)), "signal"] = -1
     return out
 
 

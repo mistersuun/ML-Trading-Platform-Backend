@@ -95,7 +95,6 @@ def telegram(monkeypatch):
 
 
 # --------------------------------------------------------------------------- API-1
-@pytest.mark.xfail(reason="BUG-API-1: json_response 500s on NaN/inf (python/np floats bypass the encoder)", **BUG)
 def test_API_1_json_response_nan_inf_does_not_500():
     app = FastAPI()
 
@@ -110,7 +109,6 @@ def test_API_1_json_response_nan_inf_does_not_500():
 
 
 # --------------------------------------------------------------------------- API-2
-@pytest.mark.xfail(reason="BUG-API-2: error conditions return HTTP 200 {error: ...}", **BUG)
 def test_API_2_errors_are_not_http_200(patch_fetch):
     c = _client()
     r = c.post("/api/backtest/run", json={"symbol": "SPY", "pattern_name": "no_such_pattern"})
@@ -123,7 +121,6 @@ def test_API_2_errors_are_not_http_200(patch_fetch):
 
 
 # --------------------------------------------------------------------------- API-3
-@pytest.mark.xfail(reason="BUG-API-3: pattern scan pre-rounds total_return_pct to 2 decimals", **BUG)
 def test_API_3_scan_total_return_not_prerounded(patch_fetch, monkeypatch):
     from backtester import classic_backtest
     from patterns import PATTERN_REGISTRY
@@ -145,7 +142,6 @@ def test_API_3_scan_total_return_not_prerounded(patch_fetch, monkeypatch):
 
 
 # --------------------------------------------------------------------------- API-4 (SIG-2)
-@pytest.mark.xfail(reason="BUG-API-4/SIG-2: pattern scan swallows per-pattern exceptions silently", **BUG)
 def test_API_4_scan_does_not_swallow_exceptions(patch_fetch, monkeypatch, caplog):
     import backtester
     monkeypatch.setitem(config.WATCHLIST, "unit", ["AAA"])
@@ -164,7 +160,6 @@ def test_API_4_scan_does_not_swallow_exceptions(patch_fetch, monkeypatch, caplog
 
 
 # --------------------------------------------------------------------------- DATA-1
-@pytest.mark.xfail(reason="BUG-DATA-1: '=F' futures symbol stripped and sent to Alpha Vantage as an equity", **BUG)
 def test_DATA_1_futures_symbol_not_sent_as_equity(av):
     av.payload = _av_equity_payload(pd.bdate_range("2024-01-01", periods=60), [100.0] * 60, [100.0] * 60)
     df = data_fetcher.fetch_ohlcv("GC=F", period_days=200, end_date=datetime(2024, 6, 1), sources=["alphavantage"])
@@ -174,33 +169,44 @@ def test_DATA_1_futures_symbol_not_sent_as_equity(av):
 
 
 # --------------------------------------------------------------------------- DATA-2
-@pytest.mark.xfail(reason="BUG-DATA-2: adjusted Close mixed with unadjusted O/H/L breaks High >= max(Open, Close)", **BUG)
-def test_DATA_2_adjusted_close_consistent_with_ohl(av):
-    dates = pd.bdate_range("2024-01-01", periods=60)
-    close = np.full(60, 100.0)
-    adj = np.where(np.arange(60) < 30, 50.0, 100.0)  # 2:1 split adjustment on the early half
-    av.payload = _av_equity_payload(dates, close, adj)
-    df = data_fetcher.fetch_ohlcv("AAPL", period_days=200, end_date=datetime(2024, 6, 1), sources=["alphavantage"])
-    assert len(df) == 60
-    assert (df["High"] >= df[["Open", "Close"]].max(axis=1) - 1e-9).all()
-    assert (df["Low"] <= df[["Open", "Close"]].min(axis=1) + 1e-9).all()
+# DATA-2 / DATA-3 were written against the Alpha Vantage parser, which decision D11 deleted. Rewritten under
+# D12 to pin the same behaviours on the live adapters (yfinance / Alpaca fakes from tests/test_data_layer.py).
+from tests.test_data_layer import (NOW_AFTER_CLOSE, NOW_MID_SESSION, _clean, adapters,  # noqa: E402,F401
+                                   yf_fake, yf_frame)
+from data.validate import DataQualityError  # noqa: E402
+
+
+def test_DATA_2_adjusted_close_consistent_with_ohl(yf_fake):
+    """Adjusted Close mixed with unadjusted O/H/L must never be returned: a hard DataQualityError, an empty
+    frame from the legacy shim, and whatever IS returned always satisfies High >= max(O, C) >= min(O, C) >= Low."""
+    good = yf_frame("XNYS", "2024-01-02", "2024-06-04")
+    yf_fake.frames["AAPL"] = good
+    ok = adapters.fetch_bars("AAPL", 150, end_date=datetime(2024, 6, 4), now=NOW_AFTER_CLOSE).df
+    assert (ok["High"] >= ok[["Open", "Close"]].max(axis=1) - 1e-9).all()
+    assert (ok["Low"] <= ok[["Open", "Close"]].min(axis=1) + 1e-9).all()
+    adapters.reset_pins()
+    bad = good.copy()
+    bad.iloc[:30, bad.columns.get_loc("Close")] *= 3.0          # 'adjusted' close outside [Low, High]
+    yf_fake.frames["AAPL"] = bad
+    with pytest.raises(DataQualityError):
+        adapters.fetch_bars("AAPL", 150, end_date=datetime(2024, 6, 4), now=NOW_AFTER_CLOSE)
+    assert data_fetcher.fetch_ohlcv("AAPL", 150, end_date=datetime(2024, 6, 4)).empty
 
 
 # --------------------------------------------------------------------------- DATA-3
-@pytest.mark.xfail(reason="BUG-DATA-3: in-progress (today's) bar is returned as if final", **BUG)
-def test_DATA_3_in_progress_bar_dropped(av, frozen_now, monkeypatch):
-    class _FrozenDT(datetime):
+def test_DATA_3_in_progress_bar_dropped(yf_fake, monkeypatch):
+    class _Frozen(datetime):
         @classmethod
         def now(cls, tz=None):
-            return frozen_now if tz is None else frozen_now.replace(tzinfo=tz)
+            return NOW_MID_SESSION if tz is not None else NOW_MID_SESSION.replace(tzinfo=None)
 
-    monkeypatch.setattr(data_fetcher, "datetime", _FrozenDT)  # clock frozen for now()-based fixes
-    dates = pd.bdate_range(end=frozen_now.strftime("%Y-%m-%d"), periods=60)  # last bar == "today"
-    assert dates[-1].date() == frozen_now.date()
-    av.payload = _av_equity_payload(dates, [100.0] * 60, [100.0] * 60)
-    df = data_fetcher.fetch_ohlcv("AAPL", period_days=200, sources=["alphavantage"])  # end_date -> frozen now()
+    monkeypatch.setattr(data_fetcher, "datetime", _Frozen)      # clock frozen mid-session (Tue 11:00 ET)
+    f = yf_frame("XNYS", "2024-01-02", "2024-06-04")
+    assert f.index[-1].date() == NOW_MID_SESSION.date()          # the last bar IS today's unfinished bar
+    yf_fake.frames["AAPL"] = f
+    df = data_fetcher.fetch_ohlcv("AAPL", period_days=150)
     assert not df.empty
-    assert df.index[-1].date() < frozen_now.date(), f"today's unfinished bar present: {df.index[-1]}"
+    assert df.index[-1].date() < NOW_MID_SESSION.date(), f"today's unfinished bar present: {df.index[-1]}"
 
 
 # --------------------------------------------------------------------------- ALR-1

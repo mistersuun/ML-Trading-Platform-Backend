@@ -72,16 +72,39 @@ def _frame(n=60, price=10.0):
     return df
 
 
+def _cand(symbol, pattern="stub", status="unvalidated", **kw):
+    """A validation.CandidateResult as evaluate_candidates would return it (OOS-positive, 40 OOS trades)."""
+    import validation
+    base = dict(symbol=symbol, pattern=pattern, params={}, n_trials=2, n_oos_trades=40,
+                oos={"sharpe": 1.1, "win_rate": 0.55, "total_return": 0.08, "max_drawdown": -0.05,
+                     "profit_factor": 1.6, "sortino": 1.4, "expectancy_equity": 0.001},
+                oos_psr=0.96, holdout={"total_return": 0.01}, bh_adjusted_p=0.02, validation_status=status)
+    base.update(kw)
+    return validation.CandidateResult(**base)
+
+
 @pytest.fixture
 def scan_stubs(monkeypatch):
-    res = SimpleNamespace(is_valid=True, win_rate=0.6, profit_factor=2.0, total_trades=20, total_return_pct=0.1)
-    res.summary = lambda: {"symbol": "AAPL", "pattern": "stub", "win_rate": 0.6, "profit_factor": 2.0}
-    sent = []
-    monkeypatch.setattr(main, "classic_backtest", lambda *a, **k: res)
+    """Offline scan: two symbols, one stub pattern, validation replaced by `scan_stubs.results` (a list)."""
+    class Sent(list):
+        results = None
+        evaluate_calls = None
+
+    sent = Sent()
+    sent.results = None   # set by a test to override; default = both symbols OOS-positive but unvalidated
+    stub_calls = []
+
+    def fake_evaluate(frames, patterns, *a, **k):
+        stub_calls.append((sorted(frames), sorted(patterns)))
+        return sent.results if sent.results is not None else [_cand(s) for s in sorted(frames)]
+
+    monkeypatch.setattr(main.validation, "evaluate_candidates", fake_evaluate)
+    sent.evaluate_calls = stub_calls
     monkeypatch.setattr(main, "send_alert", lambda msg, **k: sent.append((k.get("kind"), msg)) or True)
     monkeypatch.setattr(main, "send_daily_summary", lambda *a, **k: True)
     monkeypatch.setattr(main, "PATTERN_REGISTRY", {"stub": lambda d: d.copy()})
     monkeypatch.setattr(main, "fetch_watchlist", lambda markets=None: {"AAPL": _frame(), "MSFT": _frame()})
+    monkeypatch.setattr(main, "fetch_ohlcv", lambda *a, **k: pd.DataFrame())  # research fetch falls back to short frame
     return sent
 
 
@@ -243,3 +266,145 @@ def test_unreadable_broker_refuses_the_session_and_seeds_no_baseline(monkeypatch
     conn = db.connect()
     assert conn.execute("SELECT account_baseline FROM risk_state").fetchone()[0] is None
     conn.close()
+
+
+# ---------------------------------------------------------------- Phase 2: validation wiring
+def test_technical_scan_uses_one_validation_run_and_reports_oos_status(monkeypatch, scan_stubs):
+    scan_stubs.results = [_cand("AAPL", status="oos_validated", n_trials=2), _cand("MSFT", n_oos_trades=5)]
+    intents: list = []
+    got = main.scan_technical({"AAPL": _frame(), "MSFT": _frame()}, intents=intents)
+    # ONE evaluate_candidates call over every symbol (so BH spans the whole run)
+    assert scan_stubs.evaluate_calls == [(["AAPL", "MSFT"], ["stub"])]
+    # MSFT has too few OOS trades to be reported even informationally; AAPL is validated
+    assert [g["symbol"] for g in got] == ["AAPL"]
+    assert got[0]["validation_status"] == "oos_validated"
+    assert [(i.symbol, i.validation_status) for i in intents] == [("AAPL", "oos_validated")]
+    alert = next(m for k, m in scan_stubs if k == "signal")
+    assert "OUT-OF-SAMPLE" in alert and "oos_validated" in alert and "BH-adjusted" in alert
+
+
+def test_unvalidated_but_oos_positive_signal_is_reported_as_unvalidated(scan_stubs):
+    intents: list = []
+    got = main.scan_technical({"AAPL": _frame()}, intents=intents)
+    assert got[0]["validation_status"] == "unvalidated"
+    assert intents[0].validation_status == "unvalidated"
+
+
+def test_validation_failure_makes_nothing_eligible(monkeypatch, scan_stubs):
+    def boom(*a, **k):
+        raise RuntimeError("boom")
+    monkeypatch.setattr(main.validation, "evaluate_candidates", boom)
+    monkeypatch.setattr(main, "classic_backtest", lambda *a, **k: SimpleNamespace(is_valid=False))
+    intents: list = []
+    assert main.scan_technical({"AAPL": _frame()}, intents=intents) == [] and intents == []
+
+
+def test_legacy_in_sample_tier_stays_unvalidated(monkeypatch, scan_stubs):
+    """No OOS evidence (too little history) + the old in-sample heuristic passes: reported, never eligible."""
+    scan_stubs.results = [_cand("AAPL", n_oos_trades=0, oos={}, oos_psr=None, holdout=None,
+                                rejected_reasons=["insufficient_history"])]
+    monkeypatch.setattr(main, "classic_backtest", lambda *a, **k: SimpleNamespace(is_valid=True))
+    intents: list = []
+    got = main.scan_technical({"AAPL": _frame()}, intents=intents)
+    assert got[0]["validation_status"] == "unvalidated" and got[0]["sharpe"] == "n/a"
+    assert intents[0].validation_status == "unvalidated"
+
+
+def test_full_scan_fetches_research_length_history(monkeypatch, scan_stubs):
+    calls = []
+    monkeypatch.setattr(main, "fetch_ohlcv", lambda s, period_days=None, **k: calls.append((s, period_days)) or pd.DataFrame())
+    main.run_full_scan(modes=["technical"])
+    assert {(s, d) for s, d in calls} == {("AAPL", config.RESEARCH_LOOKBACK_DAYS), ("MSFT", config.RESEARCH_LOOKBACK_DAYS)}
+
+
+def _ml_cand(symbol, auc, base, validated, psr, direction=1):
+    bt = SimpleNamespace(psr=psr, win_rate=0.55, profit_factor=1.5, profit_factor_undefined=False,
+                         total_return_pct=0.05, max_drawdown_pct=-0.04, sharpe_ratio=0.9, total_trades=40)
+    return {"symbol": symbol, "oos_auc": auc, "baseline_auc": base, "oos_validated": validated,
+            "oos_start": "2024-02-01", "confidence": 0.7, "direction": direction, "oos_frame": _frame(),
+            "backtest": bt, "oos_backtest_summary": {"win_rate": 0.55, "profit_factor": 1.5, "total_return": 0.05,
+                                                     "max_drawdown": -0.04, "sharpe": 0.9, "total_trades": 40}}
+
+
+def test_scan_ml_gates_on_auc_and_bh_status(monkeypatch, scan_stubs):
+    frames = {s: _frame(n=300) for s in ("AAA", "BBB", "CCC")}
+    cands = {"AAA": _ml_cand("AAA", 0.60, 0.53, True, 0.9999),    # beats baseline, validated, tiny p
+             "BBB": _ml_cand("BBB", 0.51, 0.53, True, 0.9999),    # below baseline -> never reported
+             "CCC": _ml_cand("CCC", 0.58, 0.53, False, 0.97)}     # beats baseline, own gates fail
+    monkeypatch.setattr(main, "ml_scan_candidate", lambda df, sym: cands[sym])
+    monkeypatch.setattr(main.MLPatternDetector, "train", lambda self, df: {"top_features": {"rsi": 1.0}})
+    monkeypatch.setattr(main, "classic_backtest", lambda df, sym, name, **k: cands[sym]["backtest"])
+    intents: list = []
+    got = main.scan_ml(frames, intents=intents)
+    status = {g["symbol"]: g["validation_status"] for g in got}
+    # ML clears only its own gates: ml_oos_candidate, never an order-eligible status (review blocker)
+    assert status == {"AAA": "ml_oos_candidate", "CCC": "unvalidated"}
+    assert {i.symbol: i.validation_status for i in intents} == status
+
+
+def test_scan_ml_own_gates_pass_but_bh_fails_is_unvalidated(monkeypatch, scan_stubs):
+    frames = {s: _frame(n=300) for s in ("AAA", "BBB")}
+    cands = {"AAA": _ml_cand("AAA", 0.60, 0.53, True, 0.9999),
+             "BBB": _ml_cand("BBB", 0.60, 0.53, True, 0.80)}      # p = 0.2 > alpha: BH does not reject
+    monkeypatch.setattr(main, "ml_scan_candidate", lambda df, sym: cands[sym])
+    monkeypatch.setattr(main.MLPatternDetector, "train", lambda self, df: {"top_features": {}})
+    monkeypatch.setattr(main, "classic_backtest", lambda df, sym, name, **k: cands[sym]["backtest"])
+    got = main.scan_ml(frames, intents=[])
+    assert {g["symbol"]: g["validation_status"] for g in got} == {"AAA": "ml_oos_candidate", "BBB": "unvalidated"}
+
+
+def test_scan_ml_status_is_never_order_eligible(monkeypatch, scan_stubs):
+    cands = {"AAA": _ml_cand("AAA", 0.60, 0.53, True, 0.9999)}
+    monkeypatch.setattr(main, "ml_scan_candidate", lambda df, sym: cands[sym])
+    monkeypatch.setattr(main.MLPatternDetector, "train", lambda self, df: {"top_features": {}})
+    monkeypatch.setattr(main, "classic_backtest", lambda df, sym, name, **k: cands[sym]["backtest"])
+    intents: list = []
+    main.scan_ml({"AAA": _frame(n=300)}, intents=intents)
+    assert intents and all(i.validation_status not in config.ORDER_ELIGIBLE_STATUSES for i in intents)
+
+
+@pytest.mark.parametrize("psr, expected", [(0.94, False), (0.95, False), (0.951, True)])
+def test_ml_scan_candidate_requires_psr_strictly_above_min(monkeypatch, psr, expected):
+    """oos_validated needs PSR > OOS_PSR_MIN (the spec's strict inequality) on top of AUC and trade count."""
+    import ml_patterns
+    import backtester
+
+    oos = _frame(n=60)
+    oos["oos"] = True
+    oos["ml_confidence"] = 0.7
+
+    class Det:
+        oos_start = oos.index[0]
+        oos_metrics = {"auc": 0.6, "baseline_auc": 0.53, "auc_above_baseline": True}
+        model_type = "stub"
+
+        def walk_forward_predict(self, df):
+            return oos
+
+    bt = SimpleNamespace(psr=psr, total_trades=config.MIN_TRADES_OOS, numeric_summary=lambda: {})
+    monkeypatch.setattr(ml_patterns, "MLPatternDetector", Det)
+    monkeypatch.setattr(backtester, "classic_backtest", lambda *a, **k: bt)
+    assert ml_patterns.ml_scan_candidate(_frame(n=60), "AAA")["oos_validated"] is expected
+
+
+def test_pairs_alert_survives_none_fields_and_says_unvalidated(monkeypatch, scan_stubs):
+    monkeypatch.setattr(main, "scan_all_pairs", lambda data, pairs: [{
+        "symbol_a": "KO", "symbol_b": "PEP", "has_signal": True, "signal_direction": "LONG_SPREAD",
+        "current_zscore": 2.1, "half_life": 12.0, "correlation": 0.8, "win_rate": 0.6, "profit_factor": None,
+        "total_return": 0.03, "sharpe_ratio": 0.7, "total_trades": 9, "adj_pvalue": 0.01, "n_tested": 5}])
+    out = main.scan_pairs({})
+    assert len(out) == 1
+    msg = next(m for k, m in scan_stubs if k == "signal")
+    assert "unvalidated" in msg and "alert-only" in msg
+
+
+def test_report_shows_oos_and_validation_columns(tmp_path):
+    out = tmp_path / "r.html"
+    main.generate_report({"technical": [{"direction": "🟢 BUY", "symbol": "A<B", "pattern": "p", "win_rate": "55.0%",
+                                         "validation_status": "oos_validated", "sharpe": "1.00",
+                                         "profit_factor": "n/a", "total_trades": 40, "holdout_return": 0.02,
+                                         "bh_adjusted_p": 0.03}],
+                          "pairs": [{"symbol_a": "K", "symbol_b": "P", "half_life": None, "profit_factor": None}],
+                          "ml": []}, output=str(out))
+    html = out.read_text()
+    assert "oos_validated" in html and "out-of-sample" in html and "Hold-out" in html and "A&lt;B" in html

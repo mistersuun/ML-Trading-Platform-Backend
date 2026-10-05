@@ -23,6 +23,7 @@ dependencies = [
     "python-dotenv>=1.0",
     "schedule>=1.2",
     "anthropic>=1.11,<2",
+    "exchange-calendars>=4.13.2",
 ]
 
 [dependency-groups]

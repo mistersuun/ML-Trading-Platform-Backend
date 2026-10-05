@@ -51,7 +51,6 @@ def test_PR_1a_scaling_both_prices_leaves_returns_unchanged(pair_case):
     assert scaled["total_return"] == pytest.approx(base["total_return"], rel=1e-6, abs=1e-9)
 
 
-@pytest.mark.xfail(reason="BUG-PR-1: pairs P&L divided by |entry spread| (+1e-10), blowing up when the spread is near zero", **BUG)
 def test_PR_1b_near_zero_entry_spread_gives_bounded_pnl(pair_case):
     _, _, analysis, _ = pair_case
     n = 40
@@ -67,7 +66,6 @@ def test_PR_1b_near_zero_entry_spread_gives_bounded_pnl(pair_case):
 
 
 # ------------------------------------------------------------------ PR-2
-@pytest.mark.xfail(reason="BUG-PR-2: hedge ratio / z-score use full-sample statistics (look-ahead)", **BUG)
 def test_PR_2_pair_signals_causal_under_truncation():
     a, b = ou_pair(n=420, seed=11)
 
@@ -89,7 +87,6 @@ def client():
     return TestClient(server.app, raise_server_exceptions=False)
 
 
-@pytest.mark.xfail(reason="BUG-PR-3: /api/pairs/analyze emits Infinity half_life -> invalid JSON / 500", **BUG)
 def test_PR_3_pairs_analyze_json_valid_with_infinite_half_life(client, patch_fetch):
     # Independent random walks (seeds chosen so AR(1) theta >= 0): half_life == inf
     patch_fetch.overrides["RW1"] = random_walk_ohlc(n=300, seed=14)
@@ -101,8 +98,10 @@ def test_PR_3_pairs_analyze_json_valid_with_infinite_half_life(client, patch_fet
     assert body["half_life"] is None or np.isfinite(body["half_life"])
 
 
-@pytest.mark.xfail(reason="BUG-PR-4: /api/pairs/scan returns np.bool_ / inf and 500s", **BUG)
 def test_PR_4_pairs_scan_does_not_500_on_numpy_types(client, patch_fetch, monkeypatch):
+    # Rewritten under decision D12: the bug is the 500 / non-strict JSON. The fixture pair is cointegrated at
+    # p = 0.0508 (max of both Engle-Granger orderings), so the corrected scan rightly rejects it; the pin now
+    # asserts the response contract (200, strict JSON, a count) instead of that the pair is accepted.
     a, b = ou_pair(n=400, seed=7)
     patch_fetch.overrides["PA"] = a
     patch_fetch.overrides["PB"] = b
@@ -111,17 +110,28 @@ def test_PR_4_pairs_scan_does_not_500_on_numpy_types(client, patch_fetch, monkey
     r = client.post("/api/pairs/scan")
     assert r.status_code == 200, f"got {r.status_code}"
     body = json.loads(r.text, parse_constant=_no_constants)
-    assert body["count"] >= 1
+    assert body["count"] >= 0 and isinstance(body["count"], int)
+    assert isinstance(body.get("pairs", body.get("results", [])), list)
+
+
+def test_PR_4b_pairs_scan_accepts_a_clearly_cointegrated_pair_with_strict_json(client, patch_fetch, monkeypatch):
+    """The positive half of PR-4: a clearly cointegrated pair (mean reversion inside the half-life band) is returned, as strict JSON."""
+    a, b = ou_pair(n=600, seed=3, half_life=8.0)
+    patch_fetch.overrides["PA"], patch_fetch.overrides["PB"] = a, b
+    monkeypatch.setattr(config, "PAIRS", [("PA", "PB")])
+    monkeypatch.setattr(config, "PAIRS_LOOKBACK", 600)
+    r = client.post("/api/pairs/scan")
+    assert r.status_code == 200, r.text[:300]
+    body = json.loads(r.text, parse_constant=_no_constants)
+    assert body["count"] == 1 and body["pairs"][0]["symbol_a"] == "PA"
 
 
 # ------------------------------------------------------------------ ST-1..ST-3
-@pytest.mark.xfail(reason="BUG-ST-1: detect_regimes uses full-sample rank(pct=True) (look-ahead)", **BUG)
 def test_ST_1_regimes_causal():
     df = gbm_ohlc(n=700, seed=21)
     assert_causal(detect_regimes, df, T=500, n_future=150)
 
 
-@pytest.mark.xfail(reason="BUG-ST-2: regime tests run the pattern on non-contiguous stitched slices", **BUG)
 def test_ST_2_regime_tests_use_contiguous_slices():
     df = gbm_ohlc(n=1000, seed=5)
     pos = {ts: i for i, ts in enumerate(df.index)}
@@ -138,7 +148,6 @@ def test_ST_2_regime_tests_use_contiguous_slices():
         assert (np.diff(p) == 1).all(), "pattern run on a non-contiguous stitched slice"
 
 
-@pytest.mark.xfail(reason="BUG-ST-3: Monte Carlo compounds full pnl_pct, ignoring position size", **BUG)
 def test_ST_3_monte_carlo_dispersion_reflects_position_size():
     f = config.MAX_POSITION_SIZE_PCT
     pnl = 0.10

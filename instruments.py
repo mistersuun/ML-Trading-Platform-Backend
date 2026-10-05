@@ -122,6 +122,14 @@ def get(symbol: str) -> Instrument:
     return inst
 
 
+def bars_per_year(symbol: str, default: int = 252) -> int:
+    """Annualisation factor for `symbol` (365 crypto, 260 fx, 252 otherwise); `default` if not in the registry."""
+    try:
+        return get(symbol).bars_per_year
+    except UnknownSymbol:
+        return default
+
+
 def all_instruments() -> list:
     return list(_registry().values())
 

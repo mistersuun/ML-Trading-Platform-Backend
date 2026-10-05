@@ -31,6 +31,8 @@ from backtester import classic_backtest, walk_forward_validate, BacktestResult
 from stress_test import full_stress_test, detect_regimes, monte_carlo_analysis, parameter_sensitivity
 from pairs_trading import analyze_pair, is_valid_pair, generate_pair_signals, backtest_pair, scan_all_pairs
 from risk_manager import RiskManager
+from dashboard_fmt import (fmt, pair_metric_texts, regime_profitability, safe_analyze_pair,
+                           scanned_pair_texts)
 
 logger = logging.getLogger(__name__)
 
@@ -288,7 +290,8 @@ def plot_regime_comparison(regime_results: dict, height: int = 400) -> go.Figure
     labels, win_rates, profit_factors, returns = [], [], [], []
 
     for name, result in regime_results.items():
-        if isinstance(result, BacktestResult) and result.total_trades > 0:
+        if isinstance(result, BacktestResult) and result.total_trades > 0 \
+                and not getattr(result, "insufficient", False):
             labels.append(name.replace("_", " ").title())
             win_rates.append(result.win_rate * 100)
             profit_factors.append(result.profit_factor)
@@ -425,13 +428,14 @@ if page == "📊 Dashboard":
             for p in pairs_triggered:
                 with st.expander(
                     f"{p.get('signal_direction','?')} — {p['symbol_a']}/{p['symbol_b']} "
-                    f"| z={p.get('current_zscore',0):.2f}"
+                    f"| z={scanned_pair_texts(p)['zscore']}"
                 ):
+                    pt = scanned_pair_texts(p)
                     pc1, pc2, pc3, pc4 = st.columns(4)
-                    pc1.metric("Z-Score", f"{p.get('current_zscore',0):.2f}")
-                    pc2.metric("Win Rate", f"{p.get('win_rate',0):.1%}")
-                    pc3.metric("Half-Life", f"{p.get('half_life',0):.0f}d")
-                    pc4.metric("Profit Factor", f"{p.get('profit_factor',0):.2f}")
+                    pc1.metric("Z-Score", pt["zscore"])
+                    pc2.metric("Win Rate", pt["win_rate"])
+                    pc3.metric("Half-Life", pt["half_life"])
+                    pc4.metric("Profit Factor", pt["profit_factor"])
 
         if not tech_results and not pairs_triggered:
             st.info("No signals triggered. This is normal — the filters are intentionally strict.")
@@ -576,39 +580,38 @@ elif page == "📈 Pairs Trading":
         if df_a.empty or df_b.empty:
             st.error("Could not fetch data for one or both symbols")
         else:
-            # Align
-            common = df_a.index.intersection(df_b.index)
-            if len(common) < 60:
-                st.error("Insufficient overlapping data")
+            analysis, df_a_aligned, df_b_aligned, warn = safe_analyze_pair(df_a, df_b, sym_a, sym_b)
+            if analysis is None:
+                st.warning(warn)
             else:
-                df_a_aligned = df_a.loc[common]
-                df_b_aligned = df_b.loc[common]
-
-                analysis = analyze_pair(df_a_aligned, df_b_aligned, sym_a, sym_b)
                 valid = is_valid_pair(analysis)
 
                 # Status
                 status_color = "🟢" if valid else "🔴"
                 st.markdown(f"### {status_color} Pair {'VALID' if valid else 'INVALID'} for Trading")
+                st.caption("Pairs are alert-only and the backtest below is in-sample.")
 
                 # Metrics
+                pm = pair_metric_texts(analysis)
                 c1, c2, c3, c4, c5, c6 = st.columns(6)
-                c1.metric("Cointegration p", f"{analysis.coint_pvalue:.4f}",
+                c1.metric("Cointegration p", pm["coint_p"],
                          delta="Pass" if analysis.coint_pvalue < 0.05 else "Fail")
-                c2.metric("Correlation", f"{analysis.correlation:.3f}")
-                c3.metric("Half-Life", f"{analysis.half_life:.1f} days")
-                c4.metric("Current Z-Score", f"{analysis.current_zscore:.2f}")
-                c5.metric("Hedge Ratio", f"{analysis.hedge_ratio:.4f}")
-                c6.metric("ADF p-value", f"{analysis.adf_pvalue:.4f}")
+                c2.metric("Correlation", pm["correlation"])
+                c3.metric("Half-Life", pm["half_life"])
+                c4.metric("Current Z-Score", pm["zscore"])
+                c5.metric("Hedge Ratio", pm["hedge_ratio"])
+                c6.metric("ADF p-value", pm["adf_p"])
 
                 # Signal
-                if abs(analysis.current_zscore) > config.PAIRS_ZSCORE_ENTRY:
-                    if analysis.current_zscore < -config.PAIRS_ZSCORE_ENTRY:
-                        st.success(f"🟢 **LONG SPREAD** — Buy {sym_a}, Sell {sym_b} (z={analysis.current_zscore:.2f})")
+                z = analysis.current_zscore
+                zt = pm["zscore"]
+                if z is not None and abs(z) > config.PAIRS_ZSCORE_ENTRY:
+                    if z < -config.PAIRS_ZSCORE_ENTRY:
+                        st.success(f"🟢 **LONG SPREAD** — Buy {sym_a}, Sell {sym_b} (z={zt})")
                     else:
-                        st.error(f"🔴 **SHORT SPREAD** — Sell {sym_a}, Buy {sym_b} (z={analysis.current_zscore:.2f})")
+                        st.error(f"🔴 **SHORT SPREAD** — Sell {sym_a}, Buy {sym_b} (z={zt})")
                 else:
-                    st.info(f"No active signal (z={analysis.current_zscore:.2f}, need |z|>{config.PAIRS_ZSCORE_ENTRY})")
+                    st.info(f"No active signal (z={zt}, need |z|>{config.PAIRS_ZSCORE_ENTRY})")
 
                 # Generate signals and plot
                 signals = generate_pair_signals(df_a_aligned, df_b_aligned, analysis)
@@ -634,10 +637,10 @@ elif page == "📈 Pairs Trading":
                     if bt.get("total_trades", 0) > 0:
                         st.subheader("Backtest Results")
                         b1, b2, b3, b4 = st.columns(4)
-                        b1.metric("Win Rate", f"{bt['win_rate']:.1%}")
-                        b2.metric("Profit Factor", f"{bt['profit_factor']:.2f}")
-                        b3.metric("Total Return", f"{bt['total_return']:.2%}")
-                        b4.metric("Sharpe", f"{bt['sharpe_ratio']:.2f}")
+                        b1.metric("Win Rate", fmt(bt.get("win_rate"), ".1%"))
+                        b2.metric("Profit Factor", fmt(bt.get("profit_factor"), ".2f"))
+                        b3.metric("Total Return", fmt(bt.get("total_return"), ".2%"))
+                        b4.metric("Sharpe", fmt(bt.get("sharpe_ratio"), ".2f"))
 
         # Scan all pairs
         st.markdown("---")
@@ -880,10 +883,7 @@ elif page == "🔬 Stress Test Lab":
             else:
                 checks.append("❌ Backtest metrics fail")
 
-            regime_ok = sum(1 for n, r in regime_results.items()
-                          if n != "full_period" and isinstance(r, BacktestResult)
-                          and r.total_return_pct > 0)
-            regime_total = sum(1 for n in regime_results if n != "full_period")
+            regime_ok, regime_total = regime_profitability(regime_results)   # skips insufficient regimes
             if regime_total > 0 and regime_ok / regime_total >= 0.5:
                 checks.append(f"✅ Profitable in {regime_ok}/{regime_total} regimes")
             else:
