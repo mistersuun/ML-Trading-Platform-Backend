@@ -1,6 +1,7 @@
 """Nightly precompute run, scheduler loop and dead-man heartbeat (WS3.4, trimmed).
 
-* ``run_nightly()``: one locked run. Scans (technical incl. validation, pairs, ML) via the services, writes the
+* ``run_nightly()``: one locked run. First a read-only IBKR account sync when IBKR_SYNC_ENABLED (failure: alert and
+  fall back, never blocks), then scans (technical incl. validation, pairs, ML) via the services, writes the
   results/ files, records a ``runs`` row (kind='nightly'), alerts through the normal alert path, then takes a
   daily SQLite backup into state/backups/ (newest 14 kept). Alert-only: it never places orders.
 * ``schedule_forever(at='17:30', tz='America/New_York')``: runs run_nightly daily at that wall-clock time in `tz`.
@@ -22,7 +23,7 @@ from zoneinfo import ZoneInfo
 
 import config
 from results import store
-from services import scan, session
+from services import ibkr_sync, scan, session
 from settings import RiskConfigError, validate_risk_config
 from state import db as state_db
 
@@ -78,7 +79,7 @@ def backup_state(conn, now: Optional[datetime] = None, dest_dir=None, keep: int 
 
 
 def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_root=None,
-                scan_fn: Optional[Callable] = None) -> dict:
+                scan_fn: Optional[Callable] = None, sync_fn: Optional[Callable] = None) -> dict:
     """One locked nightly run. Returns {"status": "ok"|"error"|"locked", ...}; never raises for scan errors."""
     try:
         validate_risk_config(config)
@@ -101,6 +102,11 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
                               (NIGHTLY_KIND, started.isoformat(), "running")).lastrowid
         summary: dict = {}
         status = "ok"
+        # Read-only IBKR account sync (D14) before the scan. It never raises: a failure alerts and the views fall
+        # back to the last snapshot or holdings.csv, so the scan always runs.
+        sync_res = ibkr_sync.sync_before_scan(sync_fn, conn)
+        if sync_res["status"] != "skipped":
+            summary["ibkr_sync"] = {k: sync_res[k] for k in ("status", "source")}
         try:
             fn = scan_fn or scan.run_full_scan
             results = fn(modes=list(modes), run_stress=run_stress, paper_trade=False) or {}

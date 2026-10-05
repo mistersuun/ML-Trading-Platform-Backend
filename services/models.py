@@ -379,6 +379,31 @@ class GroupWeight(_Base):
     now: float                               # fraction
     drift: float                             # now - target
     after: OptF = None                       # allocation proposal only
+    value: OptF = None                       # overview only: this group's value in base currency
+
+
+class AccountBlock(_Base):
+    """The owner's broker account (read-only IBKR snapshot) or the holdings.csv fallback, in base currency.
+
+    margin_loan is the absolute value of negative cash; leverage is gross positions / net liquidation;
+    margin_headroom is the broker's excess liquidity (None without a broker snapshot)."""
+    available: bool = True
+    source: Optional[str] = None             # ibkr | holdings_csv
+    as_of: Optional[str] = None
+    age_hours: OptF = None
+    base_currency: Optional[str] = None
+    net_worth: OptF = None
+    positions_value: OptF = None
+    cash: OptF = None                        # negative = margin loan
+    margin_loan: OptF = None
+    leverage: OptF = None
+    max_leverage_warn: OptF = None
+    margin_headroom: OptF = None             # excess liquidity
+    maint_margin: OptF = None
+    buying_power: OptF = None
+    positions: Optional[int] = None
+    warnings: list[str] = Field(default_factory=list)
+    note: Optional[str] = None
 
 
 class OverviewResponse(_Base):
@@ -400,6 +425,16 @@ class OverviewResponse(_Base):
     allocation_basis: str
     unpriced: list[str] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    base_currency: str = "CAD"
+    source: str = "holdings_csv"             # ibkr | holdings_csv
+    net_worth: OptF = None                   # net liquidation (broker) or positions + cash (negative cash included)
+    positions_value: OptF = None             # holdings priced from the bar store, base currency
+    margin_loan: OptF = None                 # abs(negative cash)
+    leverage: OptF = None                    # gross positions / net worth
+    margin_headroom: OptF = None             # IBKR excess liquidity
+    account: Optional[AccountBlock] = None
+    other_value: OptF = None                 # snapshot only: net worth - (positions + cash): stale closes, accruals, unvalued items
+    unclassified_value: OptF = None          # value of priced holdings that are in no asset group, base currency
 
 
 # ---------------------------------------------------------------- allocation proposal (GET /api/allocation/proposal)
@@ -465,6 +500,14 @@ class ProposalResponse(_Base):
     unmanaged: list[str] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
     advisory: str
+    profile: str = "us"
+    margin_loan: OptF = None
+    leverage: OptF = None
+    base_currency: str = "CAD"               # every amount in this response (prices, values, trades) is in it
+    managed_value: OptF = None               # managed positions + max(cash, 0): what the targets apply to
+    contribution_to_loan: OptF = None        # part of the contribution that repays the margin loan first
+    margin_loan_after: OptF = None           # the loan after that repayment
+    unmanaged_value: OptF = None             # holdings outside the target list, held fixed
 
 
 # ---------------------------------------------------------------- risk status (GET /api/risk/status)
@@ -535,6 +578,7 @@ class RiskStatusResponse(_Base):
     decision_total: int
     decision_reasons: list[ReasonCount]
     decisions: list[DecisionRow]
+    account: Optional[AccountBlock] = None
 
 
 # ---------------------------------------------------------------- scanner candidate (GET /api/scanner/candidate)

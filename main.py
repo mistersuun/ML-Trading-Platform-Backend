@@ -34,6 +34,7 @@ import scheduler
 from claude_integration import check_llm
 from logging_setup import install_redaction
 from risk_manager import RiskManager
+from services import ibkr_sync
 from services import rebalance as rebalance_service
 from services import session
 from services import stress as stress_service
@@ -56,7 +57,7 @@ logger = logging.getLogger(__name__)
 # ══════════════════════════════════════════════════════════════
 
 SUBCOMMANDS = ("scan", "risk", "check-llm", "rebalance", "backup", "data-status",
-               "schedule", "run-nightly", "heartbeat")
+               "schedule", "run-nightly", "heartbeat", "ibkr")
 
 
 def _err(msg: str) -> None:
@@ -228,6 +229,38 @@ def cmd_rebalance(args) -> int:
     return 0
 
 
+def cmd_ibkr(args) -> int:
+    """Read-only IBKR account sync (D14): `ibkr sync` fetches and stores a snapshot, `ibkr status` shows the last one."""
+    if args.ibkr_cmd == "sync":
+        conn = _db_or_error()
+        if conn is None:
+            return 1
+        try:
+            snap = ibkr_sync.sync(conn)
+        except ibkr_sync.IBKRUnavailable as e:
+            _err(f"IBKR unavailable: {e}. Is IB Gateway running and logged in (README: IB Gateway setup)?")
+            return 1
+        finally:
+            conn.close()
+        print(ibkr_sync.render(snap))
+        return 0
+    conn = _db_or_error()
+    if conn is None:
+        return 1
+    try:
+        snap = ibkr_sync.status(conn)
+    finally:
+        conn.close()
+    print(f"host {config.IBKR_HOST}:{config.IBKR_PORT} client {config.IBKR_CLIENT_ID} "
+          f"account {config.IBKR_ACCOUNT or '(first managed)'} base {config.BASE_CURRENCY} "
+          f"profile {config.ALLOCATION_PROFILE} nightly sync {'on' if config.IBKR_SYNC_ENABLED else 'off'}")
+    if snap is None:
+        print("no IBKR snapshot yet; run `python main.py ibkr sync`")
+        return 1
+    print(ibkr_sync.render(snap))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Trading Pattern Bot v2")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -276,6 +309,11 @@ def build_parser() -> argparse.ArgumentParser:
     hb = sub.add_parser("heartbeat", help="exit non-zero (and alert) if the nightly run is stale or failed")
     hb.add_argument("--max-age-hours", type=float, default=30)
 
+    ib = sub.add_parser("ibkr", help="read-only IBKR account sync (never places orders)")
+    ibs = ib.add_subparsers(dest="ibkr_cmd", required=True)
+    ibs.add_parser("sync", help="read the account from IB Gateway and store a snapshot")
+    ibs.add_parser("status", help="show the latest stored snapshot (does not connect)")
+
     bk = sub.add_parser("backup", help="back up the state DB")
     bk.add_argument("--dest", required=True)
     return parser
@@ -295,7 +333,7 @@ def main(argv: list[str] | None = None) -> int:
     return {"scan": cmd_scan, "risk": cmd_risk, "check-llm": cmd_check_llm,
             "rebalance": cmd_rebalance, "backup": cmd_backup,
             "data-status": cmd_data_status, "run-nightly": cmd_run_nightly,
-            "schedule": cmd_schedule, "heartbeat": cmd_heartbeat}[args.command](args)
+            "schedule": cmd_schedule, "heartbeat": cmd_heartbeat, "ibkr": cmd_ibkr}[args.command](args)
 
 
 

@@ -25,6 +25,7 @@ nothing reaches that in Phase 1, so the system is effectively **alert-only**.
     uv run python main.py check-llm
     uv run python main.py rebalance --holdings holdings.csv [--contributions 500]
     uv run python main.py backup --dest backups/trading.db
+    uv run python main.py ibkr sync | status       # read-only IBKR account snapshot (see "IBKR read-only sync")
     uv run uvicorn server:app --host 127.0.0.1 --port 8000   # API (loopback only)
 
 The old flat flags (`python main.py --mode pairs`) still work and mean `scan`.
@@ -64,6 +65,34 @@ copy the backup over `STATE_DB_PATH` (default `state/trading.db`), run `risk sta
 redistribution and no guarantee of availability or accuracy. If the UI or API is ever exposed to other people,
 the Alpaca market-data terms (feed, redistribution and display limits) apply and need review first. Live trading
 is out of scope (D2).
+
+## IBKR read-only sync (decision D14)
+
+The platform can read your real IBKR account (net liquidation, cash incl. a negative margin loan, positions, FX
+rates) through a locally running **IB Gateway**. Nothing in this repo places orders: tests ban every order, modify,
+cancel, exercise and what-if API name, the module reaches the broker only through a five-method read wrapper (best
+effort, not a security boundary), and **the Gateway's own Read-Only API setting (step 1) is what makes the broker reject
+orders**. The `readonly=True` connect flag in ib_async only skips order synchronisation at startup.
+
+1. Install and log in to IB Gateway (IBKR Gateway, live account). Configure > Settings > API > Settings:
+   - **Enable ActiveX and Socket Clients**: on.
+   - **Read-Only API**: **ON** (the broker then rejects orders even if this code were wrong).
+   - **Socket port**: 4001 (IB Gateway live default; 4002 paper; TWS uses 7496 / 7497). Match `IBKR_PORT`.
+   - **Trusted IPs**: `127.0.0.1` (add nothing else), and leave "Allow connections from localhost only" on.
+2. IB Gateway **logs out about once a day** (daily auto-restart / re-login; a full re-login is needed about weekly or after
+   a 2FA prompt). Log in again when it does; until then the sync fails and the last snapshot is used.
+3. Settings (env / `.env`): `IBKR_HOST=127.0.0.1`, `IBKR_PORT=4001`, `IBKR_CLIENT_ID=17`, `IBKR_ACCOUNT` (optional;
+   default is the first managed account), `BASE_CURRENCY=CAD`, `MAX_LEVERAGE_WARN=1.0`, `ALLOCATION_PROFILE=cad|us (default cad)`
+   (`cad` is the approved D14 mapping and the default), `IBKR_SYNC_ENABLED=true` to sync before every
+   nightly scan.
+4. `uv run python main.py risk init` (adds the snapshot table), then `uv run python main.py ibkr sync`;
+   `ibkr status` shows the latest stored snapshot without connecting.
+
+Snapshots are stored in the state DB with history. The overview and risk pages use the latest one (net worth =
+net liquidation, margin loan, leverage and excess liquidity; a leverage above `MAX_LEVERAGE_WARN` shows a warning). If the sync
+fails the nightly run alerts, keeps using the last snapshot (or `holdings.csv`) and still scans. `holdings.csv` accepts
+a negative `CASH` row (margin loan) and an optional `currency` column (default `BASE_CURRENCY`). Allocation proposals
+never use margin: with a loan they say "reduce margin loan first" and spend only your own cash plus contributions.
 
 ## Paper-trading checklist
 

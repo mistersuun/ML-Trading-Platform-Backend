@@ -14,6 +14,13 @@ AS_OF = date(2024, 6, 15)
 PRICES = {s: 100.0 for s in set(CORE_TARGETS) | set(TREND_UNIVERSE)}
 
 
+@pytest.fixture(autouse=True)
+def _us_profile(monkeypatch):
+    """These tests are written against the D4 US-ticker table; the platform default is now 'cad' (D14)."""
+    import config
+    monkeypatch.setattr(config, "ALLOCATION_PROFILE", "us")
+
+
 def _closes(n=30, start="2022-01", drift=0.01, cols=TREND_UNIVERSE):
     idx = pd.period_range(start, periods=n, freq="M")
     return pd.DataFrame({c: 100 * (1 + drift) ** np.arange(n) for c in cols}, index=idx)

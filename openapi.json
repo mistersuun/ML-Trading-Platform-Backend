@@ -1,6 +1,191 @@
 {
   "components": {
     "schemas": {
+      "AccountBlock": {
+        "additionalProperties": false,
+        "description": "The owner's broker account (read-only IBKR snapshot) or the holdings.csv fallback, in base currency.\n\nmargin_loan is the absolute value of negative cash; leverage is gross positions / net liquidation;\nmargin_headroom is the broker's excess liquidity (None without a broker snapshot).",
+        "properties": {
+          "age_hours": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Age Hours"
+          },
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "available": {
+            "default": true,
+            "title": "Available",
+            "type": "boolean"
+          },
+          "base_currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Base Currency"
+          },
+          "buying_power": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Buying Power"
+          },
+          "cash": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cash"
+          },
+          "leverage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leverage"
+          },
+          "maint_margin": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Maint Margin"
+          },
+          "margin_headroom": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Headroom"
+          },
+          "margin_loan": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Loan"
+          },
+          "max_leverage_warn": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Leverage Warn"
+          },
+          "net_worth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Worth"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "positions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positions"
+          },
+          "positions_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positions Value"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "title": "AccountBlock",
+        "type": "object"
+      },
       "AccountValue": {
         "additionalProperties": false,
         "properties": {
@@ -958,6 +1143,17 @@
           "target": {
             "title": "Target",
             "type": "number"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
           }
         },
         "required": [
@@ -1573,6 +1769,16 @@
       "OverviewResponse": {
         "additionalProperties": false,
         "properties": {
+          "account": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "accounts": {
             "items": {
               "$ref": "#/components/schemas/AccountValue"
@@ -1593,6 +1799,11 @@
           },
           "as_of": {
             "title": "As Of",
+            "type": "string"
+          },
+          "base_currency": {
+            "default": "CAD",
+            "title": "Base Currency",
             "type": "string"
           },
           "benchmark_label": {
@@ -1636,6 +1847,39 @@
             ],
             "title": "Day Change Pct"
           },
+          "leverage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leverage"
+          },
+          "margin_headroom": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Headroom"
+          },
+          "margin_loan": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Loan"
+          },
           "max_drawdown": {
             "anyOf": [
               {
@@ -1651,6 +1895,28 @@
             "title": "Method",
             "type": "string"
           },
+          "net_worth": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Net Worth"
+          },
+          "other_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Value"
+          },
           "paper_sleeve": {
             "$ref": "#/components/schemas/PaperSleeve"
           },
@@ -1665,6 +1931,17 @@
             ],
             "title": "Period Return"
           },
+          "positions_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Positions Value"
+          },
           "range": {
             "title": "Range",
             "type": "string"
@@ -1676,9 +1953,25 @@
             "title": "Series",
             "type": "array"
           },
+          "source": {
+            "default": "holdings_csv",
+            "title": "Source",
+            "type": "string"
+          },
           "total_value": {
             "title": "Total Value",
             "type": "number"
+          },
+          "unclassified_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unclassified Value"
           },
           "unpriced": {
             "items": {
@@ -2202,6 +2495,11 @@
             "title": "As Of",
             "type": "string"
           },
+          "base_currency": {
+            "default": "CAD",
+            "title": "Base Currency",
+            "type": "string"
+          },
           "cash": {
             "title": "Cash",
             "type": "number"
@@ -2214,6 +2512,17 @@
             "title": "Contribution",
             "type": "number"
           },
+          "contribution_to_loan": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contribution To Loan"
+          },
           "groups": {
             "items": {
               "$ref": "#/components/schemas/GroupWeight"
@@ -2225,12 +2534,61 @@
             "title": "Groups Basis",
             "type": "string"
           },
+          "leverage": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leverage"
+          },
+          "managed_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Managed Value"
+          },
+          "margin_loan": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Loan"
+          },
+          "margin_loan_after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Margin Loan After"
+          },
           "notes": {
             "items": {
               "type": "string"
             },
             "title": "Notes",
             "type": "array"
+          },
+          "profile": {
+            "default": "us",
+            "title": "Profile",
+            "type": "string"
           },
           "rows": {
             "items": {
@@ -2274,6 +2632,17 @@
             },
             "title": "Unmanaged",
             "type": "array"
+          },
+          "unmanaged_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unmanaged Value"
           }
         },
         "required": [
@@ -2474,6 +2843,16 @@
       "RiskStatusResponse": {
         "additionalProperties": false,
         "properties": {
+          "account": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AccountBlock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "configured_equity": {
             "title": "Configured Equity",
             "type": "number"

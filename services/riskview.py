@@ -13,8 +13,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 import config
+from account import store as account_store
 from api.errors import ApiError
 from risk_manager import kill_switch_env
+from services import account_view
 from services import models as M
 from state import db as state_db
 
@@ -164,6 +166,16 @@ def _reconcile(conn) -> M.ReconcileStatus:
              "(`python main.py risk reconcile`).")
 
 
+def _account(conn, now: datetime) -> M.AccountBlock:
+    """Latest read-only IBKR snapshot (net worth, margin loan, leverage, headroom) or an 'unavailable' block. The
+    broker is not queried here: this is what the last `python main.py ibkr sync` stored."""
+    snap = account_store.latest_snapshot(conn)
+    if snap is None:
+        return account_view.unavailable("No IBKR snapshot yet. Run `python main.py ibkr sync` with IB Gateway "
+                                        "running (README: IB Gateway setup).")
+    return account_view.block_from_snapshot(snap, now)
+
+
 def status(conn=None, now: Optional[datetime] = None) -> M.RiskStatusResponse:
     own = conn is None
     conn = conn or open_state()
@@ -182,6 +194,7 @@ def status(conn=None, now: Optional[datetime] = None) -> M.RiskStatusResponse:
             n_open = _open_positions(conn)
             decisions = _decisions(conn, now)
             reconcile = _reconcile(conn)
+            account = _account(conn, now)
         except sqlite3.Error as e:
             raise ApiError("The risk state database could not be read. Run `python main.py risk init`.",
                            {"reason": type(e).__name__}, status_code=503, code="state_not_initialized") from e
@@ -202,4 +215,4 @@ def status(conn=None, now: Optional[datetime] = None) -> M.RiskStatusResponse:
         equity_history=hist, decision_window_days=DECISION_WINDOW_DAYS, decision_total=len(decisions),
         decision_reasons=[M.ReasonCount(reason=k, count=n) for k, n in
                           sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))],
-        decisions=latest)
+        decisions=latest, account=account)

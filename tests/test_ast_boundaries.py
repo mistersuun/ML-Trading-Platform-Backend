@@ -30,9 +30,35 @@ def _hits(names: set[str], mod: str) -> bool:
     return any(n == mod or n.startswith(mod + ".") for n in names)
 
 
+# D14: the one extra importer is the read-only IBKR sync, and only of the read-only module.
+_READONLY_IMPORTERS = {pathlib.Path("account/sync.py")}
+
+
+def _only_readonly_module(broker_names: set[str]) -> bool:
+    """True only when there is at least one broker import and every one is brokers.ibkr_readonly (or a member of it).
+    A bare `import brokers` leaves the set empty and must NOT pass (all() of nothing is True)."""
+    return bool(broker_names) and all(_hits({n}, "brokers.ibkr_readonly") for n in broker_names)
+
+
+def test_readonly_importer_exception_is_not_vacuous():
+    assert _only_readonly_module({"brokers.ibkr_readonly", "brokers.ibkr_readonly.fetch_account"})
+    assert not _only_readonly_module(set())                       # bare `import brokers`
+    assert not _only_readonly_module({"brokers.ibkr_readonly", "brokers.alpaca_broker"})
+    assert not _only_readonly_module({"brokers.ibkr_readonly_extra"})
+
+
 def test_only_execution_and_brokers_import_brokers():
-    offenders = [str(r) for r in _sources()
-                 if r.parts[0] != "brokers" and r.name != "execution.py" and _hits(_imports(ROOT / r), "brokers")]
+    offenders = []
+    for r in _sources():
+        if r.parts[0] == "brokers" or r.name == "execution.py":
+            continue
+        names = _imports(ROOT / r)
+        if not _hits(names, "brokers"):
+            continue
+        broker_names = {n for n in names if _hits({n}, "brokers")} - {"brokers"}
+        if r in _READONLY_IMPORTERS and _only_readonly_module(broker_names):
+            continue
+        offenders.append(str(r))
     assert offenders == [], f"brokers.* may only be imported by execution.py: {offenders}"
 
 
@@ -112,3 +138,86 @@ def test_raw_call_scanner_detects_violations(tmp_path):
 
 def test_execution_has_no_raw_client_reexport():
     assert not hasattr(__import__("execution"), "build_trading_client")
+
+
+# ── defence in depth: no reach-around of the read-only IBKR wrapper (D14) ─────
+_READONLY_MODULE = pathlib.Path("brokers/ibkr_readonly.py")
+_NO_DYNAMIC_DIRS = {"account", "services"}
+
+
+def _is_const_str(node) -> bool:
+    return isinstance(node, ast.Constant) and isinstance(node.value, str)
+
+
+def _live_refs(tree: ast.AST) -> list[str]:
+    hits = []
+    for n in ast.walk(tree):
+        ident = n.id if isinstance(n, ast.Name) else n.attr if isinstance(n, ast.Attribute) else \
+            n.name if isinstance(n, ast.alias) else None
+        if ident in ("_LIVE", "_live"):
+            hits.append(f"line {getattr(n, 'lineno', '?')}: {ident}")
+        elif isinstance(n, ast.Constant) and isinstance(n.value, str) and n.value in ("_LIVE", "_live"):
+            hits.append(f"line {n.lineno}: '{n.value}'")
+    return hits
+
+
+def _call_name(call: ast.Call) -> str:
+    f = call.func
+    return f.id if isinstance(f, ast.Name) else f.attr if isinstance(f, ast.Attribute) else ""
+
+
+def _dynamic_getattr(tree: ast.AST) -> list[str]:
+    """getattr/setattr/delattr/vars-style access whose attribute name is not a string constant."""
+    return [f"line {n.lineno}: {_call_name(n)}(...)" for n in ast.walk(tree)
+            if isinstance(n, ast.Call) and _call_name(n) in ("getattr", "setattr", "delattr")
+            and not (len(n.args) >= 2 and _is_const_str(n.args[1]))]
+
+
+def _computed_imports(tree: ast.AST) -> list[str]:
+    return [f"line {n.lineno}: {_call_name(n)}(...)" for n in ast.walk(tree)
+            if isinstance(n, ast.Call) and _call_name(n) in ("import_module", "__import__")
+            and not (n.args and _is_const_str(n.args[0]) and not n.keywords)]
+
+
+def test_live_registry_is_referenced_only_inside_the_readonly_module():
+    offenders = {}
+    for r in _sources():
+        if r == _READONLY_MODULE:
+            continue
+        h = _live_refs(ast.parse((ROOT / r).read_text()))
+        if h:
+            offenders[str(r)] = h
+    assert offenders == {}, offenders
+
+
+def test_no_dynamic_getattr_in_account_and_services():
+    offenders = {}
+    for r in _sources():
+        if r.parts[0] in _NO_DYNAMIC_DIRS:
+            h = _dynamic_getattr(ast.parse((ROOT / r).read_text()))
+            if h:
+                offenders[str(r)] = h
+    assert offenders == {}, offenders
+
+
+def test_no_computed_imports_anywhere_outside_the_readonly_module():
+    offenders = {}
+    for r in _sources():
+        if r == _READONLY_MODULE:
+            continue
+        h = _computed_imports(ast.parse((ROOT / r).read_text()))
+        if h:
+            offenders[str(r)] = h
+    assert offenders == {}, offenders
+
+
+def test_the_new_scanners_detect_violations():
+    bad = ast.parse("import importlib\nx = r._LIVE\nfrom m import _live\n"
+                    "getattr(x, 'place' + 'Order')\ngetattr(x, name, None)\nsetattr(x, n, 1)\n"
+                    "importlib.import_module('ib_' + 'async')\n__import__(name)\nimportlib.import_module(n)\n"
+                    "importlib.import_module('ib_async')\n")
+    assert len(_live_refs(bad)) == 2
+    assert len(_dynamic_getattr(bad)) == 3
+    assert len(_computed_imports(bad)) == 3           # the plain constant import_module('ib_async') is not "computed"
+    ok = ast.parse("getattr(x, 'tag', None)\nimportlib.import_module('json')\n")
+    assert _dynamic_getattr(ok) == [] and _computed_imports(ok) == []

@@ -20,8 +20,9 @@ _WATCHLIST_ETFS = {"SPY", "QQQ", "IWM", "DIA"}
 _EXTRA_EQUITIES = ("BRK-B",)
 _INDICES = ("^GSPC", "^IXIC", "^DJI", "^VIX")
 
-_BARS_PER_YEAR = {"equity": 252, "etf": 252, "futures": 252, "index": 252, "fx": 260, "crypto": 365}
-_CALENDAR = {"equity": "XNYS", "etf": "XNYS", "index": "XNYS", "crypto": "24/7", "fx": "FX", "futures": "CMES"}
+_BARS_PER_YEAR = {"equity": 252, "etf": 252, "futures": 252, "index": 252, "fx": 260, "crypto": 365, "external": 252}
+_CALENDAR = {"equity": "XNYS", "etf": "XNYS", "index": "XNYS", "crypto": "24/7", "fx": "FX", "futures": "CMES",
+             "external": "XTSE"}
 
 
 class UnknownSymbol(KeyError):
@@ -115,8 +116,25 @@ def _registry() -> dict:
     return reg
 
 
+# Symbols reported by the broker account (account/sync.py), e.g. 'VFV.TO'. Never executable (D3, D14): they exist so
+# prices, allocation and the overview can look them up, nothing else.
+_EXTERNAL: dict = {}
+
+
+def register_external(symbol: str, currency: str = "", exchange: str = "") -> Instrument:
+    """Register a broker-reported symbol as a non-executable 'external' instrument (idempotent)."""
+    sym = symbol.strip().upper()
+    inst = Instrument(
+        id=sym, asset_class="external", calendar=_CALENDAR["external"], bars_per_year=_BARS_PER_YEAR["external"],
+        alpaca_data_symbol=None, alpaca_trade_symbol=None, yfinance_symbol=sym, executable=False,
+        cluster=sym, research_only=True,
+        notes=f"broker-reported {currency or '?'} listing on {exchange or '?'}; read-only, never executable (D14)")
+    _EXTERNAL[sym] = inst
+    return inst
+
+
 def get(symbol: str) -> Instrument:
-    inst = _registry().get(symbol)
+    inst = _registry().get(symbol) or _EXTERNAL.get(symbol)
     if inst is None:
         raise UnknownSymbol(symbol)
     return inst
@@ -131,7 +149,7 @@ def bars_per_year(symbol: str, default: int = 252) -> int:
 
 
 def all_instruments() -> list:
-    return list(_registry().values())
+    return list(_registry().values()) + [i for k, i in _EXTERNAL.items() if k not in _registry()]
 
 
 def default_pairs() -> list:

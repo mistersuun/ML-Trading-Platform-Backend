@@ -1,4 +1,9 @@
-"""Owner portfolio overview (GET /api/portfolio/overview): the real holdings CSV priced with the data layer.
+"""Owner portfolio overview (GET /api/portfolio/overview): the owner's account priced with the data layer.
+
+The account is the latest read-only IBKR snapshot (account_snapshots, D14) when there is one, else the holdings CSV.
+Positions are priced from the bar store in their own currency and converted to the base currency (CAD by default)
+with the snapshot's FX rates, or with the yfinance '<CCY><BASE>=X' history for the series. Net worth is the broker's
+net liquidation; a negative cash balance is a margin loan and stays constant in the net-worth series.
 
 Method (stated in the response): today's holdings are held CONSTANT and applied to historical prices, so the
 series answers "how would what I own today have done", not "what did my account do" (the platform has no
@@ -16,6 +21,7 @@ import allocation
 import config
 from api.errors import ApiError
 from services import allocation_view as av
+from services import account_view
 from services import models as M
 from services import riskview
 from services.common import finite
@@ -29,6 +35,8 @@ METHOD = ("Constant current holdings applied to historical prices: it shows how 
           "performed, not your account's history (no transactions are recorded). Prices are dividend-adjusted "
           "closes, so returns are total returns. The benchmark is the monthly-rebalanced "
           "{bench}, also total return.")
+NET_METHOD = (" Growth of 100 and drawdown are on NET worth: constant current holdings plus a constant cash "
+              "balance{loan}.")
 
 
 def _benchmark_label() -> str:
@@ -79,20 +87,40 @@ def overview(provider: DataProvider, rng: str = "1Y", holdings: Optional[dict] =
     if rng not in RANGES:
         raise ApiError(f"range must be one of {', '.join(RANGES)}", {"range": rng}, status_code=422,
                        code="validation_error")
-    holdings = holdings if holdings is not None else av.load_owner_holdings()
+    inp = av.owner_inputs(holdings)
+    snap, base = inp.snapshot, inp.base
     days = config.RESEARCH_LOOKBACK_DAYS if rng == "ALL" else _RANGE_DAYS[rng]
     closes = av.Closes(provider, max(days, av.PRICE_HISTORY_DAYS))
     warnings: list[str] = []
 
-    cash = float(holdings.get(allocation.CASH_KEY, 0.0))
-    qty = {s: float(q) for s, q in holdings.items() if s != allocation.CASH_KEY and q}
-    series, unpriced = {}, []
+    cash = inp.cash
+    qty = {s: float(q) for s, q in inp.holdings.items() if s != allocation.CASH_KEY and q}
+    series, unpriced, fx_notes = {}, [], []
     for s in sorted(qty):
         c = closes.get(s)
         if c is None:
             unpriced.append(s)
-        else:
-            series[s] = c
+            continue
+        ccy = av.native_currency(s, inp) if snap is not None else inp.currency.get(s, base)
+        if ccy != base:
+            rate = av.fx_rate_now(closes, ccy, inp)
+            hist = closes.get(f"{ccy}{base}=X")
+            if rate is None:
+                warnings.append(f"No {ccy}{base}=X rate: {s} is left out of the total and the charts.")
+                unpriced.append(s)
+                continue
+            if hist is not None:
+                fx = hist.reindex(c.index.union(hist.index)).ffill().bfill().reindex(c.index)
+                if f"{ccy}{base}=X" not in fx_notes:
+                    fx_notes.append(f"{ccy}{base}=X")
+            else:
+                fx = pd.Series(rate, index=c.index)
+                warnings.append(f"No {ccy}{base}=X history: {s} is converted at the constant rate {rate:.4f}.")
+            c = c * fx
+            if snap is not None and snap.fx(ccy):
+                c = c.copy()
+                c.iloc[-1] = float(closes.get(s).iloc[-1]) * rate        # today at the broker's rate
+        series[s] = c
     if unpriced:
         warnings.append("No price data for " + ", ".join(unpriced) + ": left out of the total and the charts.")
     if not series and cash <= 0:
@@ -104,13 +132,15 @@ def overview(provider: DataProvider, rng: str = "1Y", holdings: Optional[dict] =
     prev_px = {s: float(c.iloc[-2]) if len(c) > 1 else float(c.iloc[-1]) for s, c in series.items()}
     value = {s: qty[s] * last_px[s] for s in series}
     invested = sum(value.values())
-    total = invested + cash
+    net_worth = snap.net_liquidation if snap is not None else invested + cash
+    total = net_worth
     prev_total = sum(qty[s] * prev_px[s] for s in series) + cash
-    day = total - prev_total
+    day = invested - sum(qty[s] * prev_px[s] for s in series)
     as_of = max((c.index[-1] for c in series.values()), default=pd.Timestamp(date.today()))
 
-    core = set(allocation.CORE_TARGETS)
-    trend = set(allocation.TREND_UNIVERSE) - core   # VEA and IEF sit in both lists: they count as core
+    prof = allocation.resolve_profile(inp.holdings)
+    core = set(prof.core)
+    trend = set(prof.trend_universe) - core         # VEA and IEF sit in both lists: they count as core
     acct = {"core": sum(v for s, v in value.items() if s in core),
             "trend": sum(v for s, v in value.items() if s in trend)}
     acct["other"] = sum(v for sym, v in value.items() if sym not in core | trend)
@@ -120,23 +150,44 @@ def overview(provider: DataProvider, rng: str = "1Y", holdings: Optional[dict] =
                 if k in ("core", "trend", "cash") or v > 0.005]
     if acct["trend"] or acct["core"]:
         warnings.append("Core / trend split is by symbol (the CSV has no account column): VEA and IEF count as "
-                        "core, SPY, GLD, DBC and VNQ as trend.")
+                        "core, SPY, GLD, DBC and VNQ as trend." if prof.name == "us" else
+                        "Core / trend split is by symbol (the account has no sleeve column): the profile's core "
+                        "listings count as core, its other trend listings as trend.")
 
-    # ---- history: growth of 100, drawdown, benchmark
+    # ---- account block (net worth, margin loan, leverage, headroom)
+    if snap is not None:
+        block = account_view.block_from_snapshot(snap)
+        block.positions_value = finite(invested)         # priced from the bar store, like the series
+        positions_value = invested
+    else:
+        positions_value = invested
+        block = account_view.block_from_values("holdings_csv", None, base, net_worth, invested, cash,
+                                               n_positions=len(series))
+    warnings.extend(block.warnings)
+    if snap is not None and snap.unvalued_positions():
+        warnings.append("Not valued (not shares): " + ", ".join(sorted({f"{p.broker_symbol or p.symbol} "
+                        f"({p.sec_type})" for p in snap.unvalued_positions()})) + ". They count in the broker's "
+                        "net liquidation but not in the holdings below.")
+    if snap is not None and base != "USD":
+        warnings.append("The benchmark (SPY/IEF) is in US dollars and is not converted to " + base + ".")
+
+    # ---- history: growth of 100, drawdown, benchmark (on NET worth: positions + the constant cash balance)
     points: list[M.SeriesPoint] = []
     period_return = bench_return = max_dd = None
-    if series:
-        px = pd.concat(series, axis=1).sort_index().ffill(limit=5).dropna()
-        if px.empty:
-            warnings.append("The holdings share no common price history; no chart is available.")
+    px = pd.concat(series, axis=1).sort_index().ffill(limit=5).dropna() if series else None
+    if px is not None and px.empty:
+        warnings.append("The holdings share no common price history; no chart is available.")
+    elif px is not None:
+        starts = {s: series[s].index[0] for s in series}
+        limiter = max(starts, key=starts.get)
+        if rng == "ALL" and starts[limiter] > min(starts.values()) + pd.Timedelta(days=7):
+            warnings.append(f"Chart starts {px.index[0].date().isoformat()}, when {limiter} began trading.")
+        vals = (px * pd.Series(qty)[px.columns]).sum(axis=1) + cash
+        vals = vals.iloc[_range_base(px.index, rng):]
+        if not (vals > 0).all():
+            warnings.append("Net worth is not positive over the chart range, so growth of 100 is undefined and no "
+                            "chart is shown.")
         else:
-            starts = {s: series[s].index[0] for s in series}
-            limiter = max(starts, key=starts.get)
-            if rng == "ALL" and starts[limiter] > min(starts.values()) + pd.Timedelta(days=7):
-                warnings.append(f"Chart starts {px.index[0].date().isoformat()}, when {limiter} began trading.")
-            vals = (px * pd.Series(qty)[px.columns]).sum(axis=1) + cash
-            base = _range_base(px.index, rng)
-            vals = vals.iloc[base:]
             growth = vals / vals.iloc[0] * 100.0
             dd = growth / growth.cummax() - 1.0
             bench = None
@@ -158,22 +209,35 @@ def overview(provider: DataProvider, rng: str = "1Y", holdings: Optional[dict] =
                     drawdown=finite(dd.iloc[i])))
 
     # ---- allocation by group (core + trend at today's trend signals)
-    monthly = av.monthly_frame(closes, allocation.TREND_UNIVERSE)
-    scores, _ = allocation.trend_signals(monthly if len(monthly.columns) else None)
-    target = av.group_targets(allocation.target_weights(scores))
-    mapped = {s: v for s, v in value.items() if s in av.GROUP_OF}
-    other = sorted(s for s in value if s not in av.GROUP_OF)
+    monthly = av.monthly_frame(closes, prof.trend_universe)
+    scores, _ = allocation.trend_signals(monthly if len(monthly.columns) else None, assets=list(prof.trend_universe))
+    target = av.group_targets(allocation.target_weights(scores, prof))
+    mapped = {s: v for s, v in value.items() if av.group_key(s)}
+    other = sorted(s for s in value if not av.group_key(s))
     if other:
         warnings.append("Not in any asset group (left out of the allocation): " + ", ".join(other) + ".")
-    groups = av.group_rows(target, av.group_shares(mapped))
+    groups = av.group_rows(target, av.group_shares(mapped), profile=prof.name)
+    classified = sum(mapped.values())
+    for g in groups:                                  # value in base currency: the share is over classified symbols
+        g.value = finite(g.now * classified)
+    unclassified = finite(sum(v for s, v in value.items() if not av.group_key(s)))
 
+    method = METHOD.format(bench=_benchmark_label()) + NET_METHOD.format(
+        loan=f" (a margin loan of {-cash:,.0f} {base}, held constant)" if cash < 0 else "")
+    if fx_notes:
+        method += " Positions in other currencies are converted to " + base + " with " + ", ".join(fx_notes) + "."
+    if snap is not None:
+        method += " Net worth is the broker's net liquidation."
     return M.OverviewResponse(
         as_of=as_of.date().isoformat(), range=rng, total_value=total, day_change=finite(day),
         day_change_pct=finite(day / prev_total) if prev_total > 0 else None, cash=cash, accounts=accounts,
         paper_sleeve=_paper_sleeve(), period_return=period_return, benchmark_return=bench_return,
-        max_drawdown=max_dd, series=points, method=METHOD.format(bench=_benchmark_label()),
+        max_drawdown=max_dd, series=points, method=method,
         benchmark_label=_benchmark_label(), allocation=groups, allocation_basis=av.GROUPS_BASIS,
-        unpriced=unpriced, warnings=warnings)
+        unpriced=unpriced, warnings=warnings, base_currency=base, source=inp.source, net_worth=finite(net_worth),
+        positions_value=finite(positions_value), margin_loan=finite(max(-cash, 0.0)), leverage=block.leverage,
+        margin_headroom=block.margin_headroom, account=block, unclassified_value=unclassified,
+        other_value=finite(net_worth - (positions_value + cash)) if snap is not None else None)
 
 
 def _paper_sleeve() -> M.PaperSleeve:

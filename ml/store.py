@@ -10,6 +10,7 @@
 """
 from __future__ import annotations
 
+from importlib.metadata import version as _metadata_version
 import hashlib
 import json
 import logging
@@ -34,6 +35,8 @@ BUNDLE_FILE = "model.joblib"
 META_FILE = "metadata.json"
 SCHEMA_VERSION = 1
 _LIBS = ("sklearn", "lightgbm", "xgboost", "numpy", "pandas")
+_DISTRIBUTIONS = {"sklearn": "scikit-learn", "lightgbm": "lightgbm", "xgboost": "xgboost", "numpy": "numpy",
+                  "pandas": "pandas"}       # constant names only: no computed imports (tests/test_ast_boundaries.py)
 _MAJOR_CHECKED = ("sklearn", "lightgbm", "xgboost")
 _TS_FMT = "%Y%m%dT%H%M%S%fZ"
 _TS_RE = re.compile(r"^\d{8}T\d{12}Z$")
@@ -56,7 +59,7 @@ def library_versions() -> dict[str, Optional[str]]:
     out: dict[str, Optional[str]] = {}
     for name in _LIBS:
         try:
-            out[name] = __import__(name).__version__
+            out[name] = _metadata_version(_DISTRIBUTIONS[name])
         except Exception:  # noqa: BLE001  (lightgbm / xgboost are optional)
             out[name] = None
     return out

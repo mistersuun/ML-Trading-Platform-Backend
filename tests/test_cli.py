@@ -14,6 +14,13 @@ from brokers.fake import FakeBroker
 from tests.fixtures.fake_broker import init_state
 
 
+@pytest.fixture(autouse=True)
+def _us_profile(monkeypatch):
+    """These tests are written against the D4 US-ticker table; the platform default is now 'cad' (D14)."""
+    import config
+    monkeypatch.setattr(config, "ALLOCATION_PROFILE", "us")
+
+
 def _run(argv):
     try:
         return main.main(argv)

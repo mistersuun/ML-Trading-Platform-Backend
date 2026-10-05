@@ -278,3 +278,25 @@ PAIRS_TIME_STOP_HALF_LIVES = 3
 HOLDINGS_CSV = _repo_path("HOLDINGS_CSV", "state/holdings.csv")
 # Benchmark for the overview: monthly-rebalanced total-return mix.
 BENCHMARK_WEIGHTS = {"SPY": 0.6, "IEF": 0.4}
+
+# ══════════════════════════════════════════════════════════════
+#  IBKR READ-ONLY ACCOUNT SYNC (docs/decisions.md D14)
+#  Talks to a locally running IB Gateway with the API set to READ-ONLY (that Gateway setting is what actually blocks
+#  orders). In the code, brokers/ibkr_readonly.py is guarded by AST tests that ban order APIs and by an allow-list
+#  wrapper (best effort); connect(readonly=True) only skips order sync. The sync only reads the account into state
+#  DB snapshots.
+# ══════════════════════════════════════════════════════════════
+
+IBKR_HOST = os.getenv("IBKR_HOST", "127.0.0.1")
+IBKR_PORT = int(_f("IBKR_PORT", 4001))          # 4001 IB Gateway live, 4002 IB Gateway paper (7496/7497 for TWS)
+IBKR_CLIENT_ID = int(_f("IBKR_CLIENT_ID", 17))
+IBKR_ACCOUNT = os.getenv("IBKR_ACCOUNT", "").strip() or None   # optional: default is the first managed account
+IBKR_TIMEOUT_S = _f("IBKR_TIMEOUT_S", 10.0)
+# The nightly run only calls the sync when this is true (a machine without IB Gateway would alert every night).
+IBKR_SYNC_ENABLED = os.getenv("IBKR_SYNC_ENABLED", "false").strip().lower() == "true"
+BASE_CURRENCY = (os.getenv("BASE_CURRENCY", "CAD").strip().upper() or "CAD")
+# 'cad' = the CAD-listed mapping (default; approved by the owner 2026-10-05, D14); 'us' = the D4 core in US tickers.
+ALLOCATION_PROFILE = os.getenv("ALLOCATION_PROFILE", "cad").strip().lower()
+if ALLOCATION_PROFILE not in ("us", "cad"):
+    ALLOCATION_PROFILE = "cad"
+MAX_LEVERAGE_WARN = _f("MAX_LEVERAGE_WARN", 1.0)   # gross positions / net liquidation above this -> warning

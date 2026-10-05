@@ -28,6 +28,13 @@ HOLDINGS = {"VTI": 300, "VEA": 250, "VWO": 80, "IEF": 100, "TLT": 40, "TIP": 60,
             "PDBC": 40, "SPY": 15, "GLD": 10, "DBC": 100, "VNQ": 30, "CASH": 4560}
 
 
+@pytest.fixture(autouse=True)
+def _us_profile(monkeypatch):
+    """These tests are written against the D4 US-ticker table; the platform default is now 'cad' (D14)."""
+    import config
+    monkeypatch.setattr(config, "ALLOCATION_PROFILE", "us")
+
+
 def _no_constants(name):
     raise AssertionError(f"non-finite JSON constant {name}")
 
@@ -81,6 +88,7 @@ def holdings_csv(tmp_path, monkeypatch):
     p = tmp_path / "holdings.csv"
     p.write_text("symbol,quantity\n" + "\n".join(f"{s},{q}" for s, q in HOLDINGS.items()) + "\n")
     monkeypatch.setattr(config, "HOLDINGS_CSV", str(p))
+    monkeypatch.setattr(config, "BASE_CURRENCY", "USD")        # a US-ticker portfolio held in US dollars
     return p
 
 
