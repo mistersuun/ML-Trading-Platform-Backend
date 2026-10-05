@@ -226,7 +226,7 @@ def propose_rebalance(holdings: dict[str, float], prices: dict[str, float],
     for s, n in buys.items():
         if n and (contributions > 0 or n * prices[s] >= min_trade):
             rows[s].trade_shares, rows[s].trade_value = n, n * prices[s]
-    leftover = avail - sum(r.trade_value for r in rows.values())
+    leftover = cash + contributions - sum(r.trade_value for r in rows.values())
     ordered = sorted(rows.values(), key=lambda r: -r.target)
     return Proposal(ordered, total, cash, contributions, leftover, scores, sig_month,
                     unmanaged, notes)

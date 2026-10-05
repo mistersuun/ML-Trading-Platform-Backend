@@ -29,6 +29,7 @@ from state import db as state_db
 logger = logging.getLogger(__name__)
 
 NIGHTLY_KIND = "nightly"
+FUNNEL_KIND = "funnel"   # results/funnel/latest.json: counts of the latest technical validation run
 DEFAULT_AT = "17:30"
 DEFAULT_TZ = "America/New_York"
 BACKUP_KEEP = 14
@@ -112,6 +113,12 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
                 store.write_result(kind, [r.model_dump(mode="json") if hasattr(r, "model_dump") else r
                                           for r in rows], root=results_root)
                 summary[kind] = len(rows)
+                if kind == "technical":
+                    # funnel counts {tested, min_trades, oos_positive, psr, bh, orders} of the same validation run
+                    funnel = results.get("technical_funnel") or {}
+                    if funnel:
+                        store.write_result(FUNNEL_KIND, funnel, root=results_root)
+                        summary["funnel"] = funnel
         except Exception as e:
             status = "error"
             summary["error"] = f"{type(e).__name__}: {e}"[:300]

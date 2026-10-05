@@ -76,6 +76,10 @@ def test_every_route_is_covered_by_the_sweep(client):
         ("POST", "/api/stress/regimes"), ("POST", "/api/stress/sensitivity"),
         ("GET", "/api/data/status"), ("GET", "/api/results/technical/latest"),
         ("GET", "/api/results/pairs/latest"), ("GET", "/api/results/ml/latest"),
+        # UI endpoints need holdings / state fixtures: strict-JSON, 404/503 envelope and happy paths are in
+        # tests/test_ui_endpoints.py
+        ("GET", "/api/portfolio/overview"), ("GET", "/api/allocation/proposal"), ("GET", "/api/risk/status"),
+        ("GET", "/api/scanner/candidate"),
     }
     paths = client.get("/openapi.json").json()["paths"]
     actual = {(m.upper(), path) for path, ops in paths.items() if path.startswith("/api") for m in ops}

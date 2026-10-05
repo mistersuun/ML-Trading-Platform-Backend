@@ -312,6 +312,20 @@ def _validate(data: dict, registry: dict) -> list:
     return results
 
 
+def funnel_counts(results: list) -> dict:
+    """Sequential gate funnel over every candidate a validation run tested (each stage is a subset of the last):
+    tested -> enough OOS trades -> positive OOS return -> OOS PSR above the bar -> BH-significant -> may become an
+    order (validated: also hold-out and cost-stress gates)."""
+    tested = list(results)
+    min_trades = [r for r in tested if r.n_oos_trades >= config.MIN_TRADES_OOS]
+    oos_pos = [r for r in min_trades if ((r.oos or {}).get("total_return") or 0.0) > 0]
+    psr = [r for r in oos_pos if r.oos_psr is not None and r.oos_psr > config.OOS_PSR_MIN]
+    bh = [r for r in psr if r.bh_significant]
+    orders = [r for r in bh if r.validation_status in config.ORDER_ELIGIBLE_STATUSES]
+    return {"tested": len(tested), "min_trades": len(min_trades), "oos_positive": len(oos_pos),
+            "psr": len(psr), "bh": len(bh), "orders": len(orders)}
+
+
 def orderable_frame(df: pd.DataFrame, bar_date: Optional[str]) -> bool:
     """May a signal on `bar_date` become an order? Not when the frame was served stale from the bar store, nor
     when the signal bar is not the last closed session (D12: entry at the NEXT open needs a current close).
@@ -324,10 +338,13 @@ def orderable_frame(df: pd.DataFrame, bar_date: Optional[str]) -> bool:
     return True
 
 
-def _technical_hits(data: dict, patterns: Optional[list], recency_days: Optional[int] = None) -> list[_Hit]:
+def _technical_hits(data: dict, patterns: Optional[list], recency_days: Optional[int] = None,
+                    funnel_out: Optional[dict] = None) -> list[_Hit]:
     pattern_list = [p for p in (patterns or list(PATTERN_REGISTRY.keys())) if p in PATTERN_REGISTRY]
     registry = {p: PATTERN_REGISTRY[p] for p in pattern_list}
     results = _validate(data, registry)
+    if funnel_out is not None:
+        funnel_out.update(funnel_counts(results))
     hits: list[_Hit] = []
     for symbol, df in data.items():
         logger.info(f"\n─── {symbol} ({len(df)} bars) ───")
@@ -377,6 +394,7 @@ def scan_technical(
     intents: Optional[list] = None,
     recency_days: Optional[int] = None,
     candidates_out: Optional[list] = None,
+    funnel_out: Optional[dict] = None,
 ) -> list[dict]:
     """Scan all symbols with all technical patterns, validating every (symbol x pattern) candidate.
 
@@ -394,7 +412,7 @@ def scan_technical(
     candidates = intents if intents is not None else []
     all_triggered = []
 
-    for h in _technical_hits(data, patterns, recency_days):
+    for h in _technical_hits(data, patterns, recency_days, funnel_out):
         symbol, pat_name, cr, df = h.cand.symbol, h.cand.pattern, h.cr, h.df
         try:
             current_price = float(df["Close"].iloc[-1])
@@ -631,13 +649,15 @@ def _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_tr
 
         logger.info(f"Data fetched for {len(data)} symbols\n")
 
-        results = {"technical": [], "pairs": [], "ml": [], "decisions": [], "technical_candidates": []}
+        results = {"technical": [], "pairs": [], "ml": [], "decisions": [], "technical_candidates": [],
+                   "technical_funnel": {}}
         candidates: list = []
         research = fetch_research(data, provider) if ("technical" in modes or "ml" in modes) else {}
 
         if "technical" in modes:
             results["technical"] = scan_technical(research, patterns, run_stress, paper_trade, intents=candidates,
-                                              candidates_out=results["technical_candidates"])
+                                              candidates_out=results["technical_candidates"],
+                                              funnel_out=results["technical_funnel"])
         if "pairs" in modes:
             results["pairs"] = scan_pairs(data, paper_trade)
         if "ml" in modes:

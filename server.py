@@ -24,9 +24,13 @@ from routes.backtest_routes import router as backtest_router
 from routes.config_routes import router as config_router
 from routes.data_routes import router as data_router
 from routes.ml_routes import router as ml_router
+from routes.allocation_routes import router as allocation_router
 from routes.pairs_routes import router as pairs_router
 from routes.pattern_routes import router as pattern_router
+from routes.portfolio_routes import router as portfolio_router
 from routes.results_routes import router as results_router
+from routes.risk_routes import router as risk_router
+from routes.scanner_routes import router as scanner_router
 from routes.stress_routes import router as stress_router
 from services.data_status import StoreSymbolStatus, data_status
 from services.providers import DataProvider, get_provider
@@ -103,6 +107,10 @@ app.include_router(ml_router, prefix="/api/ml", tags=["ml"])
 app.include_router(stress_router, prefix="/api/stress", tags=["stress"])
 app.include_router(results_router, prefix="/api/results", tags=["results"])
 app.include_router(config_router, prefix="/api/config", tags=["config"])
+app.include_router(portfolio_router, prefix="/api/portfolio", tags=["portfolio"])
+app.include_router(allocation_router, prefix="/api/allocation", tags=["allocation"])
+app.include_router(risk_router, prefix="/api/risk", tags=["risk"])
+app.include_router(scanner_router, prefix="/api/scanner", tags=["scanner"])
 
 
 @app.get("/api/health")

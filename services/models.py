@@ -323,9 +323,20 @@ class _LatestResult(_Base):
     stale: bool
 
 
+class Funnel(_Base):
+    """How many candidates of the nightly run survive each gate in turn (every stage is a subset of the last)."""
+    tested: int
+    min_trades: int
+    oos_positive: int
+    psr: int
+    bh: int
+    orders: int
+
+
 class LatestTechnicalResult(_LatestResult):
     """Latest nightly technical scan: the validated / OOS-positive candidates (a superset of ScanSignal)."""
     payload: list[TechnicalCandidate]
+    funnel: Optional[Funnel] = None          # None for results stored before the funnel existed
 
 
 class LatestPairsResult(_LatestResult):
@@ -334,3 +345,271 @@ class LatestPairsResult(_LatestResult):
 
 class LatestMLResult(_LatestResult):
     payload: list[dict[str, Any]]
+
+
+# ---------------------------------------------------------------- owner portfolio overview (GET /api/portfolio/overview)
+class AccountValue(_Base):
+    key: str                                 # core | trend | cash | other
+    label: str
+    value: float
+    share: OptF = None                       # fraction of total portfolio value
+
+
+class PaperSleeve(_Base):
+    """The platform's own paper signal sleeve: NOT real money and not part of the portfolio total."""
+    label: str = "paper"
+    value: OptF = None
+    peak: OptF = None
+    drawdown: OptF = None                    # negative fraction below peak
+    as_of: Optional[str] = None
+    note: str = ""
+
+
+class SeriesPoint(_Base):
+    date: str
+    portfolio: float                         # growth of 100
+    benchmark: OptF = None                   # growth of 100
+    drawdown: OptF = None                    # portfolio drawdown from its running peak, <= 0
+
+
+class GroupWeight(_Base):
+    key: str
+    label: str
+    target: float                            # fraction
+    now: float                               # fraction
+    drift: float                             # now - target
+    after: OptF = None                       # allocation proposal only
+
+
+class OverviewResponse(_Base):
+    as_of: str
+    range: str
+    total_value: float
+    day_change: OptF = None
+    day_change_pct: OptF = None
+    cash: float
+    accounts: list[AccountValue]
+    paper_sleeve: PaperSleeve
+    period_return: OptF = None
+    benchmark_return: OptF = None
+    max_drawdown: OptF = None
+    series: list[SeriesPoint]
+    method: str
+    benchmark_label: str
+    allocation: list[GroupWeight]
+    allocation_basis: str
+    unpriced: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------- allocation proposal (GET /api/allocation/proposal)
+class ProposalRow(_Base):
+    symbol: str
+    name: str
+    group: str
+    price: float
+    shares: float
+    value: float
+    target: float
+    current: float
+    drift: float                             # current - target (fraction)
+    band: float                              # allowed |drift| (fraction): max(5 pts, 25% of target)
+    outside: bool
+    action: str                              # buy | sell | hold
+    trade_shares: int                        # + buy / - sell
+    trade_value: float
+
+
+class ProposalTrade(_Base):
+    symbol: str
+    action: str                              # buy | sell
+    shares: int
+    amount: float
+
+
+class TrendVote(_Base):
+    lookback: int
+    above: bool
+    average: OptF = None
+
+
+class TrendMonth(_Base):
+    month: str                               # YYYY-MM
+    close: float
+    average: OptF = None                     # 10-month average at that month-end
+
+
+class TrendAsset(_Base):
+    symbol: str
+    name: str
+    months: list[TrendMonth]
+    votes: list[TrendVote]
+    score: float                             # share of 8/10/12 votes above their average
+    state: str                               # held | partial | tbills | unknown
+    weight: float                            # share of the whole portfolio held in the asset
+    data_available: bool = True
+
+
+class ProposalResponse(_Base):
+    as_of: str
+    signal_month: Optional[str] = None
+    total_value: float
+    cash: float
+    contribution: float
+    cash_after: float
+    rows: list[ProposalRow]
+    trades: list[ProposalTrade]
+    groups: list[GroupWeight]
+    groups_basis: str
+    trend: list[TrendAsset]
+    unmanaged: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+    advisory: str
+
+
+# ---------------------------------------------------------------- risk status (GET /api/risk/status)
+class LadderLevel(_Base):
+    kind: str                                # cut | halt
+    drawdown: float                          # fraction below peak that triggers it
+    risk_multiplier: float                   # 0 for the halt
+    label: str
+    threshold_equity: OptF = None
+    room: OptF = None                        # dollars of sleeve value left before the level (<= 0: reached)
+
+
+class LimitUse(_Base):
+    key: str
+    label: str
+    used: OptF = None                        # None: not measurable from the records
+    maximum: float
+    unit: str                                # fraction | count
+    note: Optional[str] = None
+
+
+class EquityHistoryPoint(_Base):
+    ts: str
+    sleeve_equity: float
+    peak: OptF = None
+
+
+class ReasonCount(_Base):
+    reason: str
+    count: int
+
+
+class DecisionRow(_Base):
+    ts: str
+    symbol: Optional[str] = None
+    side: Optional[str] = None
+    status: str
+    reasons: list[str]
+    source: str                              # ledger | scan_run
+
+
+class ReconcileStatus(_Base):
+    broker_checked: bool
+    status: str                              # clean | mismatch
+    mismatches: list[str]
+    note: str
+
+
+class RiskStatusResponse(_Base):
+    mode: str
+    paper_trade_enabled: bool
+    halted: bool
+    halt_reason: Optional[str] = None
+    halted_at: Optional[str] = None
+    kill_switch: bool
+    reconcile: ReconcileStatus
+    sleeve_value: OptF = None
+    sleeve_as_of: Optional[str] = None
+    configured_equity: float
+    peak: OptF = None
+    drawdown: OptF = None                    # negative fraction below peak
+    ladder: list[LadderLevel]
+    open_positions: Optional[int] = None
+    max_positions: int
+    limits: list[LimitUse]
+    equity_history: list[EquityHistoryPoint]
+    decision_window_days: int
+    decision_total: int
+    decision_reasons: list[ReasonCount]
+    decisions: list[DecisionRow]
+
+
+# ---------------------------------------------------------------- scanner candidate (GET /api/scanner/candidate)
+class CurvePoint(_Base):
+    date: str
+    value: float                             # cumulative return, fraction
+
+
+class Gate(_Base):
+    key: str
+    name: str
+    value: OptF = None
+    threshold: OptF = None
+    comparator: str                          # ">=" | ">" | "<="
+    unit: str                                # count | fraction | probability
+    status: str                              # pass | fail | recorded | unavailable
+    gating: bool
+    note: Optional[str] = None
+
+
+class BarOut(_Base):
+    date: str
+    open: float
+    high: float
+    low: float
+    close: float
+
+
+class TradeMarker(_Base):
+    entry_date: str
+    entry_price: float
+    exit_date: Optional[str] = None
+    exit_price: OptF = None
+    pnl_pct: OptF = None
+    exit_reason: Optional[str] = None
+    in_holdout: bool = False
+
+
+class NightlyRef(_Base):
+    in_last_scan: bool
+    generated_at: Optional[str] = None
+    bh_adjusted_p: OptF = None
+    validation_status: Optional[str] = None
+    tested: Optional[int] = None
+    label: str
+
+
+class CandidateResponse(_Base):
+    symbol: str
+    pattern: str
+    variant: str
+    last_price: OptF = None
+    day_change: OptF = None
+    day_change_pct: OptF = None
+    as_of: Optional[str] = None
+    holdout_start: str
+    holdout_frozen: bool = False
+    oos_curve: list[CurvePoint]
+    in_sample_curve: list[CurvePoint]
+    in_sample_method: str
+    oos_return: OptF = None
+    in_sample_return: OptF = None
+    holdout_return: OptF = None
+    oos_trade_returns: list[float]
+    n_oos_trades: int
+    win_rate: OptF = None
+    win_rate_ci_low: OptF = None
+    win_rate_ci_high: OptF = None
+    avg_win: OptF = None
+    avg_loss: OptF = None
+    gates: list[Gate]
+    gates_failed: int
+    verdict: str                             # validated | alert_only
+    nightly: NightlyRef
+    bars: list[BarOut]
+    trades: list[TradeMarker]
+    rejected_reasons: list[str]
+    note: str

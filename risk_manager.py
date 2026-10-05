@@ -151,6 +151,8 @@ class RiskManager:
             ev = self._drawdown_halt(conn, now)
             if ev:
                 events.append(ev)
+            conn.execute("INSERT INTO equity_history (ts, sleeve_equity, peak) VALUES (?,?,?)",
+                         (now.isoformat(), self._equity, self._row(conn)["peak_equity"]))
             conn.execute("COMMIT")
         except BaseException:
             conn.execute("ROLLBACK")

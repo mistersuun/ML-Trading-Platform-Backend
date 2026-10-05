@@ -269,3 +269,12 @@ ML_CV_TEST_BARS = 126
 PAIRS_MIN_ALIGNED_BARS = 252
 PAIRS_ROLLING_WINDOW = 60
 PAIRS_TIME_STOP_HALF_LIVES = 3
+
+# ══════════════════════════════════════════════════════════════
+#  OWNER PORTFOLIO VIEW (decisions D1/D4: read-only, proposals only)
+# ══════════════════════════════════════════════════════════════
+
+# The owner's real holdings (`symbol,quantity` rows, a CASH row holds dollars). Never written by the platform.
+HOLDINGS_CSV = _repo_path("HOLDINGS_CSV", "state/holdings.csv")
+# Benchmark for the overview: monthly-rebalanced total-return mix.
+BENCHMARK_WEIGHTS = {"SPY": 0.6, "IEF": 0.4}

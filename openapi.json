@@ -1,6 +1,41 @@
 {
   "components": {
     "schemas": {
+      "AccountValue": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Share"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "value"
+        ],
+        "title": "AccountValue",
+        "type": "object"
+      },
       "BacktestRequest": {
         "properties": {
           "include_holdout": {
@@ -104,6 +139,291 @@
           "holdout"
         ],
         "title": "BacktestResponse",
+        "type": "object"
+      },
+      "BarOut": {
+        "additionalProperties": false,
+        "properties": {
+          "close": {
+            "title": "Close",
+            "type": "number"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "high": {
+            "title": "High",
+            "type": "number"
+          },
+          "low": {
+            "title": "Low",
+            "type": "number"
+          },
+          "open": {
+            "title": "Open",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close"
+        ],
+        "title": "BarOut",
+        "type": "object"
+      },
+      "CandidateResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "avg_loss": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Loss"
+          },
+          "avg_win": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Avg Win"
+          },
+          "bars": {
+            "items": {
+              "$ref": "#/components/schemas/BarOut"
+            },
+            "title": "Bars",
+            "type": "array"
+          },
+          "day_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change"
+          },
+          "day_change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change Pct"
+          },
+          "gates": {
+            "items": {
+              "$ref": "#/components/schemas/Gate"
+            },
+            "title": "Gates",
+            "type": "array"
+          },
+          "gates_failed": {
+            "title": "Gates Failed",
+            "type": "integer"
+          },
+          "holdout_frozen": {
+            "default": false,
+            "title": "Holdout Frozen",
+            "type": "boolean"
+          },
+          "holdout_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout Return"
+          },
+          "holdout_start": {
+            "title": "Holdout Start",
+            "type": "string"
+          },
+          "in_sample_curve": {
+            "items": {
+              "$ref": "#/components/schemas/CurvePoint"
+            },
+            "title": "In Sample Curve",
+            "type": "array"
+          },
+          "in_sample_method": {
+            "title": "In Sample Method",
+            "type": "string"
+          },
+          "in_sample_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Sample Return"
+          },
+          "last_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Price"
+          },
+          "n_oos_trades": {
+            "title": "N Oos Trades",
+            "type": "integer"
+          },
+          "nightly": {
+            "$ref": "#/components/schemas/NightlyRef"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "oos_curve": {
+            "items": {
+              "$ref": "#/components/schemas/CurvePoint"
+            },
+            "title": "Oos Curve",
+            "type": "array"
+          },
+          "oos_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Oos Return"
+          },
+          "oos_trade_returns": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Oos Trade Returns",
+            "type": "array"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "rejected_reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Rejected Reasons",
+            "type": "array"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/TradeMarker"
+            },
+            "title": "Trades",
+            "type": "array"
+          },
+          "variant": {
+            "title": "Variant",
+            "type": "string"
+          },
+          "verdict": {
+            "title": "Verdict",
+            "type": "string"
+          },
+          "win_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate"
+          },
+          "win_rate_ci_high": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate Ci High"
+          },
+          "win_rate_ci_low": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Win Rate Ci Low"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "variant",
+          "holdout_start",
+          "oos_curve",
+          "in_sample_curve",
+          "in_sample_method",
+          "oos_trade_returns",
+          "n_oos_trades",
+          "gates",
+          "gates_failed",
+          "verdict",
+          "nightly",
+          "bars",
+          "trades",
+          "rejected_reasons",
+          "note"
+        ],
+        "title": "CandidateResponse",
         "type": "object"
       },
       "ConfigBacktest": {
@@ -276,6 +596,25 @@
         "title": "ConfigValidation",
         "type": "object"
       },
+      "CurvePoint": {
+        "additionalProperties": false,
+        "properties": {
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "value"
+        ],
+        "title": "CurvePoint",
+        "type": "object"
+      },
       "DataStatusResponse": {
         "properties": {
           "symbols": {
@@ -290,6 +629,90 @@
           "symbols"
         ],
         "title": "DataStatusResponse",
+        "type": "object"
+      },
+      "DecisionRow": {
+        "additionalProperties": false,
+        "properties": {
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "side": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Side"
+          },
+          "source": {
+            "title": "Source",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Symbol"
+          },
+          "ts": {
+            "title": "Ts",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ts",
+          "status",
+          "reasons",
+          "source"
+        ],
+        "title": "DecisionRow",
+        "type": "object"
+      },
+      "EquityHistoryPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "peak": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak"
+          },
+          "sleeve_equity": {
+            "title": "Sleeve Equity",
+            "type": "number"
+          },
+          "ts": {
+            "title": "Ts",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ts",
+          "sleeve_equity"
+        ],
+        "title": "EquityHistoryPoint",
         "type": "object"
       },
       "EquityPoint": {
@@ -390,6 +813,163 @@
         "title": "FeatureImportance",
         "type": "object"
       },
+      "Funnel": {
+        "additionalProperties": false,
+        "description": "How many candidates of the nightly run survive each gate in turn (every stage is a subset of the last).",
+        "properties": {
+          "bh": {
+            "title": "Bh",
+            "type": "integer"
+          },
+          "min_trades": {
+            "title": "Min Trades",
+            "type": "integer"
+          },
+          "oos_positive": {
+            "title": "Oos Positive",
+            "type": "integer"
+          },
+          "orders": {
+            "title": "Orders",
+            "type": "integer"
+          },
+          "psr": {
+            "title": "Psr",
+            "type": "integer"
+          },
+          "tested": {
+            "title": "Tested",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tested",
+          "min_trades",
+          "oos_positive",
+          "psr",
+          "bh",
+          "orders"
+        ],
+        "title": "Funnel",
+        "type": "object"
+      },
+      "Gate": {
+        "additionalProperties": false,
+        "properties": {
+          "comparator": {
+            "title": "Comparator",
+            "type": "string"
+          },
+          "gating": {
+            "title": "Gating",
+            "type": "boolean"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "key",
+          "name",
+          "comparator",
+          "unit",
+          "status",
+          "gating"
+        ],
+        "title": "Gate",
+        "type": "object"
+      },
+      "GroupWeight": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "drift": {
+            "title": "Drift",
+            "type": "number"
+          },
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "now": {
+            "title": "Now",
+            "type": "number"
+          },
+          "target": {
+            "title": "Target",
+            "type": "number"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "target",
+          "now",
+          "drift"
+        ],
+        "title": "GroupWeight",
+        "type": "object"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -430,6 +1010,57 @@
           "note"
         ],
         "title": "HoldoutInfo",
+        "type": "object"
+      },
+      "LadderLevel": {
+        "additionalProperties": false,
+        "properties": {
+          "drawdown": {
+            "title": "Drawdown",
+            "type": "number"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "risk_multiplier": {
+            "title": "Risk Multiplier",
+            "type": "number"
+          },
+          "room": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Room"
+          },
+          "threshold_equity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Equity"
+          }
+        },
+        "required": [
+          "kind",
+          "drawdown",
+          "risk_multiplier",
+          "label"
+        ],
+        "title": "LadderLevel",
         "type": "object"
       },
       "LatestMLResult": {
@@ -540,6 +1171,16 @@
             "title": "Age Hours",
             "type": "number"
           },
+          "funnel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Funnel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "generated_at": {
             "title": "Generated At",
             "type": "string"
@@ -568,6 +1209,57 @@
           "payload"
         ],
         "title": "LatestTechnicalResult",
+        "type": "object"
+      },
+      "LimitUse": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "maximum": {
+            "title": "Maximum",
+            "type": "number"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "unit": {
+            "title": "Unit",
+            "type": "string"
+          },
+          "used": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Used"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "maximum",
+          "unit"
+        ],
+        "title": "LimitUse",
         "type": "object"
       },
       "MLPredictResponse": {
@@ -749,6 +1441,69 @@
         "title": "MLSignal",
         "type": "object"
       },
+      "NightlyRef": {
+        "additionalProperties": false,
+        "properties": {
+          "bh_adjusted_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bh Adjusted P"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "in_last_scan": {
+            "title": "In Last Scan",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "tested": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tested"
+          },
+          "validation_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Validation Status"
+          }
+        },
+        "required": [
+          "in_last_scan",
+          "label"
+        ],
+        "title": "NightlyRef",
+        "type": "object"
+      },
       "OhlcvBar": {
         "additionalProperties": false,
         "properties": {
@@ -813,6 +1568,147 @@
           "data"
         ],
         "title": "OhlcvResponse",
+        "type": "object"
+      },
+      "OverviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "accounts": {
+            "items": {
+              "$ref": "#/components/schemas/AccountValue"
+            },
+            "title": "Accounts",
+            "type": "array"
+          },
+          "allocation": {
+            "items": {
+              "$ref": "#/components/schemas/GroupWeight"
+            },
+            "title": "Allocation",
+            "type": "array"
+          },
+          "allocation_basis": {
+            "title": "Allocation Basis",
+            "type": "string"
+          },
+          "as_of": {
+            "title": "As Of",
+            "type": "string"
+          },
+          "benchmark_label": {
+            "title": "Benchmark Label",
+            "type": "string"
+          },
+          "benchmark_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Return"
+          },
+          "cash": {
+            "title": "Cash",
+            "type": "number"
+          },
+          "day_change": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change"
+          },
+          "day_change_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Day Change Pct"
+          },
+          "max_drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Drawdown"
+          },
+          "method": {
+            "title": "Method",
+            "type": "string"
+          },
+          "paper_sleeve": {
+            "$ref": "#/components/schemas/PaperSleeve"
+          },
+          "period_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Period Return"
+          },
+          "range": {
+            "title": "Range",
+            "type": "string"
+          },
+          "series": {
+            "items": {
+              "$ref": "#/components/schemas/SeriesPoint"
+            },
+            "title": "Series",
+            "type": "array"
+          },
+          "total_value": {
+            "title": "Total Value",
+            "type": "number"
+          },
+          "unpriced": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unpriced",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "as_of",
+          "range",
+          "total_value",
+          "cash",
+          "accounts",
+          "paper_sleeve",
+          "series",
+          "method",
+          "benchmark_label",
+          "allocation",
+          "allocation_basis"
+        ],
+        "title": "OverviewResponse",
         "type": "object"
       },
       "PairAnalysisResponse": {
@@ -1087,6 +1983,68 @@
         "title": "PairsScanResponse",
         "type": "object"
       },
+      "PaperSleeve": {
+        "additionalProperties": false,
+        "description": "The platform's own paper signal sleeve: NOT real money and not part of the portfolio total.",
+        "properties": {
+          "as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "As Of"
+          },
+          "drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drawdown"
+          },
+          "label": {
+            "default": "paper",
+            "title": "Label",
+            "type": "string"
+          },
+          "note": {
+            "default": "",
+            "title": "Note",
+            "type": "string"
+          },
+          "peak": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "title": "PaperSleeve",
+        "type": "object"
+      },
       "PatternDetectResponse": {
         "additionalProperties": false,
         "properties": {
@@ -1233,6 +2191,266 @@
         "title": "PricePoint",
         "type": "object"
       },
+      "ProposalResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "advisory": {
+            "title": "Advisory",
+            "type": "string"
+          },
+          "as_of": {
+            "title": "As Of",
+            "type": "string"
+          },
+          "cash": {
+            "title": "Cash",
+            "type": "number"
+          },
+          "cash_after": {
+            "title": "Cash After",
+            "type": "number"
+          },
+          "contribution": {
+            "title": "Contribution",
+            "type": "number"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/GroupWeight"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "groups_basis": {
+            "title": "Groups Basis",
+            "type": "string"
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/ProposalRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "signal_month": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signal Month"
+          },
+          "total_value": {
+            "title": "Total Value",
+            "type": "number"
+          },
+          "trades": {
+            "items": {
+              "$ref": "#/components/schemas/ProposalTrade"
+            },
+            "title": "Trades",
+            "type": "array"
+          },
+          "trend": {
+            "items": {
+              "$ref": "#/components/schemas/TrendAsset"
+            },
+            "title": "Trend",
+            "type": "array"
+          },
+          "unmanaged": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Unmanaged",
+            "type": "array"
+          }
+        },
+        "required": [
+          "as_of",
+          "total_value",
+          "cash",
+          "contribution",
+          "cash_after",
+          "rows",
+          "trades",
+          "groups",
+          "groups_basis",
+          "trend",
+          "advisory"
+        ],
+        "title": "ProposalResponse",
+        "type": "object"
+      },
+      "ProposalRow": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "band": {
+            "title": "Band",
+            "type": "number"
+          },
+          "current": {
+            "title": "Current",
+            "type": "number"
+          },
+          "drift": {
+            "title": "Drift",
+            "type": "number"
+          },
+          "group": {
+            "title": "Group",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "outside": {
+            "title": "Outside",
+            "type": "boolean"
+          },
+          "price": {
+            "title": "Price",
+            "type": "number"
+          },
+          "shares": {
+            "title": "Shares",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "number"
+          },
+          "trade_shares": {
+            "title": "Trade Shares",
+            "type": "integer"
+          },
+          "trade_value": {
+            "title": "Trade Value",
+            "type": "number"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "symbol",
+          "name",
+          "group",
+          "price",
+          "shares",
+          "value",
+          "target",
+          "current",
+          "drift",
+          "band",
+          "outside",
+          "action",
+          "trade_shares",
+          "trade_value"
+        ],
+        "title": "ProposalRow",
+        "type": "object"
+      },
+      "ProposalTrade": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "title": "Action",
+            "type": "string"
+          },
+          "amount": {
+            "title": "Amount",
+            "type": "number"
+          },
+          "shares": {
+            "title": "Shares",
+            "type": "integer"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "action",
+          "shares",
+          "amount"
+        ],
+        "title": "ProposalTrade",
+        "type": "object"
+      },
+      "ReasonCount": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason",
+          "count"
+        ],
+        "title": "ReasonCount",
+        "type": "object"
+      },
+      "ReconcileStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "broker_checked": {
+            "title": "Broker Checked",
+            "type": "boolean"
+          },
+          "mismatches": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Mismatches",
+            "type": "array"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "broker_checked",
+          "status",
+          "mismatches",
+          "note"
+        ],
+        "title": "ReconcileStatus",
+        "type": "object"
+      },
       "RegimeRequest": {
         "properties": {
           "period_days": {
@@ -1251,6 +2469,176 @@
           "symbol"
         ],
         "title": "RegimeRequest",
+        "type": "object"
+      },
+      "RiskStatusResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "configured_equity": {
+            "title": "Configured Equity",
+            "type": "number"
+          },
+          "decision_reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonCount"
+            },
+            "title": "Decision Reasons",
+            "type": "array"
+          },
+          "decision_total": {
+            "title": "Decision Total",
+            "type": "integer"
+          },
+          "decision_window_days": {
+            "title": "Decision Window Days",
+            "type": "integer"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionRow"
+            },
+            "title": "Decisions",
+            "type": "array"
+          },
+          "drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drawdown"
+          },
+          "equity_history": {
+            "items": {
+              "$ref": "#/components/schemas/EquityHistoryPoint"
+            },
+            "title": "Equity History",
+            "type": "array"
+          },
+          "halt_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Halt Reason"
+          },
+          "halted": {
+            "title": "Halted",
+            "type": "boolean"
+          },
+          "halted_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Halted At"
+          },
+          "kill_switch": {
+            "title": "Kill Switch",
+            "type": "boolean"
+          },
+          "ladder": {
+            "items": {
+              "$ref": "#/components/schemas/LadderLevel"
+            },
+            "title": "Ladder",
+            "type": "array"
+          },
+          "limits": {
+            "items": {
+              "$ref": "#/components/schemas/LimitUse"
+            },
+            "title": "Limits",
+            "type": "array"
+          },
+          "max_positions": {
+            "title": "Max Positions",
+            "type": "integer"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "open_positions": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Open Positions"
+          },
+          "paper_trade_enabled": {
+            "title": "Paper Trade Enabled",
+            "type": "boolean"
+          },
+          "peak": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Peak"
+          },
+          "reconcile": {
+            "$ref": "#/components/schemas/ReconcileStatus"
+          },
+          "sleeve_as_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sleeve As Of"
+          },
+          "sleeve_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sleeve Value"
+          }
+        },
+        "required": [
+          "mode",
+          "paper_trade_enabled",
+          "halted",
+          "kill_switch",
+          "reconcile",
+          "configured_equity",
+          "ladder",
+          "max_positions",
+          "limits",
+          "equity_history",
+          "decision_window_days",
+          "decision_total",
+          "decision_reasons",
+          "decisions"
+        ],
+        "title": "RiskStatusResponse",
         "type": "object"
       },
       "ScanFailure": {
@@ -1479,6 +2867,47 @@
           "price"
         ],
         "title": "ScanSignal",
+        "type": "object"
+      },
+      "SeriesPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "benchmark": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark"
+          },
+          "date": {
+            "title": "Date",
+            "type": "string"
+          },
+          "drawdown": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Drawdown"
+          },
+          "portfolio": {
+            "title": "Portfolio",
+            "type": "number"
+          }
+        },
+        "required": [
+          "date",
+          "portfolio"
+        ],
+        "title": "SeriesPoint",
         "type": "object"
       },
       "StoreSymbolStatus": {
@@ -1882,6 +3311,74 @@
         "title": "TechnicalCandidate",
         "type": "object"
       },
+      "TradeMarker": {
+        "additionalProperties": false,
+        "properties": {
+          "entry_date": {
+            "title": "Entry Date",
+            "type": "string"
+          },
+          "entry_price": {
+            "title": "Entry Price",
+            "type": "number"
+          },
+          "exit_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Date"
+          },
+          "exit_price": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Price"
+          },
+          "exit_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exit Reason"
+          },
+          "in_holdout": {
+            "default": false,
+            "title": "In Holdout",
+            "type": "boolean"
+          },
+          "pnl_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pnl Pct"
+          }
+        },
+        "required": [
+          "entry_date",
+          "entry_price"
+        ],
+        "title": "TradeMarker",
+        "type": "object"
+      },
       "TradeOut": {
         "additionalProperties": false,
         "properties": {
@@ -1958,6 +3455,121 @@
           "exit_price"
         ],
         "title": "TradeOut",
+        "type": "object"
+      },
+      "TrendAsset": {
+        "additionalProperties": false,
+        "properties": {
+          "data_available": {
+            "default": true,
+            "title": "Data Available",
+            "type": "boolean"
+          },
+          "months": {
+            "items": {
+              "$ref": "#/components/schemas/TrendMonth"
+            },
+            "title": "Months",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "votes": {
+            "items": {
+              "$ref": "#/components/schemas/TrendVote"
+            },
+            "title": "Votes",
+            "type": "array"
+          },
+          "weight": {
+            "title": "Weight",
+            "type": "number"
+          }
+        },
+        "required": [
+          "symbol",
+          "name",
+          "months",
+          "votes",
+          "score",
+          "state",
+          "weight"
+        ],
+        "title": "TrendAsset",
+        "type": "object"
+      },
+      "TrendMonth": {
+        "additionalProperties": false,
+        "properties": {
+          "average": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average"
+          },
+          "close": {
+            "title": "Close",
+            "type": "number"
+          },
+          "month": {
+            "title": "Month",
+            "type": "string"
+          }
+        },
+        "required": [
+          "month",
+          "close"
+        ],
+        "title": "TrendMonth",
+        "type": "object"
+      },
+      "TrendVote": {
+        "additionalProperties": false,
+        "properties": {
+          "above": {
+            "title": "Above",
+            "type": "boolean"
+          },
+          "average": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Average"
+          },
+          "lookback": {
+            "title": "Lookback",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lookback",
+          "above"
+        ],
+        "title": "TrendVote",
         "type": "object"
       },
       "ValidationError": {
@@ -2114,6 +3726,104 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/allocation/proposal": {
+      "get": {
+        "description": "Whole-share rebalance proposal toward the 90% core + 10% trend targets, with per-ETF drift against its band,\ngroup mix and the trend sleeve detail. Advisory only (404 `no_holdings` when the CSV is missing).",
+        "operationId": "get_proposal_api_allocation_proposal_get",
+        "parameters": [
+          {
+            "description": "dollars to add on top of cash",
+            "in": "query",
+            "name": "contribution",
+            "required": false,
+            "schema": {
+              "default": 0.0,
+              "description": "dollars to add on top of cash",
+              "maximum": 1000000000.0,
+              "minimum": 0,
+              "title": "Contribution",
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProposalResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Proposal",
+        "tags": [
+          "allocation"
+        ]
+      }
+    },
     "/api/backtest/run": {
       "post": {
         "description": "Run a backtest on a symbol + pattern combination (execution convention: config.EXECUTION_MODE).",
@@ -3311,6 +5021,107 @@
         ]
       }
     },
+    "/api/portfolio/overview": {
+      "get": {
+        "description": "Value, day change, accounts, growth of 100 vs the monthly-rebalanced 60/40, drawdown and allocation by\nasset group, from the owner's holdings CSV (404 `no_holdings` when it is missing). Fetches prices, so it\nshares the heavy-endpoint cap (429 when busy).",
+        "operationId": "get_overview_api_portfolio_overview_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "range",
+            "required": false,
+            "schema": {
+              "default": "1Y",
+              "enum": [
+                "1M",
+                "3M",
+                "YTD",
+                "1Y",
+                "ALL"
+              ],
+              "title": "Range",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Overview",
+        "tags": [
+          "portfolio"
+        ]
+      }
+    },
     "/api/results/ml/latest": {
       "get": {
         "description": "Latest nightly ML scan.",
@@ -3524,6 +5335,192 @@
         "summary": "Latest Technical",
         "tags": [
           "results"
+        ]
+      }
+    },
+    "/api/risk/status": {
+      "get": {
+        "description": "Sleeve value, peak, drawdown ladder with dollars of room, halt / kill switch / reconcile / mode, limits used\nvs maximum, equity history and the order decisions of the last 30 days. 503 `state_not_initialized` until\n`main.py risk init` has been run.",
+        "operationId": "get_risk_status_api_risk_status_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "state_not_initialized"
+          }
+        },
+        "summary": "Get Risk Status",
+        "tags": [
+          "risk"
+        ]
+      }
+    },
+    "/api/scanner/candidate": {
+      "get": {
+        "description": "Walk-forward, hold-out, null and cost-stress validation of one (symbol, pattern) executable candidate:\nOOS vs in-sample curves, trade returns, each gate measured against its bar, and the chart's bars and\ntrades. Heavy (shares the cap: 429 when busy).",
+        "operationId": "get_candidate_api_scanner_candidate_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "minLength": 1,
+              "title": "Symbol",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pattern",
+            "required": true,
+            "schema": {
+              "title": "Pattern",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CandidateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Candidate",
+        "tags": [
+          "scanner"
         ]
       }
     },
