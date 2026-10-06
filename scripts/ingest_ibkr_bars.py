@@ -79,7 +79,12 @@ def main(argv=None) -> int:
     except external_bars.ExternalBarsError as e:
         print(f"error: {args.symbol}: {e}", file=sys.stderr)
         return 1
-    df = external_bars.load_bars(args.symbol, args.asset_class)
+    try:
+        df = external_bars.load_bars(args.symbol, args.asset_class)
+    except external_bars.ExternalBarsError as e:      # the new file is valid; older stored bars are not
+        print(f"warning: {args.symbol}: wrote {dest.name}, but the merged history fails validation: {e} "
+              f"(re-fetch the full history without --topup)", file=sys.stderr)
+        return 2
     print(f"{args.symbol}: wrote {dest.name}; {len(df)} merged bars {df.index[0].date()} .. {df.index[-1].date()}")
     return 0
 

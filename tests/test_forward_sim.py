@@ -167,6 +167,19 @@ def test_ingest_script_validates_and_topup(tmp_path):
         ing.ingest("ABC", json.dumps(ibkr_json([("2024-06-03", -1, 11, 9, 10.5, 1)])), root=tmp_path)
 
 
+
+def test_ingest_cli_reports_bad_stored_history_after_a_valid_topup(tmp_path, monkeypatch, capsys):
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import ingest_ibkr_bars as ing
+    monkeypatch.setattr(external_bars, "bars_dir", lambda: tmp_path)
+    # stored history with a bar whose Low is far above its Close (like GURU's 2024-12-18 print)
+    (tmp_path / "ABC.json").write_text(json.dumps(ibkr_json([("2024-06-03", 10, 11, 10.9, 10.2, 1)])))
+    new = tmp_path / "new.json"
+    new.write_text(json.dumps(ibkr_json([("2024-06-04", 10, 11, 9, 10.5, 1)])))
+    assert ing.main(["ABC", str(new), "--topup"]) == 2
+    assert (tmp_path / "ABC.20240604.json").exists()
+    assert "merged history fails validation" in capsys.readouterr().err
+
 # ── sim broker fills ─────────────────────────────────────────
 
 ROWS = [("2024-06-03", 100, 101, 99, 100, 1), ("2024-06-04", 102, 103, 101, 102.5, 1),
