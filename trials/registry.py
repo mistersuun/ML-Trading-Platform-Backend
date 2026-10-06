@@ -23,6 +23,9 @@ import config
 from state import db as state_db
 
 
+POOLED_RUN_PREFIX = "pooled-"
+
+
 class TrialRegistryError(RuntimeError):
     """A trial could not be recorded / loaded faithfully. Callers must not continue as if N were intact."""
 
@@ -101,9 +104,16 @@ def _conn(db_path=None) -> sqlite3.Connection:
 
 
 class TrialRegistry:
-    def __init__(self, run_id: str, *, db_path=None, trials_dir=None, conn: Optional[sqlite3.Connection] = None):
+    def __init__(self, run_id: str, *, db_path=None, trials_dir=None, conn: Optional[sqlite3.Connection] = None,
+                 unit: str = "symbol"):
         if not run_id or any(c in run_id for c in "/\\") or run_id.startswith("."):
             raise TrialRegistryError(f"invalid run_id {run_id!r}")
+        if unit not in ("symbol", "pooled"):
+            raise TrialRegistryError(f"invalid trial unit {unit!r}")
+        if unit == "pooled" and not run_id.startswith(POOLED_RUN_PREFIX):
+            # the pooled family is told apart by its run_id prefix (D18): its own namespace, never mixed with tech-*
+            raise TrialRegistryError(f"a pooled run id must start with {POOLED_RUN_PREFIX!r}: {run_id!r}")
+        self.unit = unit
         self.run_id = run_id
         self.trials_dir = Path(trials_dir) if trials_dir is not None else default_trials_dir()
         self._conn = conn if conn is not None else _conn(db_path)

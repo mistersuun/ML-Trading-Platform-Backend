@@ -1,8 +1,8 @@
 # Proposal: pooled validation (pattern-level, pooled across the universe)
 
-Status: **PROPOSED, NOT APPROVED.** This is a design for the owner to review. Nothing here is implemented. The
-owner approved planning it, to be built **after** the October 2026 forward-test week. Decision entry: D18 in
-`docs/decisions.md`.
+Status: **APPROVED by the owner on 2026-10-06 as shadow only; order eligibility needs a further owner decision.**
+Built after the October 2026 forward-test week plan; the decision and what was built (including every choice this
+proposal left open) are in `docs/decisions.md` D18. This file is kept as the design record.
 
 Invariants this proposal keeps: paper only (`paper=True` hard-coded, no live mode), long-only, US equities/ETFs
 only executable, every order through `execution.submit_intent`, IBKR read-only, the hold-out read once per

@@ -225,6 +225,7 @@ KILL_SWITCH_FILE = _repo_path("KILL_SWITCH_FILE", "state/KILL")
 SIGNAL_SLEEVE_EQUITY = _f("SIGNAL_SLEEVE_EQUITY", 10_000.0)
 RISK_PER_TRADE_PCT = 0.005          # 0.5% of sleeve risked to the stop (allowed 0.25-1.0%)
 ATR_PERIOD = 20
+TAKE_PROFIT_ATR_MULT = 3.0           # bracket take-profit = this x ATR above the entry (execution and the pooled null share it)
 ATR_STOP_MULT = 2.0                 # initial stop = 2 x ATR(20) from the fill
 MAX_SYMBOL_PCT = 0.10               # max notional per symbol, fraction of sleeve
 MAX_GROSS_EXPOSURE_PCT = 1.00       # no leverage
@@ -285,6 +286,39 @@ NULL_P_MAX = 0.05
 COST_STRESS_MULT = 2.0
 FDR_ALPHA = 0.05                      # Benjamini-Hochberg across ALL candidates tested in a run
 SEED = 20261005
+
+# ── Pooled validation (decision D18; shadow only, never order-eligible) ──
+# "off" disables it; "shadow" computes pooled results nightly and stores / serves them but NEVER makes anything
+# order-eligible. Any other value is treated as "off" (fail safe). The per-symbol path above does not read these.
+POOLED_VALIDATION = os.getenv("POOLED_VALIDATION", "shadow").strip().lower()
+if POOLED_VALIDATION not in ("off", "shadow"):
+    POOLED_VALIDATION = "off"
+# The forward paper test (FORWARD_TEST) keeps running the per-symbol gates only: its journal, timings and trial
+# counts must not change during the October 2026 forward week. Owners set this to false after that week.
+POOLED_SKIP_IN_FORWARD_TEST = os.getenv("POOLED_SKIP_IN_FORWARD_TEST", "true").strip().lower() not in ("0", "false", "no", "off")
+POOLED_WARMUP_BARS = 252              # D18(c): a fixed (non-fitted) pattern needs indicator warm-up, not a 504-bar train window
+POOLED_MIN_TRADES = 60                # pooled OOS trades ...
+POOLED_MIN_CLUSTERS = 30              # ... and distinct entry-week clusters
+POOLED_BREADTH_MIN = 8                # symbols with >= POOLED_BREADTH_MIN_TRADES OOS trades: >= max(this, ceil(K / 2))
+POOLED_BREADTH_MIN_TRADES = 3
+POOLED_MAX_MISSING = 0.10             # share of the universe that may be missing before the run is pooled_universe_incomplete
+POOLED_MAX_SYMBOL_SHARE = 0.25        # max share of the pooled absolute R-P&L any one symbol may contribute
+POOLED_HAC_LAGS = 10                  # floor of the Bartlett bandwidth used for the effective sample size
+POOLED_HOLDOUT_MIN_TRADES = 20        # a flat pooled hold-out must not pass
+POOLED_NULL_MAX_UNFIT = 0.05          # share of cluster members that may fail to fit a shared null offset
+POOLED_EXCLUDE_T = -2.0               # a symbol whose own OOS mean R has a one-sided t below this does not trade
+POOLED_BOOTSTRAP_DRAWS = 2000         # stationary / cluster bootstrap draws (reported, never gated)
+POOLED_BOOTSTRAP_BLOCK = 10           # mean block length of the stationary bootstrap, in days
+POOLED_XS_SPLITS = 2000               # seeded random symbol splits for the cross-sectional CSCV (advisory)
+POOLED_COMPONENTS_KEEP = 14           # retention: newest N pooled-*.components.parquet files in data/trials (about 0.8 MB each)
+POOLED_FAILURE_ALERT_NIGHTS = 2       # consecutive pooled_error / incomplete nights before a (non-halt) alert
+POOLED_FALLBACK_MAX_AGE_HOURS = 120   # an incomplete-universe run may show the last stored verdict for display up to this age
+# A universe other than the registered rule universe (the executable WATCHLIST["stocks"]) needs its own decision entry
+# recording why it was chosen; {universe_hash: "D18-..."}. Empty by default: nothing else may run pooled.
+POOLED_APPROVED_UNIVERSES: dict = {}
+# D18(d): retired from the POOLED pattern set only (identical signals to macd_crossover; chosen by rule, blind to
+# pooled results). The retired pattern stays in N. The per-symbol path still evaluates it.
+POOLED_RETIRED_PATTERNS = {"macd_hist_reversal": "macd_crossover"}
 
 # ML
 ML_HORIZON_BARS = 1

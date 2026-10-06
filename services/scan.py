@@ -655,12 +655,20 @@ def run_full_scan(
     run_stress: bool = False,
     paper_trade: bool = False,
     provider: Optional[DataProvider] = None,
+    pooled_shadow: Optional[bool] = None,
 ) -> dict:
-    """Run the complete scan pipeline."""
+    """Run the complete scan pipeline.
+
+    ``pooled_shadow``: run the D18 pooled shadow after the scan. ``None`` (default) means "only inside the nightly
+    scheduler's scope" (``services.pooled.nightly_scope``), so a manual ``main.py scan`` never registers pooled trials
+    or spends the pooled hold-out read; ``True`` / ``False`` force it (tests)."""
     started = datetime.now(timezone.utc)
+    if pooled_shadow is None:
+        from services import pooled as pooled_service
+        pooled_shadow = pooled_service.in_nightly_scope()
     try:
         results = _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_trade,
-                                 provider or default_provider())
+                                 provider or default_provider(), pooled_shadow)
     except Exception as e:
         sess_mod.record_run("scan", started, "error", {"error": type(e).__name__})
         raise
@@ -671,7 +679,8 @@ def run_full_scan(
     return results
 
 
-def _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_trade, provider) -> dict:
+def _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_trade, provider,
+                   pooled_shadow: bool = False) -> dict:
     modes = modes or ["technical", "pairs", "ml"]
 
     logger.info("\n" + "=" * 60)
@@ -711,6 +720,16 @@ def _run_full_scan(markets, patterns, symbol_filter, modes, run_stress, paper_tr
 
         if paper_trade:
             results["decisions"] = dispatch_intents(candidates, session=sess)
+
+        if pooled_shadow and "technical" in modes and not (symbol_filter or patterns or markets):
+            # D18 pooled validation, SHADOW ONLY and failure-isolated: it runs AFTER the intents were dispatched, never
+            # raises, creates no intent and no alert, and is off in the forward test. Only the nightly scheduler asks
+            # for it (a manual scan would use the pooled hold-out read without storing its verdict); a narrowed scan
+            # never computes (or overwrites) the pooled verdict.
+            from services import pooled as pooled_service
+            pooled_payload = pooled_service.run_shadow(research)
+            if pooled_payload is not None:        # disabled (e.g. the forward test): the results dict is unchanged
+                results["pooled"] = pooled_payload
 
         total = len(results["technical"]) + len(results["pairs"]) + len(results["ml"])
         logger.info("\n" + "=" * 60)

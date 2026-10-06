@@ -44,3 +44,10 @@ def latest_pairs():
 def latest_ml():
     """Latest nightly ML scan."""
     return _latest("ml", M.LatestMLResult)
+
+
+@router.get("/pooled/latest", response_model=M.LatestPooledResult, responses=ERROR_RESPONSES)
+def latest_pooled():
+    """Latest nightly POOLED validation (D18): per-pattern verdicts, gates, symbol contributions, funnel.
+    Shadow only: nothing in it is order-eligible. An incomplete universe shows the last verdict as display-only."""
+    return _latest("pooled", M.LatestPooledResult)

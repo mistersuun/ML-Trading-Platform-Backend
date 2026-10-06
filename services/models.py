@@ -347,6 +347,247 @@ class LatestTechnicalResult(_LatestResult):
     funnel: Optional[Funnel] = None          # None for results stored before the funnel existed
 
 
+# ---------------------------------------------------------------- pooled validation, shadow only (D18)
+class _PooledBase(BaseModel):
+    """Pooled blocks tolerate extra keys (newer stored payloads) and are all-optional where a run can omit them."""
+    model_config = ConfigDict(extra="ignore")
+
+
+class PooledUniverse(_PooledBase):
+    hash: str
+    symbols: list[str]
+    k: int
+    missing: list[str] = Field(default_factory=list)
+    missing_reasons: dict[str, str] = Field(default_factory=dict)
+    complete: bool
+    partial: bool
+    flags: list[str] = Field(default_factory=list)
+
+
+class PooledOosWindow(_PooledBase):
+    days: int
+    start: str
+    end: str
+    bars_min: int
+    bars_max: int
+
+
+class PooledInterval(_PooledBase):
+    lo: float
+    hi: float
+    mean: float
+    draws: int
+
+
+class PooledConcentration(_PooledBase):
+    max_symbol_share: OptF = None
+    top_symbol: Optional[str] = None
+    loso_min_mean_r: OptF = None
+    loso_worst_symbol: Optional[str] = None
+    loco_min_mean_r: OptF = None
+    loco_worst_cluster: Optional[str] = None
+    lofo_min_mean_r: OptF = None
+    lofo_worst_fold: Optional[int] = None
+    share_ok: bool = False
+    loso_ok: bool = False
+    loco_ok: bool = False
+    lofo_ok: bool = False
+    ok: bool = False
+
+
+class PooledCapped(_PooledBase):
+    admitted: int = 0
+    skipped_by_caps: int = 0
+    excluded_trades: int = 0
+    pooled_return: OptF = None                # fraction of the sleeve (sum of the daily capped contributions)
+    sharpe: OptF = None
+    sharpe_ratio_to_uncapped: OptF = None
+    max_concurrent_uncapped: int = 0
+    ok: bool = False
+
+
+class PooledSymbolRow(_PooledBase):
+    symbol: str
+    n_trades: int
+    mean_r: OptF = None
+    pnl_r: float = 0.0
+    share: float = 0.0
+    t_stat: OptF = None
+    excluded: bool = False
+
+
+class PooledHoldout(_PooledBase):
+    start: str
+    n_bars: int
+    n_trades: int
+    n_symbols: Optional[int] = None
+    total_return: OptF = None
+    sharpe: OptF = None
+    reread_p: OptF = None
+    bonferroni_k: Optional[int] = None
+
+
+class PooledPattern(_PooledBase):
+    """One pattern's pooled verdict: status, every gate, the symbol contribution table and the version hashes."""
+    pattern: str
+    status: str                               # unvalidated | pooled_oos_validated | pooled_deflated_validated
+    order_eligible: bool = False              # always False: pooled is shadow only
+    reasons: list[str] = Field(default_factory=list)
+    gates: dict[str, bool] = Field(default_factory=dict)
+    n_trades: int = 0
+    n_clusters: Optional[int] = None
+    breadth: Optional[int] = None
+    breadth_needed: Optional[int] = None
+    mean_r: OptF = None
+    pooled_return: OptF = None
+    sharpe: OptF = None
+    psr: OptF = None
+    t_eff: OptF = None
+    q: Optional[int] = None
+    null_p: OptF = None
+    null_draws: Optional[int] = None
+    null_observed: OptF = None
+    null_clusters: Optional[int] = None
+    null_unfit: Optional[int] = None
+    null_failed: Optional[bool] = None
+    bh_adjusted_p: OptF = None
+    dsr: OptF = None
+    dsr_p: OptF = None
+    n_trials: Optional[int] = None
+    sharpe_var_used: OptF = None
+    deflation_reason: Optional[str] = None
+    cost_return: OptF = None
+    delay_return: OptF = None
+    concentration: Optional[PooledConcentration] = None
+    capped: Optional[PooledCapped] = None
+    excluded_symbols: list[str] = Field(default_factory=list)
+    symbols: list[PooledSymbolRow] = Field(default_factory=list)
+    bootstrap_sharpe: Optional[PooledInterval] = None
+    bootstrap_mean_r: Optional[PooledInterval] = None
+    max_hold_bars: Optional[int] = None
+    holdout: Optional[PooledHoldout] = None
+    holdout_state: Optional[str] = None
+    holdout_frozen: Optional[bool] = None
+    holdout_asof: Optional[str] = None
+    holdout_reads_of_pattern: Optional[int] = None
+    trial_version: Optional[str] = None
+    pooled_version: Optional[str] = None
+    duplicate_of: Optional[str] = None
+    failed_symbols: list[str] = Field(default_factory=list)
+
+
+class PooledFunnel(_PooledBase):
+    """patterns_tested -> pooled_min_trades -> ... -> holdout; every stage is a subset of the last."""
+    unit: str = "pooled"
+    patterns_tested: int
+    pooled_min_trades: int
+    breadth: int
+    oos_positive: int
+    psr: int
+    null_bh: int
+    dsr: int
+    concentration: int
+    cost_delay: int
+    capped_replay: int
+    holdout: int
+    pooled_oos_validated: int
+    pooled_validated: int
+    n_trials: int
+    sharpe_var: OptF = None
+    pbo: OptF = None                          # advisory time CSCV
+    pbo_xs: OptF = None                       # advisory cross-sectional CSCV
+    run_id: Optional[str] = None
+    universe_hash: Optional[str] = None
+    orders: int = 0                           # always 0: shadow only
+    firing_tonight: int = 0
+
+
+class PooledRetired(_PooledBase):
+    pattern: str
+    duplicate_of: Optional[str] = None
+    reason: str
+
+
+class PooledShadowSignal(_PooledBase):
+    kind: str = "pooled_pattern"
+    symbol: str
+    pattern: str
+    signal_bar_date: str
+    pooled_status: str
+    stale: bool = False
+    excluded: bool = False
+    order_eligible: bool = False
+
+
+class PooledLastVerdictPattern(_PooledBase):
+    pattern: Optional[str] = None
+    status: Optional[str] = None
+
+
+class PooledLastVerdict(_PooledBase):
+    """Display-only fallback shown when the universe is incomplete: never an eligibility input."""
+    generated_at: str
+    age_hours: float
+    display_only: bool = True
+    order_eligible: bool = False
+    universe_hash: Optional[str] = None
+    patterns: list[PooledLastVerdictPattern] = Field(default_factory=list)
+
+
+class PooledShadowHealth(_PooledBase):
+    """D18(a) shadow-period counters: complete = >= 20 distinct bar-date sessions AND >= 28 calendar days."""
+    ok_nights: int = 0
+    consecutive_failed_nights: int = 0
+    last_counted_date: Optional[str] = None
+    ok_dates: list[str] = Field(default_factory=list)
+    ok_sessions: int = 0
+    ok_session_dates: list[str] = Field(default_factory=list)
+    first_ok_date: Optional[str] = None
+    calendar_days: Optional[int] = None
+    required_ok_sessions: int = 20
+    required_calendar_days: int = 28
+    complete: bool = False
+
+
+class PooledPayload(_PooledBase):
+    unit: str = "pooled"
+    mode: str
+    shadow_only: bool = True
+    order_eligible: bool = False
+    status: str                               # ok | pooled_universe_incomplete | pooled_trials_unavailable | ...
+    message: Optional[str] = None
+    run_id: Optional[str] = None
+    generated_at: Optional[str] = None
+    method_version: Optional[str] = None
+    holdout_start: Optional[str] = None
+    warmup_bars: Optional[int] = None
+    asof: Optional[str] = None
+    disclosure: Optional[str] = None
+    universe: PooledUniverse
+    oos: Optional[PooledOosWindow] = None
+    narrowed: bool = False
+    n_trials: Optional[int] = None
+    n_trials_floor: Optional[int] = None
+    n_trials_ledger: Optional[int] = None
+    sharpe_var: OptF = None
+    sharpe_var_empirical: OptF = None
+    no_nightly_variance: bool = False
+    pbo: OptF = None
+    pbo_xs: OptF = None
+    funnel: Optional[PooledFunnel] = None
+    patterns: list[PooledPattern] = Field(default_factory=list)
+    retired: list[PooledRetired] = Field(default_factory=list)
+    shadow_signals: list[PooledShadowSignal] = Field(default_factory=list)
+    last_verdict: Optional[PooledLastVerdict] = None
+    shadow_health: Optional[PooledShadowHealth] = None
+    elapsed_s: OptF = None
+
+
+class LatestPooledResult(_LatestResult):
+    """Latest nightly POOLED validation (D18): shadow only, never order-eligible."""
+    payload: PooledPayload
+
+
 class LatestPairsResult(_LatestResult):
     payload: list[dict[str, Any]]
 

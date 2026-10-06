@@ -1651,6 +1651,40 @@
         "title": "LatestPairsResult",
         "type": "object"
       },
+      "LatestPooledResult": {
+        "additionalProperties": false,
+        "description": "Latest nightly POOLED validation (D18): shadow only, never order-eligible.",
+        "properties": {
+          "age_hours": {
+            "title": "Age Hours",
+            "type": "number"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/PooledPayload"
+          },
+          "stale": {
+            "title": "Stale",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "generated_at",
+          "age_hours",
+          "stale",
+          "payload"
+        ],
+        "title": "LatestPooledResult",
+        "type": "object"
+      },
       "LatestSignal": {
         "additionalProperties": false,
         "properties": {
@@ -2846,6 +2880,1564 @@
           "failed"
         ],
         "title": "PatternScanResponse",
+        "type": "object"
+      },
+      "PooledCapped": {
+        "properties": {
+          "admitted": {
+            "default": 0,
+            "title": "Admitted",
+            "type": "integer"
+          },
+          "excluded_trades": {
+            "default": 0,
+            "title": "Excluded Trades",
+            "type": "integer"
+          },
+          "max_concurrent_uncapped": {
+            "default": 0,
+            "title": "Max Concurrent Uncapped",
+            "type": "integer"
+          },
+          "ok": {
+            "default": false,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "pooled_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Return"
+          },
+          "sharpe": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe"
+          },
+          "sharpe_ratio_to_uncapped": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Ratio To Uncapped"
+          },
+          "skipped_by_caps": {
+            "default": 0,
+            "title": "Skipped By Caps",
+            "type": "integer"
+          }
+        },
+        "title": "PooledCapped",
+        "type": "object"
+      },
+      "PooledConcentration": {
+        "properties": {
+          "loco_min_mean_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loco Min Mean R"
+          },
+          "loco_ok": {
+            "default": false,
+            "title": "Loco Ok",
+            "type": "boolean"
+          },
+          "loco_worst_cluster": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loco Worst Cluster"
+          },
+          "lofo_min_mean_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lofo Min Mean R"
+          },
+          "lofo_ok": {
+            "default": false,
+            "title": "Lofo Ok",
+            "type": "boolean"
+          },
+          "lofo_worst_fold": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lofo Worst Fold"
+          },
+          "loso_min_mean_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loso Min Mean R"
+          },
+          "loso_ok": {
+            "default": false,
+            "title": "Loso Ok",
+            "type": "boolean"
+          },
+          "loso_worst_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loso Worst Symbol"
+          },
+          "max_symbol_share": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Symbol Share"
+          },
+          "ok": {
+            "default": false,
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "share_ok": {
+            "default": false,
+            "title": "Share Ok",
+            "type": "boolean"
+          },
+          "top_symbol": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Symbol"
+          }
+        },
+        "title": "PooledConcentration",
+        "type": "object"
+      },
+      "PooledFunnel": {
+        "description": "patterns_tested -> pooled_min_trades -> ... -> holdout; every stage is a subset of the last.",
+        "properties": {
+          "breadth": {
+            "title": "Breadth",
+            "type": "integer"
+          },
+          "capped_replay": {
+            "title": "Capped Replay",
+            "type": "integer"
+          },
+          "concentration": {
+            "title": "Concentration",
+            "type": "integer"
+          },
+          "cost_delay": {
+            "title": "Cost Delay",
+            "type": "integer"
+          },
+          "dsr": {
+            "title": "Dsr",
+            "type": "integer"
+          },
+          "firing_tonight": {
+            "default": 0,
+            "title": "Firing Tonight",
+            "type": "integer"
+          },
+          "holdout": {
+            "title": "Holdout",
+            "type": "integer"
+          },
+          "n_trials": {
+            "title": "N Trials",
+            "type": "integer"
+          },
+          "null_bh": {
+            "title": "Null Bh",
+            "type": "integer"
+          },
+          "oos_positive": {
+            "title": "Oos Positive",
+            "type": "integer"
+          },
+          "orders": {
+            "default": 0,
+            "title": "Orders",
+            "type": "integer"
+          },
+          "patterns_tested": {
+            "title": "Patterns Tested",
+            "type": "integer"
+          },
+          "pbo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo"
+          },
+          "pbo_xs": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo Xs"
+          },
+          "pooled_min_trades": {
+            "title": "Pooled Min Trades",
+            "type": "integer"
+          },
+          "pooled_oos_validated": {
+            "title": "Pooled Oos Validated",
+            "type": "integer"
+          },
+          "pooled_validated": {
+            "title": "Pooled Validated",
+            "type": "integer"
+          },
+          "psr": {
+            "title": "Psr",
+            "type": "integer"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "sharpe_var": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Var"
+          },
+          "unit": {
+            "default": "pooled",
+            "title": "Unit",
+            "type": "string"
+          },
+          "universe_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Universe Hash"
+          }
+        },
+        "required": [
+          "patterns_tested",
+          "pooled_min_trades",
+          "breadth",
+          "oos_positive",
+          "psr",
+          "null_bh",
+          "dsr",
+          "concentration",
+          "cost_delay",
+          "capped_replay",
+          "holdout",
+          "pooled_oos_validated",
+          "pooled_validated",
+          "n_trials"
+        ],
+        "title": "PooledFunnel",
+        "type": "object"
+      },
+      "PooledHoldout": {
+        "properties": {
+          "bonferroni_k": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bonferroni K"
+          },
+          "n_bars": {
+            "title": "N Bars",
+            "type": "integer"
+          },
+          "n_symbols": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Symbols"
+          },
+          "n_trades": {
+            "title": "N Trades",
+            "type": "integer"
+          },
+          "reread_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reread P"
+          },
+          "sharpe": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          },
+          "total_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Total Return"
+          }
+        },
+        "required": [
+          "start",
+          "n_bars",
+          "n_trades"
+        ],
+        "title": "PooledHoldout",
+        "type": "object"
+      },
+      "PooledInterval": {
+        "properties": {
+          "draws": {
+            "title": "Draws",
+            "type": "integer"
+          },
+          "hi": {
+            "title": "Hi",
+            "type": "number"
+          },
+          "lo": {
+            "title": "Lo",
+            "type": "number"
+          },
+          "mean": {
+            "title": "Mean",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lo",
+          "hi",
+          "mean",
+          "draws"
+        ],
+        "title": "PooledInterval",
+        "type": "object"
+      },
+      "PooledLastVerdict": {
+        "description": "Display-only fallback shown when the universe is incomplete: never an eligibility input.",
+        "properties": {
+          "age_hours": {
+            "title": "Age Hours",
+            "type": "number"
+          },
+          "display_only": {
+            "default": true,
+            "title": "Display Only",
+            "type": "boolean"
+          },
+          "generated_at": {
+            "title": "Generated At",
+            "type": "string"
+          },
+          "order_eligible": {
+            "default": false,
+            "title": "Order Eligible",
+            "type": "boolean"
+          },
+          "patterns": {
+            "items": {
+              "$ref": "#/components/schemas/PooledLastVerdictPattern"
+            },
+            "title": "Patterns",
+            "type": "array"
+          },
+          "universe_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Universe Hash"
+          }
+        },
+        "required": [
+          "generated_at",
+          "age_hours"
+        ],
+        "title": "PooledLastVerdict",
+        "type": "object"
+      },
+      "PooledLastVerdictPattern": {
+        "properties": {
+          "pattern": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pattern"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "title": "PooledLastVerdictPattern",
+        "type": "object"
+      },
+      "PooledOosWindow": {
+        "properties": {
+          "bars_max": {
+            "title": "Bars Max",
+            "type": "integer"
+          },
+          "bars_min": {
+            "title": "Bars Min",
+            "type": "integer"
+          },
+          "days": {
+            "title": "Days",
+            "type": "integer"
+          },
+          "end": {
+            "title": "End",
+            "type": "string"
+          },
+          "start": {
+            "title": "Start",
+            "type": "string"
+          }
+        },
+        "required": [
+          "days",
+          "start",
+          "end",
+          "bars_min",
+          "bars_max"
+        ],
+        "title": "PooledOosWindow",
+        "type": "object"
+      },
+      "PooledPattern": {
+        "description": "One pattern's pooled verdict: status, every gate, the symbol contribution table and the version hashes.",
+        "properties": {
+          "bh_adjusted_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bh Adjusted P"
+          },
+          "bootstrap_mean_r": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledInterval"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bootstrap_sharpe": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledInterval"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "breadth": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Breadth"
+          },
+          "breadth_needed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Breadth Needed"
+          },
+          "capped": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledCapped"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "concentration": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledConcentration"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "cost_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Return"
+          },
+          "deflation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deflation Reason"
+          },
+          "delay_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delay Return"
+          },
+          "dsr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr"
+          },
+          "dsr_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dsr P"
+          },
+          "duplicate_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Of"
+          },
+          "excluded_symbols": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Excluded Symbols",
+            "type": "array"
+          },
+          "failed_symbols": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Failed Symbols",
+            "type": "array"
+          },
+          "gates": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "title": "Gates",
+            "type": "object"
+          },
+          "holdout": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledHoldout"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "holdout_asof": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout Asof"
+          },
+          "holdout_frozen": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout Frozen"
+          },
+          "holdout_reads_of_pattern": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout Reads Of Pattern"
+          },
+          "holdout_state": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout State"
+          },
+          "max_hold_bars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Hold Bars"
+          },
+          "mean_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean R"
+          },
+          "n_clusters": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Clusters"
+          },
+          "n_trades": {
+            "default": 0,
+            "title": "N Trades",
+            "type": "integer"
+          },
+          "n_trials": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials"
+          },
+          "null_clusters": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null Clusters"
+          },
+          "null_draws": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null Draws"
+          },
+          "null_failed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null Failed"
+          },
+          "null_observed": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null Observed"
+          },
+          "null_p": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null P"
+          },
+          "null_unfit": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Null Unfit"
+          },
+          "order_eligible": {
+            "default": false,
+            "title": "Order Eligible",
+            "type": "boolean"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "pooled_return": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Return"
+          },
+          "pooled_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pooled Version"
+          },
+          "psr": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Psr"
+          },
+          "q": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          },
+          "sharpe": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe"
+          },
+          "sharpe_var_used": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Var Used"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "symbols": {
+            "items": {
+              "$ref": "#/components/schemas/PooledSymbolRow"
+            },
+            "title": "Symbols",
+            "type": "array"
+          },
+          "t_eff": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "T Eff"
+          },
+          "trial_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trial Version"
+          }
+        },
+        "required": [
+          "pattern",
+          "status"
+        ],
+        "title": "PooledPattern",
+        "type": "object"
+      },
+      "PooledPayload": {
+        "properties": {
+          "asof": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Asof"
+          },
+          "disclosure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Disclosure"
+          },
+          "elapsed_s": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Elapsed S"
+          },
+          "funnel": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledFunnel"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "holdout_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Holdout Start"
+          },
+          "last_verdict": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledLastVerdict"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "method_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Method Version"
+          },
+          "mode": {
+            "title": "Mode",
+            "type": "string"
+          },
+          "n_trials": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials"
+          },
+          "n_trials_floor": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials Floor"
+          },
+          "n_trials_ledger": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "N Trials Ledger"
+          },
+          "narrowed": {
+            "default": false,
+            "title": "Narrowed",
+            "type": "boolean"
+          },
+          "no_nightly_variance": {
+            "default": false,
+            "title": "No Nightly Variance",
+            "type": "boolean"
+          },
+          "oos": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledOosWindow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "order_eligible": {
+            "default": false,
+            "title": "Order Eligible",
+            "type": "boolean"
+          },
+          "patterns": {
+            "items": {
+              "$ref": "#/components/schemas/PooledPattern"
+            },
+            "title": "Patterns",
+            "type": "array"
+          },
+          "pbo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo"
+          },
+          "pbo_xs": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pbo Xs"
+          },
+          "retired": {
+            "items": {
+              "$ref": "#/components/schemas/PooledRetired"
+            },
+            "title": "Retired",
+            "type": "array"
+          },
+          "run_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
+          },
+          "shadow_health": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PooledShadowHealth"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shadow_only": {
+            "default": true,
+            "title": "Shadow Only",
+            "type": "boolean"
+          },
+          "shadow_signals": {
+            "items": {
+              "$ref": "#/components/schemas/PooledShadowSignal"
+            },
+            "title": "Shadow Signals",
+            "type": "array"
+          },
+          "sharpe_var": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Var"
+          },
+          "sharpe_var_empirical": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sharpe Var Empirical"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "unit": {
+            "default": "pooled",
+            "title": "Unit",
+            "type": "string"
+          },
+          "universe": {
+            "$ref": "#/components/schemas/PooledUniverse"
+          },
+          "warmup_bars": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Warmup Bars"
+          }
+        },
+        "required": [
+          "mode",
+          "status",
+          "universe"
+        ],
+        "title": "PooledPayload",
+        "type": "object"
+      },
+      "PooledRetired": {
+        "properties": {
+          "duplicate_of": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duplicate Of"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pattern",
+          "reason"
+        ],
+        "title": "PooledRetired",
+        "type": "object"
+      },
+      "PooledShadowHealth": {
+        "description": "D18(a) shadow-period counters: complete = >= 20 distinct bar-date sessions AND >= 28 calendar days.",
+        "properties": {
+          "calendar_days": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calendar Days"
+          },
+          "complete": {
+            "default": false,
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "consecutive_failed_nights": {
+            "default": 0,
+            "title": "Consecutive Failed Nights",
+            "type": "integer"
+          },
+          "first_ok_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Ok Date"
+          },
+          "last_counted_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Counted Date"
+          },
+          "ok_dates": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ok Dates",
+            "type": "array"
+          },
+          "ok_nights": {
+            "default": 0,
+            "title": "Ok Nights",
+            "type": "integer"
+          },
+          "ok_session_dates": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Ok Session Dates",
+            "type": "array"
+          },
+          "ok_sessions": {
+            "default": 0,
+            "title": "Ok Sessions",
+            "type": "integer"
+          },
+          "required_calendar_days": {
+            "default": 28,
+            "title": "Required Calendar Days",
+            "type": "integer"
+          },
+          "required_ok_sessions": {
+            "default": 20,
+            "title": "Required Ok Sessions",
+            "type": "integer"
+          }
+        },
+        "title": "PooledShadowHealth",
+        "type": "object"
+      },
+      "PooledShadowSignal": {
+        "properties": {
+          "excluded": {
+            "default": false,
+            "title": "Excluded",
+            "type": "boolean"
+          },
+          "kind": {
+            "default": "pooled_pattern",
+            "title": "Kind",
+            "type": "string"
+          },
+          "order_eligible": {
+            "default": false,
+            "title": "Order Eligible",
+            "type": "boolean"
+          },
+          "pattern": {
+            "title": "Pattern",
+            "type": "string"
+          },
+          "pooled_status": {
+            "title": "Pooled Status",
+            "type": "string"
+          },
+          "signal_bar_date": {
+            "title": "Signal Bar Date",
+            "type": "string"
+          },
+          "stale": {
+            "default": false,
+            "title": "Stale",
+            "type": "boolean"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          }
+        },
+        "required": [
+          "symbol",
+          "pattern",
+          "signal_bar_date",
+          "pooled_status"
+        ],
+        "title": "PooledShadowSignal",
+        "type": "object"
+      },
+      "PooledSymbolRow": {
+        "properties": {
+          "excluded": {
+            "default": false,
+            "title": "Excluded",
+            "type": "boolean"
+          },
+          "mean_r": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean R"
+          },
+          "n_trades": {
+            "title": "N Trades",
+            "type": "integer"
+          },
+          "pnl_r": {
+            "default": 0.0,
+            "title": "Pnl R",
+            "type": "number"
+          },
+          "share": {
+            "default": 0.0,
+            "title": "Share",
+            "type": "number"
+          },
+          "symbol": {
+            "title": "Symbol",
+            "type": "string"
+          },
+          "t_stat": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "T Stat"
+          }
+        },
+        "required": [
+          "symbol",
+          "n_trades"
+        ],
+        "title": "PooledSymbolRow",
+        "type": "object"
+      },
+      "PooledUniverse": {
+        "properties": {
+          "complete": {
+            "title": "Complete",
+            "type": "boolean"
+          },
+          "flags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Flags",
+            "type": "array"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "k": {
+            "title": "K",
+            "type": "integer"
+          },
+          "missing": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Missing",
+            "type": "array"
+          },
+          "missing_reasons": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Missing Reasons",
+            "type": "object"
+          },
+          "partial": {
+            "title": "Partial",
+            "type": "boolean"
+          },
+          "symbols": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Symbols",
+            "type": "array"
+          }
+        },
+        "required": [
+          "hash",
+          "symbols",
+          "k",
+          "complete",
+          "partial"
+        ],
+        "title": "PooledUniverse",
         "type": "object"
       },
       "PricePoint": {
@@ -6182,6 +7774,78 @@
           }
         },
         "summary": "Latest Pairs",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/results/pooled/latest": {
+      "get": {
+        "description": "Latest nightly POOLED validation (D18): per-pattern verdicts, gates, symbol contributions, funnel.\nShadow only: nothing in it is order-eligible. An incomplete universe shows the last verdict as display-only.",
+        "operationId": "latest_pooled_api_results_pooled_latest_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LatestPooledResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Latest Pooled",
         "tags": [
           "results"
         ]

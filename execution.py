@@ -48,7 +48,7 @@ _sleep = time.sleep  # injectable (tests): the poll that waits for cancelled bra
 _clock = time.monotonic
 
 MIN_PRICE = 1.0
-TAKE_PROFIT_ATR_MULT = 3.0
+TAKE_PROFIT_ATR_MULT = config.TAKE_PROFIT_ATR_MULT
 ENTRY_ORDER_TYPE = "market"
 EXIT_ORDER_TYPE = "market"
 # Equities only; crypto/fx/futures are never executable. Bracket legs inherit the parent's
@@ -113,6 +113,12 @@ class OrderIntent:
     atr: Optional[float]
     price: float  # last completed close
     source: str = "strategy"  # "strategy" (normal) | PLUMBING_SOURCE (sim forward test only, see below)
+    # D18: the unit the validation_status was earned on. Pooled statuses are shadow only (not in
+    # config.ORDER_ELIGIBLE_STATUSES), so a pooled intent is rejected today; the universe / version checks below are the
+    # extra rejections a later owner decision would rely on (they only ever ADD rejections).
+    validation_unit: str = "per_symbol"   # "per_symbol" | "pooled"
+    pooled_version: Optional[str] = None
+    universe_hash: Optional[str] = None
 
 
 @dataclass
@@ -491,6 +497,14 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
         return reject("invalid_source")
     elif intent.validation_status not in config.ORDER_ELIGIBLE_STATUSES:
         return reject("not_deflated" if intent.validation_status == "oos_validated" else "not_validated")
+    elif intent.validation_unit != "per_symbol":
+        if intent.validation_unit != "pooled":
+            return reject("invalid_validation_unit")
+        import pooled_validation      # lazy: the order path must not import the research stack at import time
+        why = pooled_validation.intent_problem(intent.symbol, intent.strategy_key, intent.pooled_version,
+                                               intent.universe_hash)
+        if why:
+            return reject(why)
     tsym = inst.alpaca_trade_symbol
     side = _side(intent.direction)
     key = signal_key(intent.symbol, side, intent.signal_bar_date)

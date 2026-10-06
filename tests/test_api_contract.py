@@ -76,6 +76,8 @@ def test_every_route_is_covered_by_the_sweep(client):
         ("POST", "/api/stress/regimes"), ("POST", "/api/stress/sensitivity"),
         ("GET", "/api/data/status"), ("GET", "/api/results/technical/latest"),
         ("GET", "/api/results/pairs/latest"), ("GET", "/api/results/ml/latest"),
+        # pooled validation (D18, shadow only): shape and 404 envelope are in tests/test_pooled_validation.py
+        ("GET", "/api/results/pooled/latest"),
         # UI endpoints need holdings / state fixtures: strict-JSON, 404/503 envelope and happy paths are in
         # tests/test_ui_endpoints.py
         ("GET", "/api/portfolio/overview"), ("GET", "/api/allocation/proposal"), ("GET", "/api/risk/status"),

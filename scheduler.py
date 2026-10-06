@@ -25,6 +25,7 @@ from zoneinfo import ZoneInfo
 import config
 from results import store
 from services import briefing, ibkr_sync, scan, session
+from services import pooled as pooled_service
 from settings import RiskConfigError, validate_risk_config
 from state import db as state_db
 
@@ -79,6 +80,29 @@ def backup_state(conn, now: Optional[datetime] = None, dest_dir=None, keep: int 
     return dest
 
 
+def _store_pooled(results: dict, results_root, summary: dict) -> None:
+    """D18 pooled shadow result (results/pooled/latest.json). Failure-isolated: it never raises and never changes the
+    run's status; the per-symbol results above are already written."""
+    try:
+        payload = results.get("pooled")
+        if not payload:
+            return
+        prior = pooled_service._prior(results_root)
+        pooled_service.track_health(payload, prior)
+        err = pooled_service.store_result(payload, root=results_root)
+        h = payload.get("shadow_health") or {}
+        summary["pooled"] = {"status": payload.get("status"),
+                             "validated": (payload.get("funnel") or {}).get("pooled_validated"),
+                             "ok_nights": h.get("ok_nights"), "failed_streak": h.get("consecutive_failed_nights")}
+        if err:
+            summary["pooled_error"] = err
+        msg = pooled_service.failure_alert_message(payload)
+        if msg:        # non-halt, one per day: a shadow that fails nightly must not go unnoticed for the 4-week clock
+            session.alert(msg, kind="pooled_shadow", dedup_key=f"pooled_shadow_failing:{datetime.now(timezone.utc).date().isoformat()}")
+    except Exception as e:      # never fail the nightly run over a shadow result
+        summary["pooled_error"] = f"{type(e).__name__}: {e}"[:200]
+
+
 def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_root=None,
                 scan_fn: Optional[Callable] = None, sync_fn: Optional[Callable] = None) -> dict:
     """One locked nightly run. Returns {"status": "ok"|"error"|"locked", ...}; never raises for scan errors."""
@@ -110,7 +134,8 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
             summary["ibkr_sync"] = {k: sync_res[k] for k in ("status", "source")}
         try:
             fn = scan_fn or scan.run_full_scan
-            results = fn(modes=list(modes), run_stress=run_stress, paper_trade=False) or {}
+            with pooled_service.nightly_scope(results_root):          # D18: the pooled shadow runs from here only
+                results = fn(modes=list(modes), run_stress=run_stress, paper_trade=False) or {}
             if not results:
                 raise RuntimeError("scan produced no data")
             for kind in modes:
@@ -132,6 +157,8 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
             logger.exception("nightly scan failed")
             session.alert(f"Nightly run FAILED: {summary['error']}", kind="halt",
                           dedup_key=f"nightly_failed:{started.date().isoformat()}")
+        if status == "ok":
+            _store_pooled(results, results_root, summary)
         try:
             summary["backup"] = backup_state(conn, started).name
         except Exception as e:

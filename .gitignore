@@ -24,3 +24,5 @@ state/sim_broker.json
 state/sim_broker.json.tmp*
 state/forward/
 state/data/
+state/*.sqlite-wal
+state/*.sqlite-shm
