@@ -3,7 +3,8 @@
 * ``run_nightly()``: one locked run. First a read-only IBKR account sync when IBKR_SYNC_ENABLED (failure: alert and
   fall back, never blocks), then scans (technical incl. validation, pairs, ML) via the services, writes the
   results/ files, records a ``runs`` row (kind='nightly'), alerts through the normal alert path, then takes a
-  daily SQLite backup into state/backups/ (newest 14 kept). Alert-only: it never places orders.
+  daily SQLite backup into state/backups/ (newest 14 kept) and, after a good scan, writes the advisory Claude
+  briefing (services/briefing.py; skipped without an API key or over budget; a failure never fails the run). Alert-only: it never places orders.
 * ``schedule_forever(at='17:30', tz='America/New_York')``: runs run_nightly daily at that wall-clock time in `tz`.
   17:30 ET is 90 minutes after the US cash close (16:00 ET), leaving room for the vendor data delay. The time is
   evaluated in the exchange time zone, so it follows daylight-saving changes (it is never a fixed UTC offset).
@@ -23,7 +24,7 @@ from zoneinfo import ZoneInfo
 
 import config
 from results import store
-from services import ibkr_sync, scan, session
+from services import briefing, ibkr_sync, scan, session
 from settings import RiskConfigError, validate_risk_config
 from state import db as state_db
 
@@ -140,6 +141,16 @@ def run_nightly(modes=MODES, run_stress: bool = True, lock_path=None, results_ro
                           dedup_key=f"backup_failed:{started.date().isoformat()}")
         conn.execute("UPDATE runs SET finished_at=?, status=?, summary_json=? WHERE id=?",
                      (datetime.now(timezone.utc).isoformat(), status, json.dumps(summary, default=str), run_id))
+        if status == "ok":
+            # Advisory Claude briefing from this run's results (D17). It runs after the run row is final, so a slow or
+            # killed API call can never leave a successful run "running". It never raises and never changes the status.
+            try:
+                b = briefing.generate_nightly(results, summary.get("funnel"), conn, root=results_root)
+                summary["briefing"] = b["status"] if not b.get("reason") else f"{b['status']}:{b['reason']}"
+            except Exception as e:
+                summary["briefing"] = f"error:{type(e).__name__}"
+                logger.exception("nightly briefing failed")
+            conn.execute("UPDATE runs SET summary_json=? WHERE id=?", (json.dumps(summary, default=str), run_id))
         return {"status": status, "run_id": run_id, "summary": summary}
     except state_db.StateNotInitialized as e:
         session.alert(f"Nightly run cannot start: {e}", kind="halt",

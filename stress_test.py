@@ -360,10 +360,9 @@ def full_stress_test(
     except Exception as e:
         logger.warning(f"Regime stress test failed: {e}")
         regime_results, regime_detail = {}, {}
-    # numeric (fraction) metrics; the old formatted strings live under `metrics_display` (WS2.7)
+    # numeric (fraction) metrics
     report["regimes"] = {
-        name: {**result.metrics_payload(), "insufficient": bool(getattr(result, "insufficient", False)),
-               "metrics_display": result.summary()}
+        name: {**result.metrics_payload(), "insufficient": bool(getattr(result, "insufficient", False))}
         for name, result in regime_results.items()
     }
     report["regime_detail"] = regime_detail

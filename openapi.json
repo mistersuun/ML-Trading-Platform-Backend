@@ -287,11 +287,6 @@
             "title": "Metrics",
             "type": "object"
           },
-          "metrics_display": {
-            "additionalProperties": true,
-            "title": "Metrics Display",
-            "type": "object"
-          },
           "pattern": {
             "title": "Pattern",
             "type": "string"
@@ -317,7 +312,6 @@
           "symbol",
           "pattern",
           "metrics",
-          "metrics_display",
           "equity_curve",
           "trades",
           "is_valid",
@@ -358,6 +352,273 @@
           "close"
         ],
         "title": "BarOut",
+        "type": "object"
+      },
+      "BriefingAttempt": {
+        "additionalProperties": false,
+        "description": "A later skipped/failed run that did not replace the displayed briefing.",
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "BriefingAttempt",
+        "type": "object"
+      },
+      "BriefingBody": {
+        "additionalProperties": false,
+        "properties": {
+          "headline": {
+            "title": "Headline",
+            "type": "string"
+          },
+          "observations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Observations",
+            "type": "array"
+          },
+          "risks": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Risks",
+            "type": "array"
+          },
+          "what_changed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "What Changed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "headline",
+          "observations",
+          "risks",
+          "what_changed"
+        ],
+        "title": "BriefingBody",
+        "type": "object"
+      },
+      "BriefingBudget": {
+        "additionalProperties": false,
+        "properties": {
+          "daily_limit_usd": {
+            "title": "Daily Limit Usd",
+            "type": "number"
+          },
+          "monthly_limit_usd": {
+            "title": "Monthly Limit Usd",
+            "type": "number"
+          },
+          "spent_month_usd": {
+            "title": "Spent Month Usd",
+            "type": "number"
+          },
+          "spent_today_usd": {
+            "title": "Spent Today Usd",
+            "type": "number"
+          }
+        },
+        "required": [
+          "spent_today_usd",
+          "daily_limit_usd",
+          "spent_month_usd",
+          "monthly_limit_usd"
+        ],
+        "title": "BriefingBudget",
+        "type": "object"
+      },
+      "BriefingResponse": {
+        "additionalProperties": false,
+        "description": "The latest Claude briefing. Advisory only. status: none (never generated) | ok | skipped (reason: budget,\nno_api_key, disabled, ledger) | error (error holds the message).\nlast_attempt: a newer skipped/failed run when the briefing shown is an older ok one.",
+        "properties": {
+          "advisory": {
+            "title": "Advisory",
+            "type": "string"
+          },
+          "briefing": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefingBody"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "budget": {
+            "$ref": "#/components/schemas/BriefingBudget"
+          },
+          "cost_estimated": {
+            "default": false,
+            "title": "Cost Estimated",
+            "type": "boolean"
+          },
+          "cost_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cost Usd"
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "generated_at": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Generated At"
+          },
+          "last_attempt": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefingAttempt"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "usage": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefingUsage"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "status",
+          "budget",
+          "advisory"
+        ],
+        "title": "BriefingResponse",
+        "type": "object"
+      },
+      "BriefingUsage": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_creation_input_tokens": {
+            "default": 0,
+            "title": "Cache Creation Input Tokens",
+            "type": "integer"
+          },
+          "cache_read_input_tokens": {
+            "default": 0,
+            "title": "Cache Read Input Tokens",
+            "type": "integer"
+          },
+          "input_tokens": {
+            "default": 0,
+            "title": "Input Tokens",
+            "type": "integer"
+          },
+          "output_tokens": {
+            "default": 0,
+            "title": "Output Tokens",
+            "type": "integer"
+          }
+        },
+        "title": "BriefingUsage",
         "type": "object"
       },
       "CandidateResponse": {
@@ -1575,11 +1836,6 @@
             "title": "Metrics",
             "type": "object"
           },
-          "metrics_display": {
-            "additionalProperties": true,
-            "title": "Metrics Display",
-            "type": "object"
-          },
           "model_selected": {
             "anyOf": [
               {
@@ -1651,7 +1907,6 @@
           "signals",
           "total_signals",
           "metrics",
-          "metrics_display",
           "equity_curve",
           "is_valid",
           "n_oos_bars",
@@ -3326,17 +3581,6 @@
             ],
             "title": "Total Return"
           },
-          "total_return_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Return Pct"
-          },
           "total_trades": {
             "anyOf": [
               {
@@ -3801,17 +4045,6 @@
             ],
             "title": "Total Return"
           },
-          "total_return_pct": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Total Return Pct"
-          },
           "total_trades": {
             "anyOf": [
               {
@@ -4163,17 +4396,11 @@
             "additionalProperties": true,
             "title": "Metrics",
             "type": "object"
-          },
-          "metrics_display": {
-            "additionalProperties": true,
-            "title": "Metrics Display",
-            "type": "object"
           }
         },
         "required": [
           "fold",
-          "metrics",
-          "metrics_display"
+          "metrics"
         ],
         "title": "WalkForwardFold",
         "type": "object"
@@ -4535,6 +4762,160 @@
         "summary": "Run Walk Forward",
         "tags": [
           "backtest"
+        ]
+      }
+    },
+    "/api/briefing": {
+      "get": {
+        "description": "The latest stored briefing (headline, observations, risks, what changed), its model, token usage and cost,\nand today's / this month's LLM spend against the caps. status is `none` until one exists, `skipped` (budget,\nno_api_key, disabled) or `error` when the last attempt did not produce text. Advisory only.",
+        "operationId": "get_briefing_api_briefing_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Get Briefing",
+        "tags": [
+          "briefing"
+        ]
+      }
+    },
+    "/api/briefing/regenerate": {
+      "post": {
+        "description": "Re-run the briefing from the latest stored scan results. Heavy (shares the cap: 429 when busy) and subject\nto the same budget: over budget it returns status `skipped`, reason `budget`, and calls nothing.",
+        "operationId": "regenerate_briefing_api_briefing_regenerate_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BriefingResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unauthorized (API_TOKEN set, token missing or wrong)"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "unknown_symbol / no_data / not_found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "validation_error / unknown_pattern / insufficient_data"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "busy: another heavy request is running"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "internal_error / contract_violation"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "data_quality"
+          }
+        },
+        "summary": "Regenerate Briefing",
+        "tags": [
+          "briefing"
         ]
       }
     },

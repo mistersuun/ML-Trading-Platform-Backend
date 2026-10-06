@@ -54,11 +54,4 @@ def test_the_graph_test_sees_the_adapters():
 
 def test_services_do_not_import_the_adapters():
     for p in (ROOT / "services").glob("*.py"):
-        assert not (_imported_roots(p) & {"main", "routes", "server", "dashboard"}), p.name
-
-
-def test_dashboard_has_no_copy_of_the_scan_or_backtest_loops():
-    src = (ROOT / "dashboard.py").read_text()
-    assert "classic_backtest" not in src and "walk_forward_validate" not in src and "scan_all_pairs" not in src
-    roots = _imported_roots(ROOT / "dashboard.py")
-    assert "services" in roots and "data_fetcher" not in roots
+        assert not (_imported_roots(p) & {"main", "routes", "server"}), p.name

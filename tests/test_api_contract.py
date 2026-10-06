@@ -80,6 +80,8 @@ def test_every_route_is_covered_by_the_sweep(client):
         # tests/test_ui_endpoints.py
         ("GET", "/api/portfolio/overview"), ("GET", "/api/allocation/proposal"), ("GET", "/api/risk/status"),
         ("GET", "/api/scanner/candidate"),
+        # briefing: shapes, budget and 429 are in tests/test_briefing.py
+        ("GET", "/api/briefing"), ("POST", "/api/briefing/regenerate"),
     }
     paths = client.get("/openapi.json").json()["paths"]
     actual = {(m.upper(), path) for path, ops in paths.items() if path.startswith("/api") for m in ops}
@@ -123,25 +125,25 @@ def test_watchlist_fetch_route(client, monkeypatch):
 
 
 # ---------------------------------------------------------------- numbers are fractions, JSON-safe
-def test_backtest_metrics_are_numeric_fractions_with_legacy_display(client, patch_fetch):
+def test_backtest_metrics_are_numeric_fractions(client, patch_fetch):
     r = client.post("/api/backtest/run", json={"symbol": "SPY", "pattern_name": "ema_crossover"})
     body = strict(r)
     m = body["metrics"]
     for k in ("win_rate", "total_return", "max_drawdown", "sharpe", "profit_factor", "total_trades"):
         assert k in m and (m[k] is None or isinstance(m[k], (int, float))), (k, m[k])
     assert -1.0 <= m["total_return"] <= 10 and -1.0 <= m["max_drawdown"] <= 0
-    assert isinstance(body["metrics_display"]["win_rate"], str)       # legacy strings kept for one release
+    assert "metrics_display" not in body
     for t in body["trades"]:
         assert abs(t["pnl_pct"]) < 1.0
         assert t["pnl_pct"] == round(t["pnl_pct"], 12) or True        # unrounded fraction (no 4dp quantisation)
 
 
-def test_scan_exposes_unsuffixed_and_legacy_return_names(client, patch_fetch, monkeypatch):
+def test_scan_exposes_unsuffixed_return_names(client, patch_fetch, monkeypatch):
     monkeypatch.setitem(config.WATCHLIST, "unit", ["AAA"])
     body = strict(client.post("/api/patterns/scan", json={"markets": ["unit"], "recency_days": 10 ** 6}))
     assert body["signals"] and body["failed"] == []
     for s in body["signals"]:
-        assert s["total_return"] == s["total_return_pct"]
+        assert "total_return_pct" not in s and "total_return" in s
         assert s["validation_status"] == "unvalidated"
 
 
@@ -292,7 +294,7 @@ def test_metrics_are_numbers_or_null_in_stress_backtest_ml_and_walk_forward(
     for name, reg in rep["regimes"].items():
         _assert_numeric_metrics(reg, f"stress/full regimes[{name}]")
         assert isinstance(reg["insufficient"], bool)
-        assert isinstance(reg["metrics_display"]["win_rate"], str)    # strings only under metrics_display
+        assert "metrics_display" not in reg
 
 
 def test_ml_signal_confidence_is_directional(client, patch_fetch, fast_ml):

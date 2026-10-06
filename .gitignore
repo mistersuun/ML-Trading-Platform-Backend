@@ -14,6 +14,7 @@ state/*.db*
 state/KILL
 data/bars/
 results/*/
+results/*.jsonl
 models/
 state/holdings*.csv
 state/ibkr_snapshot*.json

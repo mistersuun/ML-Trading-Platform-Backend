@@ -132,7 +132,7 @@ def test_scan_patterns_reports_a_failing_backtest_and_nan_metrics_as_none(provid
     monkeypatch.setattr(backtester, "classic_backtest", lambda *a, **k: Bt())
     r = scan.scan_patterns(provider, ["unit"], ["ema_crossover"], recency_days=10 ** 6)
     assert r.signals and all(s.win_rate is None and s.profit_factor is None and s.max_drawdown is None
-                             and s.total_return == s.total_return_pct == 0.05 for s in r.signals)
+                             and s.total_return == 0.05 for s in r.signals)
     monkeypatch.setattr(backtester, "classic_backtest", lambda *a, **k: (_ for _ in ()).throw(ValueError("x")))
     r = scan.scan_patterns(provider, ["unit"], ["ema_crossover"], recency_days=10 ** 6)
     assert r.count == 0 and r.failed and all(f.error == "ValueError" for f in r.failed)

@@ -90,7 +90,6 @@ class ScanSignal(_Base):
     profit_factor: OptF = None
     sharpe: OptF = None
     total_return: OptF = None
-    total_return_pct: OptF = None            # legacy name, same fraction; kept for one release
     max_drawdown: OptF = None
     total_trades: Optional[int] = None
     is_valid: Optional[bool] = None          # in-sample display heuristic, NOT an eligibility gate
@@ -157,7 +156,6 @@ class BacktestResponse(_Base):
     symbol: str
     pattern: str
     metrics: dict[str, Any]
-    metrics_display: dict[str, Any]
     equity_curve: list[EquityPoint]
     trades: list[TradeOut]
     is_valid: bool
@@ -168,7 +166,6 @@ class BacktestResponse(_Base):
 class WalkForwardFold(_Base):
     fold: int
     metrics: dict[str, Any]
-    metrics_display: dict[str, Any]
 
 
 class WalkForwardResponse(_Base):
@@ -236,7 +233,6 @@ class MLPredictResponse(_Base):
     abstain_reasons: dict[str, int] = Field(default_factory=dict)   # OOS rows with no signal, by reason
     last_abstain_reason: Optional[str] = None                      # reason on the latest bar ('' / None = none)
     metrics: dict[str, Any]
-    metrics_display: dict[str, Any]
     equity_curve: list[EquityPoint]
     is_valid: bool
     oos_start: Optional[str] = None
@@ -672,3 +668,52 @@ class CandidateResponse(_Base):
     trades: list[TradeMarker]
     rejected_reasons: list[str]
     note: str
+
+
+# ---------------------------------------------------------------- nightly briefing (GET /api/briefing)
+class BriefingBody(_Base):
+    headline: str
+    observations: list[str]
+    risks: list[str]
+    what_changed: list[str]
+
+
+class BriefingUsage(_Base):
+    input_tokens: int = 0
+    output_tokens: int = 0
+    cache_creation_input_tokens: int = 0
+    cache_read_input_tokens: int = 0
+
+
+class BriefingBudget(_Base):
+    spent_today_usd: float
+    daily_limit_usd: float
+    spent_month_usd: float
+    monthly_limit_usd: float
+
+
+class BriefingAttempt(_Base):
+    """A later skipped/failed run that did not replace the displayed briefing."""
+    status: str
+    reason: Optional[str] = None
+    error: Optional[str] = None
+    at: Optional[str] = None
+
+
+class BriefingResponse(_Base):
+    """The latest Claude briefing. Advisory only. status: none (never generated) | ok | skipped (reason: budget,
+    no_api_key, disabled, ledger) | error (error holds the message).
+    last_attempt: a newer skipped/failed run when the briefing shown is an older ok one."""
+    status: str
+    generated_at: Optional[str] = None
+    model: Optional[str] = None
+    reason: Optional[str] = None
+    error: Optional[str] = None
+    briefing: Optional[BriefingBody] = None
+    usage: Optional[BriefingUsage] = None
+    cost_usd: OptF = None
+    cost_estimated: bool = False
+    request_id: Optional[str] = None
+    last_attempt: Optional[BriefingAttempt] = None
+    budget: BriefingBudget
+    advisory: str

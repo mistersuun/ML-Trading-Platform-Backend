@@ -81,7 +81,6 @@ def run(provider: DataProvider, symbol: str, pattern: str, period_days: int = 73
     return BacktestResponse.model_validate(clean({
         "symbol": symbol, "pattern": pattern,
         "metrics": result.metrics_payload(),         # numeric fractions; non-finite -> null
-        "metrics_display": result.summary(),         # legacy formatted strings, kept for one release
         "equity_curve": equity_points(result.equity_curve),
         "trades": trades,
         "is_valid": result.is_valid,                 # in-sample display heuristic, NOT an eligibility gate
@@ -94,7 +93,7 @@ def walk_forward(provider: DataProvider, symbol: str, pattern: str, n_splits: in
                  period_days: int = config.LOOKBACK_DAYS) -> WalkForwardResponse:
     df = require_data(provider.ohlcv(symbol, period_days), symbol)
     results = walk_forward_results(df, symbol, pattern, n_splits)
-    folds = [{"fold": i + 1, "metrics": r.metrics_payload(), "metrics_display": r.summary()}
+    folds = [{"fold": i + 1, "metrics": r.metrics_payload()}
              for i, r in enumerate(results)]
     return WalkForwardResponse.model_validate(clean({
         "symbol": symbol, "pattern": pattern, "n_folds": len(folds), "folds": folds,

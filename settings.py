@@ -122,6 +122,10 @@ def validate_risk_config(config_module) -> None:
     eff = get("LLM_EFFORT")
     if eff is not None and eff not in LLM_EFFORTS:
         problems.append(f"LLM_EFFORT={eff!r} must be one of {list(LLM_EFFORTS)}")
+    for name in ("LLM_DAILY_BUDGET_USD", "LLM_MONTHLY_BUDGET_USD"):
+        b = num(name) if hasattr(c, name) else None
+        if b is not None and not b >= 0:
+            problems.append(f"{name}={b} must be >= 0")
 
     if problems:
         raise RiskConfigError("Invalid risk configuration:\n  - " + "\n  - ".join(problems))

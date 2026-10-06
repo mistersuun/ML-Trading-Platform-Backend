@@ -29,6 +29,7 @@ from routes.pairs_routes import router as pairs_router
 from routes.pattern_routes import router as pattern_router
 from routes.portfolio_routes import router as portfolio_router
 from routes.results_routes import router as results_router
+from routes.briefing_routes import router as briefing_router
 from routes.risk_routes import router as risk_router
 from routes.scanner_routes import router as scanner_router
 from routes.stress_routes import router as stress_router
@@ -110,6 +111,7 @@ app.include_router(config_router, prefix="/api/config", tags=["config"])
 app.include_router(portfolio_router, prefix="/api/portfolio", tags=["portfolio"])
 app.include_router(allocation_router, prefix="/api/allocation", tags=["allocation"])
 app.include_router(risk_router, prefix="/api/risk", tags=["risk"])
+app.include_router(briefing_router, prefix="/api/briefing", tags=["briefing"])
 app.include_router(scanner_router, prefix="/api/scanner", tags=["scanner"])
 
 

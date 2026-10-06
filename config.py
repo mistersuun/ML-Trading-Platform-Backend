@@ -164,6 +164,12 @@ LLM_EFFORT = os.getenv("LLM_EFFORT", "medium")
 LLM_TIMEOUT_S = 120
 LLM_MAX_TOKENS = 16000
 LLM_REFUSAL_FALLBACK = os.getenv("LLM_REFUSAL_FALLBACK", "default").strip().lower()  # default | off
+# Nightly briefing (D17): advisory only, capped spend. A call is skipped when today's / this month's spend plus a
+# worst-case estimate (LLM_BRIEFING_MAX_TOKENS of output) would exceed a budget.
+LLM_BRIEFING_ENABLED = os.getenv("LLM_BRIEFING_ENABLED", "true").strip().lower() not in ("0", "false", "no", "off")
+LLM_BRIEFING_MAX_TOKENS = 6000
+LLM_DAILY_BUDGET_USD = float(os.getenv("LLM_DAILY_BUDGET_USD", "0.50"))
+LLM_MONTHLY_BUDGET_USD = float(os.getenv("LLM_MONTHLY_BUDGET_USD", "5.00"))
 
 # ══════════════════════════════════════════════════════════════
 #  PAPER TRADING

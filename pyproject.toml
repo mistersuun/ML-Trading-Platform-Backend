@@ -16,8 +16,6 @@ dependencies = [
     "yfinance>=0.2.31",
     "alpaca-py>=0.21",
     "requests>=2.31",
-    "plotly>=5.15",
-    "streamlit>=1.30",
     "fastapi>=0.115",
     "uvicorn[standard]>=0.25",
     "python-dotenv>=1.0",
@@ -55,7 +53,6 @@ xfail_strict = true
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-extend-exclude = ["dashboard.py"]
 
 [tool.ruff.lint]
 select = ["E9", "F63", "F7", "F82"]

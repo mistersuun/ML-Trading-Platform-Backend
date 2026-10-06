@@ -2,7 +2,7 @@
 
 The simulation lives in ``engine.py`` and the metrics in ``metrics.py``. This module keeps the
 Phase 1 public surface (``classic_backtest``, ``BacktestResult``, ``Trade``,
-``walk_forward_validate``) working for the API, CLI, Streamlit and stress code. The vectorbt /
+``walk_forward_validate``) working for the API, CLI and stress code. The vectorbt /
 backtesting.py overlay was removed: it ran on a different timing/cost model and silently
 replaced the Sortino and Calmar values.
 """
@@ -73,7 +73,8 @@ class BacktestResult:
 
     def metrics_payload(self) -> dict:
         """API metrics: ratios as fractions, every value a finite number / None / bool / str (never a formatted
-        string). The display strings of `summary()` belong under `metrics_display`."""
+        string). `summary()` returns the human-readable strings for the CLI/report only; it is not part of any API
+        response."""
         def fin(x):
             try:
                 v = float(x)
@@ -204,7 +205,7 @@ def walk_forward_validate(
     df: pd.DataFrame, symbol: str, pattern_func: Callable, pattern_name: str,
     n_splits: int = 4, train_pct: float = 0.7,
 ) -> list[BacktestResult]:
-    """Legacy fold-wise out-of-sample backtests (kept for the dashboard / API).
+    """Legacy fold-wise out-of-sample backtests (kept for the API).
 
     The pattern is evaluated ONCE on the full contiguous frame (warm-up included, WF-1) and each fold
     backtests only its test window with those signals. The statistically meaningful walk-forward

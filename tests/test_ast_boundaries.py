@@ -75,6 +75,13 @@ def test_advisory_modules_never_import_the_order_path():
             assert not _hits(names, banned), f"{name} imports {banned}"
 
 
+def test_briefing_modules_never_import_the_order_path_or_risk_writes():
+    for name in ("claude_integration.py", "services/briefing.py", "routes/briefing_routes.py"):
+        names = _imports(ROOT / name)
+        for banned in ("execution", "brokers", "paper_trader", "signals", "risk_manager", "alerts"):
+            assert not _hits(names, banned), f"{name} imports {banned}"
+
+
 def test_paper_trader_shim_routes_through_execution():
     names = _imports(ROOT / "paper_trader.py")
     assert _hits(names, "execution") and not _hits(names, "brokers")

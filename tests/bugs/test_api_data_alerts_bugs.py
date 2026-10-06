@@ -136,7 +136,7 @@ def test_API_3_scan_total_return_not_prerounded(patch_fetch, monkeypatch):
     for s in sigs:
         bt = classic_backtest(PATTERN_REGISTRY[s["pattern"]](df), "AAA", s["pattern"])
         raw = float(bt.total_return_pct)
-        if abs(s["total_return_pct"] - raw) > 1e-6:
+        if abs(s["total_return"] - raw) > 1e-6:
             mismatches += 1
     assert mismatches == 0, f"{mismatches}/{len(sigs)} scan results were rounded to 2 decimals"
 
@@ -251,26 +251,44 @@ def reloaded_config_with_model(monkeypatch):
 
 
 class _FakeLLMClient:
-    """Stands in for anthropic.Anthropic; records parse() kwargs, optionally raises."""
+    """Stands in for anthropic.Anthropic; records stream() kwargs, optionally raises."""
     def __init__(self, exc=None):
         from types import SimpleNamespace
         self.seen, self.exc = {}, exc
-        self.messages = SimpleNamespace(parse=self._parse)
-        self.beta = SimpleNamespace(messages=SimpleNamespace(parse=self._parse))
+        self.messages = SimpleNamespace(stream=self._stream)
+        self.beta = SimpleNamespace(messages=SimpleNamespace(stream=self._stream))
 
-    def _parse(self, **kw):
+    def with_options(self, **kw):
+        return self
+
+    def _stream(self, **kw):
         from types import SimpleNamespace
         if self.exc:
             raise self.exc
         self.seen = kw
-        return SimpleNamespace(stop_reason="end_turn", parsed_output=claude_integration.Briefing(bias="neutral"),
-                               usage=None, _request_id="req_1")
+        resp = SimpleNamespace(stop_reason="end_turn", usage=None, _request_id="req_1",
+                               content=[SimpleNamespace(type="text", text="{}")])
+        return _Ctx(resp)
+
+
+class _Ctx:
+    def __init__(self, resp):
+        self.resp = resp
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def get_final_message(self):
+        return self.resp
 
 
 def test_LLM_1_model_id_configurable_via_env(reloaded_config_with_model, monkeypatch):
     fake = _FakeLLMClient()
     monkeypatch.setattr(claude_integration, "_get_client", lambda: fake)
-    claude_integration.generate_summary([], [], [])
+    claude_integration.generate_nightly("x")
     assert fake.seen["model"] == reloaded_config_with_model
 
 
@@ -280,5 +298,5 @@ def test_LLM_1b_api_failure_is_surfaced(monkeypatch):
     resp = httpx2.Response(404, request=httpx2.Request("POST", "https://api.anthropic.com/v1/messages"))
     fake = _FakeLLMClient(exc=anthropic.NotFoundError("model not found", response=resp, body=None))
     monkeypatch.setattr(claude_integration, "_get_client", lambda: fake)
-    out = claude_integration.generate_summary([], [], [])
-    assert out is not None and ("fail" in out.lower() or "error" in out.lower())
+    out = claude_integration.generate_nightly("x")
+    assert not out.ok and out.error is claude_integration.LLMError.NOT_FOUND
