@@ -26,7 +26,9 @@ _client = None  # alpaca TradingClient (or a FakeBroker in tests); only ever han
 
 def _get_broker():
     """The Broker adapter used for every display read. No raw client is ever exposed to callers."""
-    return execution.AlpacaBroker(_client)  # builds the paper=True client lazily when _client is None
+    if _client is None:
+        return execution.default_broker()   # honours PAPER_BROKER / FORWARD_TEST (never Alpaca under the forward test)
+    return execution.AlpacaBroker(_client)
 
 
 def trading_allowed() -> bool:

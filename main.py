@@ -17,6 +17,8 @@ Commands:
     python main.py run-nightly [--mode technical pairs ml] [--no-stress]
     python main.py schedule [--at 17:30] [--tz America/New_York]
     python main.py heartbeat [--max-age-hours 30]
+    python main.py forward step [--date YYYY-MM-DD] [--no-stress] | report | restore   (one-week forward paper test,
+        simulated broker + IBKR-fed bar files; see docs/forward-test/RUNBOOK.md)
 
 The old flat flags (python main.py --mode pairs, --paper, ...) still work and mean `scan`.
 """
@@ -57,7 +59,7 @@ logger = logging.getLogger(__name__)
 # ══════════════════════════════════════════════════════════════
 
 SUBCOMMANDS = ("scan", "risk", "check-llm", "rebalance", "backup", "data-status",
-               "schedule", "run-nightly", "heartbeat", "ibkr")
+               "schedule", "run-nightly", "heartbeat", "ibkr", "forward")
 
 
 def _err(msg: str) -> None:
@@ -261,6 +263,35 @@ def cmd_ibkr(args) -> int:
     return 0
 
 
+def cmd_forward(args) -> int:
+    from services import forward
+    act = args.forward_cmd
+    if act == "step":
+        e = forward.step(date=args.date, modes=tuple(args.mode or scheduler.MODES), run_stress=not args.no_stress,
+                         rerun=args.rerun)
+        if e.get("crashed"):
+            _err("; ".join(e["errors"]))
+            return 1
+        a = e["account"]
+        print(f"forward step {e['date']}: status={e['status']} equity={a['equity']:,.2f} ({a['return_pct']}% vs SPY "
+              f"{e['spy']['return_pct']}%) dd={a['drawdown_pct']}% intents={e['counts']['intents_decided']} "
+              f"{e['counts']['decisions_by_status']} fills={len(e['sim_advance']['fills'])} "
+              f"recon={'ok' if e['reconciliation']['ok'] else e['reconciliation']['mismatches']}")
+        print(f"funnel: {e['funnel']}")
+        print(f"journal: {forward.journal_path()}  day file: {forward.journal_dir() / 'days' / (e['date'] + '.md')}")
+        return 0 if e["status"] == "ok" else 1
+    if act == "report":
+        print(forward.report())
+        return 0
+    try:
+        done = forward.restore(force=args.force)
+    except RuntimeError as e:
+        _err(str(e))
+        return 1
+    print("restored: " + (", ".join(done) if done else "nothing (targets exist or no snapshot)"))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Trading Pattern Bot v2")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -314,6 +345,17 @@ def build_parser() -> argparse.ArgumentParser:
     ibs.add_parser("sync", help="read the account from IB Gateway and store a snapshot")
     ibs.add_parser("status", help="show the latest stored snapshot (does not connect)")
 
+    fw = sub.add_parser("forward", help="one-week forward paper test on IBKR-fed bar files and a simulated broker")
+    fws = fw.add_subparsers(dest="forward_cmd", required=True)
+    fs = fws.add_parser("step", help="advance the sim broker, run the nightly pipeline, write the journal")
+    fs.add_argument("--date", help="expected latest session YYYY-MM-DD (must equal the newest bar in the files)")
+    fs.add_argument("--mode", nargs="+", choices=["technical", "pairs", "ml"])
+    fs.add_argument("--no-stress", action="store_true", help="skip the stress tests")
+    fs.add_argument("--rerun", action="store_true", help="re-run a session that is already journaled (replaces that day's row)")
+    fws.add_parser("report", help="summarise every journaled day")
+    fr = fws.add_parser("restore", help="restore sim broker + state DB from the committed snapshot (fresh container)")
+    fr.add_argument("--force", action="store_true")
+
     bk = sub.add_parser("backup", help="back up the state DB")
     bk.add_argument("--dest", required=True)
     return parser
@@ -322,6 +364,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     install_redaction()
     argv = list(sys.argv[1:] if argv is None else argv)
+    if argv[:1] == ["forward"]:
+        config.enable_forward_test()      # before anything reads config: external bars, sim broker, forward state DB
     if not argv or (argv[0] not in SUBCOMMANDS and argv[0] not in ("-h", "--help")):
         argv = ["scan"] + argv  # legacy flat flags mean `scan`
     args = build_parser().parse_args(argv)
@@ -333,7 +377,8 @@ def main(argv: list[str] | None = None) -> int:
     return {"scan": cmd_scan, "risk": cmd_risk, "check-llm": cmd_check_llm,
             "rebalance": cmd_rebalance, "backup": cmd_backup,
             "data-status": cmd_data_status, "run-nightly": cmd_run_nightly,
-            "schedule": cmd_schedule, "heartbeat": cmd_heartbeat, "ibkr": cmd_ibkr}[args.command](args)
+            "schedule": cmd_schedule, "heartbeat": cmd_heartbeat, "ibkr": cmd_ibkr,
+            "forward": cmd_forward}[args.command](args)
 
 
 

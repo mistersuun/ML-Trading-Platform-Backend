@@ -43,8 +43,9 @@ def execution_enabled() -> bool:
 
 
 def get_broker():
-    """The only broker constructor used by the CLI: Alpaca PAPER, wrapped for execution.py."""
-    return execution.AlpacaBroker()
+    """The only broker constructor used by the CLI: the paper broker config.PAPER_BROKER selects (Alpaca PAPER by
+    default, or the offline simulation for the forward test), wrapped for execution.py."""
+    return execution.default_broker()
 
 
 @dataclass

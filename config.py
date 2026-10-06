@@ -56,6 +56,12 @@ PAIRS = [
 # ══════════════════════════════════════════════════════════════
 
 DATA_SOURCE_PRIORITY = ["alpaca", "alphavantage", "yfinance"]
+if os.getenv("DATA_SOURCE_PRIORITY", "").strip():       # e.g. DATA_SOURCE_PRIORITY=external
+    DATA_SOURCE_PRIORITY = [s.strip() for s in os.getenv("DATA_SOURCE_PRIORITY", "").split(",") if s.strip()]
+
+# Forward paper test (docs/forward-test/RUNBOOK.md): bars come from files the orchestrator writes (raw IBKR
+# get_price_history JSON, one file per symbol) and orders go to a simulated paper broker. No network is needed.
+FORWARD_TEST = os.getenv("FORWARD_TEST", "").strip().lower() in ("1", "true", "yes", "on")
 
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
 ALPACA_SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
@@ -181,6 +187,13 @@ PAPER_TRADE_MAX_ORDER_VALUE = 1000  # Max $ per paper trade order
 TRADING_MODE = os.getenv("TRADING_MODE", "off").strip().lower()
 if TRADING_MODE not in ("off", "paper"):
     TRADING_MODE = "off"
+# Which paper broker execution talks to: "alpaca" (the Alpaca PAPER account, default) or "sim" (brokers/sim.py,
+# a persisted offline simulation). There is no live broker.
+PAPER_BROKER = os.getenv("PAPER_BROKER", "alpaca").strip().lower()
+if PAPER_BROKER not in ("alpaca", "sim"):
+    PAPER_BROKER = "alpaca"
+SIM_SLIPPAGE_BPS = float(os.getenv("SIM_SLIPPAGE_BPS", "5") or 5)
+SIM_START_CASH = float(os.getenv("SIM_START_CASH", "100000") or 100000)   # fictional dollars
 
 # ══════════════════════════════════════════════════════════════
 #  PHASE 1 — EXECUTION, RISK STATE, SIGNAL SLEEVE (docs/decisions.md D5)
@@ -201,7 +214,11 @@ def _repo_path(env_key: str, default: str) -> str:
     return str(p if p.is_absolute() or str(p) == ":memory:" else Path(__file__).parent / p)
 
 
-STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/trading.db")
+# The forward test keeps its own state DB so it can never touch the real one (unless STATE_DB_PATH is set).
+STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/forward/trading.db" if FORWARD_TEST else "state/trading.db")
+EXTERNAL_BARS_DIR = _repo_path("EXTERNAL_BARS_DIR", "state/external_bars")
+SIM_BROKER_PATH = _repo_path("SIM_BROKER_PATH", "state/sim_broker.json")
+FORWARD_JOURNAL_DIR = _repo_path("FORWARD_JOURNAL_DIR", "docs/forward-test/2026-10")
 KILL_SWITCH_FILE = _repo_path("KILL_SWITCH_FILE", "state/KILL")
 
 # Signal-sleeve equity is a configured dollar amount, never derived from broker equity.
@@ -309,3 +326,24 @@ ALLOCATION_PROFILE = os.getenv("ALLOCATION_PROFILE", "cad").strip().lower()
 if ALLOCATION_PROFILE not in ("us", "cad"):
     ALLOCATION_PROFILE = "cad"
 MAX_LEVERAGE_WARN = _f("MAX_LEVERAGE_WARN", 1.0)   # gross positions / net liquidation above this -> warning
+
+
+def enable_forward_test() -> None:
+    """Switch this process to the forward-test setup (idempotent): external bars only, simulated paper broker and a
+    separate state DB. Paper trading stays OFF here on purpose: only `services.forward.step` turns it on, locally and
+    for the duration of the step, so no other command (run-nightly, scan --paper) can place sim orders on a stale
+    sim clock. Used by `main.py forward ...` and FORWARD_TEST=1."""
+    global FORWARD_TEST, PAPER_BROKER, TRADING_MODE, PAPER_TRADE_ENABLED, STATE_DB_PATH, IBKR_SYNC_ENABLED, ALERT_METHOD
+    FORWARD_TEST = True
+    PAPER_BROKER = "sim"
+    TRADING_MODE = "off"
+    PAPER_TRADE_ENABLED = False
+    DATA_SOURCE_PRIORITY[:] = ["external"]
+    IBKR_SYNC_ENABLED = False        # no account sync, no network
+    ALERT_METHOD = "console"
+    if not os.getenv("STATE_DB_PATH"):
+        STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/forward/trading.db")
+
+
+if FORWARD_TEST:
+    enable_forward_test()

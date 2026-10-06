@@ -177,6 +177,9 @@ def get_bars(symbol: str, period_days: int = config.LOOKBACK_DAYS, interval: str
     spec = _spec(symbol)
     cal = get_calendar(spec.calendar)
     order = _candidate_sources(symbol, period_days, sources)
+    if order and order[0] == "external":
+        # local files: re-read (cheap) every time so a daily top-up is seen at once; the parquet cache adds nothing
+        return adapters.fetch_bars(symbol, period_days, interval, None, ["external"], now_utc)
     cached_src = next((s for s in order if bar_path(symbol, interval, s).exists()), None)
     path = bar_path(symbol, interval, cached_src) if cached_src else None
     with _lock(path or bar_dir() / _safe(symbol)):

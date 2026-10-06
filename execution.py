@@ -366,6 +366,18 @@ def cancel_open_entries(broker: Broker, conn: Optional[sqlite3.Connection] = Non
     return cancelled
 
 
+def default_broker() -> Broker:
+    """The paper broker selected by config.PAPER_BROKER: the Alpaca PAPER account (default) or the offline
+    simulation (brokers/sim.py, forward test). There is no live broker. A forward-test process never builds the
+    Alpaca adapter, even by mistake."""
+    if config.PAPER_BROKER == "sim":
+        from brokers.sim import SimBroker
+        return AlpacaBroker(SimBroker())
+    if config.FORWARD_TEST:
+        raise RuntimeError("FORWARD_TEST is on but PAPER_BROKER is not 'sim'; refusing to build the Alpaca broker")
+    return AlpacaBroker()
+
+
 # ── the chokepoint ───────────────────────────────────────────
 
 def submit_intent(intent: OrderIntent, broker: Optional[Broker] = None,
@@ -433,7 +445,7 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
     side = _side(intent.direction)
     key = signal_key(intent.symbol, side, intent.signal_bar_date)
 
-    broker = broker if broker is not None else AlpacaBroker()
+    broker = broker if broker is not None else default_broker()
     if not broker.get_asset(tsym).tradable:
         return reject("asset_not_tradable")
 

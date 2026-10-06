@@ -19,3 +19,8 @@ models/
 state/holdings*.csv
 state/ibkr_snapshot*.json
 data/trials/
+state/external_bars/
+state/sim_broker.json
+state/sim_broker.json.tmp*
+state/forward/
+state/data/

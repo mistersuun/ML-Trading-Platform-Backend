@@ -25,6 +25,7 @@ from tenacity import RetryCallState, Retrying, retry_if_exception_type, retry_if
 
 import config
 import instruments
+import external_bars
 from data.calendars import SessionCalendar, get_calendar, to_utc
 from data.validate import (
     OHLCV,
@@ -36,7 +37,8 @@ from data.validate import (
 
 logger = logging.getLogger(__name__)
 
-SUPPORTED_SOURCES = ("alpaca", "yfinance")
+SUPPORTED_SOURCES = ("alpaca", "yfinance", "external")
+EXTERNAL_MIN_BARS = 500      # an external symbol without a base file needs this many bars before coverage is relaxed
 ALPACA_DELAY = timedelta(minutes=16)  # free-tier SIP data is delayed 15 min; clamp the request end
 _TIMEFRAMES = {"1d": "1Day", "1Day": "1Day", "1h": "1Hour", "1Hour": "1Hour", "15m": "15Min",
                "15Min": "15Min", "5m": "5Min", "5Min": "5Min", "1m": "1Min", "1Min": "1Min"}
@@ -335,7 +337,20 @@ def fetch_yfinance(spec: _Spec, start: pd.Timestamp, end: pd.Timestamp, interval
     return df.sort_index()
 
 
-_ADAPTERS = {"alpaca": fetch_alpaca, "yfinance": fetch_yfinance}
+def fetch_external(spec: _Spec, start: pd.Timestamp, end: pd.Timestamp, interval: str, now: pd.Timestamp) -> pd.DataFrame:
+    """Forward-test source: raw IBKR daily bars from config.EXTERNAL_BARS_DIR (no network). Daily only; the
+    IBKR session-open stamps become exchange session dates; the usual calendar validation runs in _finalize."""
+    if interval not in ("1d", "1Day"):
+        return _empty()
+    try:
+        df = external_bars.load_bars(spec.symbol, spec.asset_class)
+    except (external_bars.ExternalBarsError, ValueError, OSError) as e:
+        logger.warning("external bars for %s unreadable: %s", spec.symbol, e)
+        return _empty()
+    return df if len(df) else _empty()
+
+
+_ADAPTERS = {"alpaca": fetch_alpaca, "yfinance": fetch_yfinance, "external": fetch_external}
 
 
 # ------------------------------------------------------------------ pipeline
@@ -403,8 +418,19 @@ def fetch_bars(
         raw = _ADAPTERS[src](spec, start_n, end_n, interval, now_utc)
         if raw is None or raw.empty:
             continue
+        s_n = start_n
+        if src == "external" and raw.index[0] > s_n:
+            # a file holds what the orchestrator fetched (e.g. 5y): judge coverage from its first bar, not from
+            # the requested window, so a 5-year file still serves an 8-year research request. Only for a real
+            # history (the base <SYM>.json file or >= EXTERNAL_MIN_BARS bars): a few top-up bars alone never pass.
+            files = external_bars.symbol_files(spec.symbol)
+            has_base = bool(files) and files[0].name == f"{external_bars._safe(spec.symbol)}.json"
+            share = (end_n - raw.index[0]).days / max((end_n - start_n).days, 1)
+            logger.info("%s: external bars cover %.0f%% of the requested window (%d bars)", symbol, share * 100, len(raw))
+            if has_base or len(raw) >= EXTERNAL_MIN_BARS:
+                s_n = raw.index[0]
         try:
-            df, rep = _finalize(raw, spec, cal, start_n, end_n, now_utc, interval)
+            df, rep = _finalize(raw, spec, cal, s_n, end_n, now_utc, interval)
         except DataQualityError as e:
             logger.warning("%s from %s failed validation: %s", symbol, src, e)
             last_err = e
