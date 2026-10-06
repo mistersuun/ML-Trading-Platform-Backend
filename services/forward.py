@@ -12,6 +12,7 @@ import logging
 import shutil
 import sqlite3
 import time
+from dataclasses import asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
@@ -290,6 +291,151 @@ def restore(force: bool = False) -> list[str]:
     return done
 
 
+# ------------------------------------------------------------------ plumbing test (NOT a strategy)
+
+PLUMBING_LABEL = "PLUMBING TEST — not a strategy"
+_PLACED = ("submitted", "pending", "unknown", "duplicate")   # ledger states in which an order may exist at the broker
+
+
+def _plumbing_ids(conn, journal: list[dict]) -> dict:
+    """client_order_ids of the (single) plumbing-test entry and close, from the signal ledger and the journal."""
+    import execution
+    ids = {"entry_cid": None, "entry_date": None, "close_cid": None, "close_date": None}
+    for r in conn.execute("SELECT signal_key, side, bar_date, status FROM signal_ledger WHERE strategy_key=? "
+                          "ORDER BY rowid", (execution.PLUMBING_STRATEGY_KEY,)):
+        k = "entry" if r["side"] == "buy" else "close"
+        if r["status"] in _PLACED and ids[f"{k}_cid"] is None:
+            ids[f"{k}_cid"], ids[f"{k}_date"] = r["signal_key"], r["bar_date"]
+    for e in journal:                                       # belt and braces: the journal outlives a restored DB
+        d = e.get("decision") or {}
+        if e.get("type") == "plumbing_test" and e.get("action") in ("entry", "close") and d.get("status") == "submitted":
+            k = e["action"]
+            if ids[f"{k}_cid"] is None:
+                ids[f"{k}_cid"], ids[f"{k}_date"] = d.get("client_order_id"), e.get("date")
+    return ids
+
+
+def plumbing_status(sim, ids: dict) -> dict:
+    """Where the plumbing trade stands in the sim: state none|entry_pending|entry_failed|open|closed, its fills, P&L."""
+    import execution
+    out = {**ids, "state": "none", "fills": [], "realized_pl": 0.0, "unrealized_pl": 0.0, "pl": 0.0, "position": None,
+           "exit_reason": None, "stop": None, "take_profit": None}
+    E, C = ids.get("entry_cid"), ids.get("close_cid")
+    if not E:
+        return out
+    sim._sync()
+    orders = {o["client_order_id"]: o for o in sim.s["orders"]}
+    entry = orders.get(E)
+    mine = [f for f in sim.s["fills"] if f["client_order_id"] == E or f["client_order_id"].startswith(E + "-")
+            or (C and f["client_order_id"] == C)]
+    out["fills"] = mine
+    if entry is None:
+        out["state"] = "entry_missing"
+        return out
+    for lid in entry.get("leg_ids", []):
+        leg = sim._find(lid)
+        if leg and leg["type"] == "stop":
+            out["stop"] = leg["stop_price"]
+        elif leg and leg["type"] == "limit":
+            out["take_profit"] = leg["limit_price"]
+    if entry["status"] in ("accepted", "new"):
+        out["state"] = "entry_pending"
+    elif entry["status"] != "filled":
+        out["state"] = "entry_failed"
+    else:
+        # the plumbing position is worked out from its OWN fills, never from "any SPY position": a strategy SPY
+        # position opened after the plumbing exit must not be mistaken for it
+        bought = [f for f in mine if f["side"] == "buy"]
+        sold = [f for f in mine if f["side"] == "sell"]
+        net = round(sum(f["qty"] for f in bought) - sum(f["qty"] for f in sold), 6)
+        pos = sim.s["positions"].get(execution.PLUMBING_SYMBOL)
+        out["state"] = "open" if net > 0 else "closed"
+        if net > 0:
+            bq = sum(f["qty"] for f in bought)
+            avg = sum(f["qty"] * f["price"] for f in bought) / bq if bq else 0.0
+            last = pos["last_price"] if pos else avg
+            out["position"] = {"qty": net, "avg_entry": avg, "last": last}
+            out["unrealized_pl"] = round(net * (last - avg), 2)
+        exits = sold
+        if exits:
+            out["exit_reason"] = {"stop": "stop_loss", "limit": "take_profit", "market": "closed_at_open"}.get(exits[-1]["type"], exits[-1]["type"])
+    out["realized_pl"] = round(sum(f["realized_pl"] for f in mine), 2)
+    out["pl"] = round(out["realized_pl"] + out["unrealized_pl"], 2)
+    return out
+
+
+def _plumbing_night(day: str, now: datetime, broker, sim, journal: list[dict], request: Optional[str],
+                    errors: list[str], nightly_block: Optional[str] = None) -> tuple[dict, list[dict]]:
+    """Run tonight's plumbing-test action (request: "entry" | "close" | None) through execution.submit_intent and
+    return (summary for the day entry, journal lines). Never raises: a problem is a journaled outcome, and a failure
+    of the status/ids work is reported as state "unknown" (a reporting feature must not stop the forward test).
+    `nightly_block` (e.g. "nightly_not_ok:error") skips the ENTRY only, so the wiring check never runs on a broken night."""
+    import execution
+    from risk_manager import RiskManager
+    from state import db as state_db
+    lines: list[dict] = []
+
+    def line(action: str, **kw) -> None:
+        lines.append({"type": "plumbing_test", "label": PLUMBING_LABEL, "date": day, "run_at": now.isoformat(),
+                      "action": action, **kw})
+
+    conn = None
+    ids: dict = {}
+    try:
+        conn = state_db.require_initialized()
+        ids = _plumbing_ids(conn, journal)
+        before = plumbing_status(sim, ids)
+        if request:
+            line_kw: dict = {}
+            try:
+                price = _close_on(REF_SYMBOL, day, now)
+                if request == "entry" and ids["entry_cid"]:
+                    line_kw = {"outcome": "skipped", "reason": f"already_placed:{ids['entry_cid']}"}
+                elif request == "entry" and nightly_block:
+                    line_kw = {"outcome": "skipped", "reason": nightly_block}
+                elif request == "close" and not ids["entry_cid"]:
+                    line_kw = {"outcome": "skipped", "reason": "no_plumbing_entry_was_ever_placed"}
+                elif request == "close" and ids["close_cid"]:
+                    line_kw = {"outcome": "skipped", "reason": f"close_already_placed:{ids['close_cid']}"}
+                elif request == "close" and before["state"] != "open":
+                    line_kw = {"outcome": "skipped", "reason": f"no_open_plumbing_position (state={before['state']})"}
+                elif request == "close" and ids["entry_date"] and day <= ids["entry_date"]:
+                    line_kw = {"outcome": "skipped", "reason": "close_only_on_a_later_night"}
+                elif price is None:
+                    line_kw = {"outcome": "skipped", "reason": f"no_{REF_SYMBOL}_close_for_{day}"}
+                else:
+                    intent = execution.build_plumbing_intent(broker, 1 if request == "entry" else -1, day, price)
+                    rm = RiskManager(conn)
+                    execution.refresh_sleeve_equity(rm, broker, now=now)
+                    d = execution.submit_intent(intent, broker=broker, conn=conn, now=now, risk_manager=rm)
+                    line_kw = {"outcome": d.status, "intent_price": price, "decision": asdict(d)}
+                    if d.status not in ("submitted", "rejected", "duplicate", "halted"):
+                        errors.append(f"plumbing test {request}: {d.status} {d.reasons}")
+            except Exception as e:
+                logger.exception("plumbing test failed")
+                errors.append(f"plumbing test {request}: {type(e).__name__}: {e}")
+                line_kw = {"outcome": "error", "reason": f"{type(e).__name__}: {e}"}
+            line(request, **line_kw)
+            ids = _plumbing_ids(conn, journal + lines)
+        status = plumbing_status(sim, ids)
+        done_before = any(e.get("type") == "plumbing_test" and e.get("state") == "closed" for e in journal)
+        if status["state"] != "none" and not request and not done_before:
+            line("status", state=status["state"], pl=status["pl"], fills=status["fills"], position=status["position"])
+        if lines and lines[-1]["action"] in ("entry", "close"):
+            lines[-1]["state"] = status["state"]
+    except Exception as e:
+        logger.exception("plumbing test status failed")
+        errors.append(f"plumbing test status: {type(e).__name__}: {e}")
+        status = {**ids, "state": "unknown", "fills": [], "realized_pl": 0.0, "unrealized_pl": 0.0, "pl": 0.0,
+                  "position": None, "exit_reason": None, "stop": None, "take_profit": None}
+    finally:
+        if conn is not None:
+            conn.close()
+    summary = {**status, "requested": request, "label": PLUMBING_LABEL,
+               "lines": [{k: v for k, v in ln.items() if k not in ("type", "label", "run_at")} for ln in lines]}
+    return summary, lines
+
+
 # ------------------------------------------------------------------ the step
 
 def _fmt_money(x) -> str:
@@ -307,22 +453,28 @@ def _replace_days(date: str) -> None:
 
 
 def step(date: Optional[str] = None, modes=("technical", "pairs", "ml"), run_stress: bool = True,
-         rerun: bool = False, now: Optional[datetime] = None) -> dict:
+         rerun: bool = False, now: Optional[datetime] = None, plumbing_test: bool = False,
+         plumbing_close: bool = False) -> dict:
     """One forward-test night. Returns the journal entry (also written to disk).
 
     Paper trading is switched on here, for this call only (config.enable_forward_test leaves it off so no other
     command can place sim orders). A session already journaled is refused unless `rerun` (which replaces that day's
-    row). Only finished sessions are ever used (see external_bars.closed_bars)."""
+    row). Only finished sessions are ever used (see external_bars.closed_bars).
+
+    `plumbing_test` places the ONE labelled plumbing-test trade tonight (idempotent, see `_plumbing_night`);
+    `plumbing_close` closes it at the next open on a later night. Neither is a strategy."""
+    if plumbing_test and plumbing_close:
+        raise ValueError("--plumbing-test and --plumbing-close are mutually exclusive (place it, then close it on a later night)")
     config.enable_forward_test()
     saved_mode = (config.TRADING_MODE, config.PAPER_TRADE_ENABLED)
     config.TRADING_MODE, config.PAPER_TRADE_ENABLED = "paper", True
     try:
-        return _step(date, modes, run_stress, rerun, now)
+        return _step(date, modes, run_stress, rerun, now, "entry" if plumbing_test else "close" if plumbing_close else None)
     finally:
         config.TRADING_MODE, config.PAPER_TRADE_ENABLED = saved_mode
 
 
-def _step(date, modes, run_stress, rerun_ok, now) -> dict:
+def _step(date, modes, run_stress, rerun_ok, now, plumbing_request=None) -> dict:
     import execution
     import scheduler
     from risk_manager import RiskManager
@@ -334,6 +486,7 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
     cap = _Capture()
     logging.getLogger().addHandler(cap)
     errors: list[str] = []
+    plumbing_lines: list[dict] = []
     try:
         latest = latest_session(now)
         if latest is None:
@@ -385,6 +538,14 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
             errors.append(f"nightly status={res.get('status')}: {summary.get('error') or res.get('message')}")
 
         decisions = results.get("decisions", []) or []
+        # the plumbing test is submitted AFTER the nightly run, through the same execution.submit_intent, and its
+        # decision is kept out of `decisions` (shadow items, intent counts and every strategy statistic)
+        nightly_block = None
+        if res.get("status") != "ok":
+            nightly_block = f"nightly_not_ok:{res.get('status')}"
+        elif any(r["symbol"] in config.WATCHLIST["stocks"] and r["status"] in ("missing", "stale") for r in freshness(now)):
+            nightly_block = "nightly_not_ok:degraded"
+        plumbing, plumbing_lines = _plumbing_night(day, now, broker, sim, journal, plumbing_request, errors, nightly_block)
         conn = state_db.require_initialized()
         try:
             order_rows = [dict(r) for r in conn.execute(
@@ -417,9 +578,18 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
         base_entry = prior_days[0] if prior_days else None
         spy_base = base_entry["spy"]["close"] if base_entry else spy_now
         base_eq = base_entry["account"]["start_equity"] if base_entry else (hist[0]["equity"] if hist else eq)
-        positions = [{"symbol": p.symbol, "qty": float(p.qty), "avg_entry": float(p.avg_entry_price),
-                      "last": float(p.current_price), "unrealized_pl": float(p.unrealized_pl)}
-                     for p in sim.get_all_positions()]
+        positions = []
+        for p in sim.get_all_positions():
+            row = {"symbol": p.symbol, "qty": float(p.qty), "avg_entry": float(p.avg_entry_price),
+                   "last": float(p.current_price), "unrealized_pl": float(p.unrealized_pl), "plumbing_test": False}
+            pp = plumbing.get("position") if p.symbol == execution.PLUMBING_SYMBOL else None
+            if pp and plumbing["state"] == "open":
+                pq = min(float(pp["qty"]), row["qty"])
+                if pq < row["qty"]:        # a strategy SPY position next to the plumbing one: report them separately
+                    positions.append({**row, "qty": row["qty"] - pq, "unrealized_pl": round(row["unrealized_pl"] - plumbing["unrealized_pl"], 2)})
+                    row = {**row, "qty": pq, "unrealized_pl": plumbing["unrealized_pl"]}
+                row["plumbing_test"] = True
+            positions.append(row)
         open_orders = [{"id": o.id, "symbol": o.symbol, "side": o.side, "type": o.order_type, "status": o.status,
                         "qty": float(o.qty), "stop": o.stop_price, "limit": o.limit_price,
                         "legs": [{"type": l.order_type, "status": l.status, "stop": l.stop_price, "limit": l.limit_price}
@@ -458,12 +628,14 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
             "account": {"equity": round(eq, 2), "cash": float(acct["cash"]), "start_cash": sim.s["start_cash"],
                         "start_equity": round(base_eq, 2), "peak_equity": round(peak, 2),
                         "drawdown_pct": round((eq / peak - 1) * 100, 3) if peak else 0.0,
-                        "return_pct": round((eq / base_eq - 1) * 100, 3) if base_eq else 0.0},
+                        "return_pct": round((eq / base_eq - 1) * 100, 3) if base_eq else 0.0,
+                        "plumbing_pl": plumbing["pl"], "equity_ex_plumbing": round(eq - plumbing["pl"], 2),
+                        "return_pct_ex_plumbing": round(((eq - plumbing["pl"]) / base_eq - 1) * 100, 3) if base_eq else 0.0},
             "spy": {"close": spy_now, "base_close": spy_base,
                     "return_pct": round((spy_now / spy_base - 1) * 100, 3) if spy_now and spy_base else None},
             "risk": risk, "reconciliation": reconciliation,
             "warnings": cap.result(), "errors": errors,
-            "shadow_new": shadow, "shadow_scored": scores,
+            "shadow_new": shadow, "shadow_scored": scores, "plumbing_test": plumbing,
             "summary_keys": {k: v for k, v in summary.items() if k in ("technical", "pairs", "ml", "briefing", "backup")},
         }
         if first_ever:
@@ -479,6 +651,8 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
 
     if entry.get("crashed"):
         _append(entry)
+        for ln in plumbing_lines:           # an order may already be placed: never lose its journal line
+            _append(ln)
         return entry
     try:                                        # before the journal line, so a failure is recorded in it
         snapshot()
@@ -487,6 +661,8 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
     if entry["rerun"]:
         _replace_days(entry["date"])
     _append(entry)
+    for ln in plumbing_lines:
+        _append(ln)
     for sc in entry["shadow_scored"]:
         _append(sc)
     write_day_file(entry)
@@ -494,6 +670,29 @@ def _step(date, modes, run_stress, rerun_ok, now) -> dict:
 
 
 # ------------------------------------------------------------------ markdown
+
+def _plumbing_md(pt: dict, e: dict) -> list[str]:
+    """Day-file / report lines for the plumbing test. It is a wiring check, never evidence for any strategy."""
+    out = ["One SPY long placed only to exercise the order path (next-open fill, bracket legs, risk checks, sizing, "
+           "reconciliation, marking, exit). It is excluded from the strategy and shadow statistics.", ""]
+    out.append(f"- State: **{pt['state']}**" + (f", exit: {pt['exit_reason']}" if pt.get("exit_reason") else "")
+               + f", entry order {pt.get('entry_cid')}, close order {pt.get('close_cid')}")
+    if pt.get("stop") or pt.get("take_profit"):
+        out.append(f"- Bracket: stop {pt.get('stop')}, take-profit {pt.get('take_profit')} (GTC)")
+    if pt.get("position"):
+        p = pt["position"]
+        out.append(f"- Position: {p['qty']:g} SPY @ {p['avg_entry']:.2f}, last {p['last']:.2f}, unrealized {pt['unrealized_pl']:.2f}")
+    out.append(f"- P&L: realized {pt['realized_pl']:.2f}, unrealized {pt['unrealized_pl']:.2f}, total {pt['pl']:.2f}")
+    for f in pt.get("fills", []):
+        out.append(f"- Fill {f['date']}: {f['side']} {f['qty']:g} @ {f['price']} ({f['type']}{', exit leg' if f['leg'] else ''})")
+    for ln in pt.get("lines", []):
+        out.append(f"- Tonight [{ln['action']}]: {ln.get('outcome', ln.get('state', ''))} "
+                   f"{ln.get('reason') or (ln.get('decision') or {}).get('reasons') or ''}"
+                   + (f" qty={(ln.get('decision') or {}).get('qty')} stop={(ln.get('decision') or {}).get('stop_price')} "
+                      f"tp={(ln.get('decision') or {}).get('limit_price')}" if ln.get("decision") else ""))
+    out.append(f"- Reconciliation tonight: {'OK' if e['reconciliation']['ok'] else 'MISMATCH ' + str(e['reconciliation']['mismatches'])}")
+    return out
+
 
 def write_day_file(e: dict) -> Path:
     d = journal_dir() / "days"
@@ -508,7 +707,12 @@ def write_day_file(e: dict) -> Path:
     L += ["## Account (simulated, fictional dollars)", "",
           f"- Equity {_fmt_money(a['equity'])}, cash {_fmt_money(a['cash'])}, peak {_fmt_money(a['peak_equity'])}, "
           f"drawdown vs peak {a['drawdown_pct']}%, return since start {a['return_pct']}%",
-          f"- SPY close {spy['close']}, SPY return over the same period {spy['return_pct']}%", ""]
+          f"- SPY close {spy['close']}, SPY return over the same period {spy['return_pct']}%"]
+    pt = e.get("plumbing_test") or {"state": "none"}
+    if pt["state"] != "none":
+        L += [f"- Includes the {PLUMBING_LABEL} position/orders (state {pt['state']}): its P&L is {_fmt_money(a.get('plumbing_pl'))}; "
+              f"equity excluding it {_fmt_money(a.get('equity_ex_plumbing'))}, return excluding it {a.get('return_pct_ex_plumbing')}%"]
+    L.append("")
     L += ["## Risk state", "",
           f"- halted={risk.get('halted')} ({risk.get('halt_reason')}), risk multiplier {risk.get('risk_multiplier')} "
           f"(ladder), allowed={risk.get('allowed')}, reasons={risk.get('reasons')}, drawdown={risk.get('drawdown')}, "
@@ -529,9 +733,10 @@ def write_day_file(e: dict) -> Path:
           for x in e["sim_advance"]["fills"]] or ["- none"]
     L += ["", "## Positions", ""]
     L += [f"- {p['symbol']}: {p['qty']:g} @ {p['avg_entry']:.2f}, last {p['last']:.2f}, unrealized {p['unrealized_pl']:.2f}"
-          for p in e["positions"]] or ["- flat"]
+          + (f"  [{PLUMBING_LABEL}]" if p.get("plumbing_test") else "") for p in e["positions"]] or ["- flat"]
     L += ["", "## Open orders", ""]
     L += [f"- {o['symbol']} {o['side']} {o['qty']:g} {o['type']} [{o['status']}] legs={o['legs']}" for o in e["open_orders"]] or ["- none"]
+    L += ["", f"## {PLUMBING_LABEL}", ""] + _plumbing_md(pt, e) if (pt["state"] != "none" or pt.get("requested")) else []
     L += ["", "## Shadow signals recorded tonight (alert-only / non-eligible)", ""]
     L += [f"- {s['kind']} {s['symbol']} {s['pattern']} {'BUY' if s['direction'] == 1 else 'SELL'} [{s['validation_status']}] "
           f"entry {s['entry_price']} - {s['reason']}" for s in e["shadow_new"]] or ["- none"]
@@ -569,12 +774,19 @@ def report() -> str:
           "|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for e in days:
         a = e["account"]
-        L.append(f"| {e['date']} | {e['status']} | {a['equity']:,.0f} | {a['return_pct']} | {e['spy']['return_pct']} | "
+        pt = e.get("plumbing_test") or {}
+        pfills = {(f["date"], f["client_order_id"]) for f in pt.get("fills", [])}
+        n_fills = sum(1 for f in e["sim_advance"]["fills"] if (f["date"], f.get("client_order_id")) not in pfills)
+        n_pos = sum(1 for p in e["positions"] if not p.get("plumbing_test"))
+        L.append(f"| {e['date']} | {e['status']} | {a.get('equity_ex_plumbing', a['equity']):,.0f} | "
+                 f"{a.get('return_pct_ex_plumbing', a['return_pct'])} | {e['spy']['return_pct']} | "
                  f"{a['drawdown_pct']} | {e['counts']['technical_candidates']} | {e['counts']['intents_decided']} | "
-                 f"{e['counts']['decisions_by_status'].get('submitted', 0)} | {len(e['sim_advance']['fills'])} | "
-                 f"{len(e['positions'])} | {'ok' if e['reconciliation']['ok'] else 'MISMATCH'} | {len(e['warnings'])}/{len(e['errors'])} |")
+                 f"{e['counts']['decisions_by_status'].get('submitted', 0)} | {n_fills} | "
+                 f"{n_pos} | {'ok' if e['reconciliation']['ok'] else 'MISMATCH'} | {len(e['warnings'])}/{len(e['errors'])} |")
+    L += ["", f"Equity, return, fills and positions above EXCLUDE the {PLUMBING_LABEL} (see its own section below)."]
     last = days[-1]
-    L += ["", f"Latest: equity {last['account']['equity']:,.2f} ({last['account']['return_pct']}% vs SPY {last['spy']['return_pct']}%), "
+    lp = last["account"]
+    L += ["", f"Latest: equity {lp.get('equity_ex_plumbing', lp['equity']):,.2f} ({lp.get('return_pct_ex_plumbing', lp['return_pct'])}% vs SPY {last['spy']['return_pct']}%), "
           f"drawdown {last['account']['drawdown_pct']}%, risk multiplier {last['risk'].get('risk_multiplier')}, "
           f"halted={last['risk'].get('halted')}", "", "## Shadow signals (forward returns of alert-only / non-eligible signals)", ""]
     if not scores:
@@ -589,6 +801,20 @@ def report() -> str:
     ids = {i["id"] for e in days for i in e.get("shadow_new", []) if i.get("entry_price") and "/" not in i["symbol"]}
     pending = len(ids) * len(SHADOW_HORIZONS) - len({k for k in ((s_["id"], s_["horizon"]) for s_ in scores) if k[0] in ids})
     L += ["", f"Shadow score slots still pending: {max(pending, 0)}", ""]
+    pt_lines = [e for e in j if e.get("type") == "plumbing_test"]
+    if pt_lines:
+        lastpt = (days[-1].get("plumbing_test") or {})
+        L += [f"## {PLUMBING_LABEL}", "",
+              "A single SPY long to exercise the order path. Excluded from every table and statistic above and from the "
+              "shadow study; its result says nothing about any strategy.", "",
+              f"Latest state: {lastpt.get('state', 'n/a')}" + (f", exit {lastpt['exit_reason']}" if lastpt.get("exit_reason") else "")
+              + f", P&L {lastpt.get('pl', 0):.2f}", ""]
+        for ln in pt_lines:
+            d = ln.get("decision") or {}
+            L.append(f"- {ln['date']} [{ln['action']}] {ln.get('outcome', ln.get('state', ''))}"
+                     + (f" qty={d.get('qty')} stop={d.get('stop_price')} tp={d.get('limit_price')}" if d else "")
+                     + (f" {ln['reason']}" if ln.get("reason") else "") + (f" {d['reasons']}" if d.get("reasons") else ""))
+        L.append("")
     errs = [(e["date"], x) for e in days for x in e.get("errors", [])]
     L += ["## Errors", ""] + ([f"- {d}: {x}" for d, x in errs] or ["- none"])
     L += ["", "## Crashes", ""] + ([f"- {c['date']} at {c['run_at']}: {'; '.join(c['errors'])}" for c in crashes] or ["- none"])

@@ -101,6 +101,8 @@ daily bars need the 24/7 calendar, so only add them if you accept the extra vali
 ```bash
 FORWARD_TEST=1 .venv/bin/python main.py risk init      # only if the state DB does not exist (step 0)
 .venv/bin/python main.py forward step                  # add --date YYYY-MM-DD to assert the expected session
+                                                       # 2026-10-06 session only: add --plumbing-test;
+                                                       # 2026-10-13 session: add --plumbing-test-close (section 3b)
 .venv/bin/python main.py forward report                # cumulative table, writes docs/forward-test/2026-10/REPORT.md
 ```
 
@@ -119,6 +121,57 @@ FORWARD_TEST=1 .venv/bin/python main.py risk init      # only if the state DB do
 Status `degraded` (exit 1) means a REQUIRED watchlist symbol is missing or stale. A crash is printed, exits 1 and is
 journaled as a `crash` line (listed by `forward report`): fix the cause, re-run. `forward restore` is all-or-nothing:
 it refuses unless every snapshotted file is missing, or `--force` overwrites them all.
+
+## 3b. The plumbing test (ONE labelled trade, NOT a strategy)
+
+Because the strict eligibility bar may leave the whole week with zero orders, one SPY long is placed on purpose to
+exercise the order path that zero candidates never reach: next-open fill, bracket stop + take-profit legs, risk
+checks, sizing, reconciliation with an open position, position marking, exit handling. It is a wiring check and
+NEVER evidence for any strategy.
+
+- The 2026-10-06 session (night 2 of the week; 2026-10-05 is already journaled without it) uses the flag: `.venv/bin/python main.py forward step --plumbing-test`.
+  Nights in between use the plain `forward step` (the flag on a later night is harmless: it is skipped, see below),
+  and the 2026-10-13 session uses `--plumbing-test-close`. Do not skip either dated flag.
+- What it does: builds a SPY long intent (`execution.build_plumbing_intent`, source `plumbing_test`) sized by the normal
+  sizing code (about 1-3 shares, capped by the symbol/order notional on a 10,000 USD sleeve), bracket stop 3% below the
+  entry reference close and the platform take-profit (3 x ATR, i.e. 4.5% above), GTC legs, and sends it through
+  `execution.submit_intent` with ALL normal gates (kill switch, halts, ladder, exposure, duplicates, client_order_id
+  ledger, reconciliation). The only thing bypassed is the candidate validation-status requirement, and only for this
+  source, only for SPY, and only when the broker is the sim in forward mode. With the Alpaca broker or outside the
+  forward runner, creating the intent raises `PlumbingTestRefused` and `submit_intent` rejects it
+  (`plumbing_test_not_allowed`). Normal intents are unchanged (`ORDER_ELIGIBLE_STATUSES` is untouched).
+- Idempotent: it is placed once per forward run. A rerun, or the flag on a later night, journals `skipped
+  already_placed:<client_order_id>` (checked against the signal ledger and the journal). If risk gates reject it
+  (e.g. halted), nothing is placed and the flag can be used again on a later night. The entry is also skipped
+  unless the nightly run is healthy (nightly `status` `ok` and no required symbol stale or missing): it then
+  journals `skipped`, reason `nightly_not_ok:<status>` (e.g. `nightly_not_ok:error`, `nightly_not_ok:degraded`).
+  That reason is not a placed state, so after fixing the cause the flag can be used again with `--rerun`.
+- It fills at the next session's open (5 bp slippage) like any order; the stop/target legs are then evaluated on the
+  daily bars like any bracket. Expect on the 2026-10-07 run: a SPY fill, a position flagged `[PLUMBING TEST — not a
+  strategy]`, reconciliation OK (position + live stop leg).
+- Closing: if neither leg has triggered, close it on the LAST regular night (the 2026-10-13 session) with
+  `.venv/bin/python main.py forward step --plumbing-test-close` (alias `--plumbing-close`; mutually exclusive with
+  `--plumbing-test`). That cancels the bracket legs and sells at the next open, so the exit fill shows in the following
+  night's run (2026-10-14, if that run is made; otherwise the position is simply closed in the next session).
+  It is refused (journaled `skipped`) on the entry night, with no plumbing entry, or if the position is already gone.
+- Interactions with strategy risk handling (NOT fully isolated; the D5 caps are unchanged): while the SPY position
+  is open it takes one of the 2 `us_index` cluster slots (`MAX_POSITIONS_PER_CLUSTER=2`, shared with QQQ, IWM, DIA),
+  so a QQQ/IWM/DIA strategy intent can be rejected as `max_positions_per_cluster`; it takes 1 of the 8 open-position
+  slots, about 7.8% of gross exposure, about 23 USD of heat, and one `MAX_ORDERS_PER_DAY` slot on its entry night.
+  Its P&L feeds sleeve equity, so the drawdown ladder and daily-loss halts see it, and the report's drawdown column
+  includes it (equity and return columns exclude it). The plumbing position is identified from its own fills, so a
+  later strategy SPY position is reported as a strategy position, not as the plumbing trade.
+- Journal: separate `"type": "plumbing_test"` lines (actions `entry`, `close`, `status`), a section "PLUMBING TEST — not
+  a strategy" in each day file (state, bracket, position, fills, P&L, tonight's decision), and a note on the sim equity
+  line. The day entry has `plumbing_test` and `account.plumbing_pl / equity_ex_plumbing / return_pct_ex_plumbing`. The
+  plumbing decision is NOT in `decisions` (no intent counts, no shadow item, no shadow score). `forward report` shows it
+  in its own section and its equity, return, fills and positions columns exclude it.
+- Daily-trigger expectations: the 2026-10-06 night (`--plumbing-test`): one `plumbing_test` entry line with outcome `submitted`
+  (qty, stop, take-profit), the SPY order open with two held legs, no position yet, reconciliation OK, funnel and
+  `decisions` unaffected. The next night: one SPY fill at the open, state `open`, reconciliation OK. Nights 3-6: `status`
+  lines; a stop or take-profit leg fill ends it (`closed`, exit reason), otherwise close it on 2026-10-13 as above.
+  A reconciliation MISMATCH or a `plumbing test ...` entry in `errors` is a real finding: report it, do not hide it.
+  Nothing else changes: zero strategy orders is still a valid result, and the plumbing trade must not be quoted as one.
 
 ## 4. Commit only the journal, then push
 

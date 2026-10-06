@@ -380,6 +380,7 @@ def test_cad_profile_is_approved_and_the_default():
     assert set(allocation.target_weights({}, cad)) == set(cad.core) | set(cad.trend_universe)
     text = (ROOT / "docs" / "decisions.md").read_text()
     d14 = text[text.index("## D14"):]
+    d14 = d14[:d14.find("\n## D", 1)] if d14.find("\n## D", 1) != -1 else d14      # only the D14 section
     assert "Approved by owner 2026-10-05" in d14.splitlines()[0] and "PROPOSED" not in d14
     assert "Approved by owner 2026-10-05" in d14 and "tzdata" in d14 and "commodities" in d14.lower()
     assert "margin-loan rule" in d14 and "contribution_to_loan" in d14

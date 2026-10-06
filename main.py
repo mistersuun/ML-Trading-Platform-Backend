@@ -17,7 +17,7 @@ Commands:
     python main.py run-nightly [--mode technical pairs ml] [--no-stress]
     python main.py schedule [--at 17:30] [--tz America/New_York]
     python main.py heartbeat [--max-age-hours 30]
-    python main.py forward step [--date YYYY-MM-DD] [--no-stress] | report | restore   (one-week forward paper test,
+    python main.py forward step [--date YYYY-MM-DD] [--no-stress] [--plumbing-test | --plumbing-test-close] | report | restore   (one-week forward paper test,
         simulated broker + IBKR-fed bar files; see docs/forward-test/RUNBOOK.md)
 
 The old flat flags (python main.py --mode pairs, --paper, ...) still work and mean `scan`.
@@ -268,7 +268,7 @@ def cmd_forward(args) -> int:
     act = args.forward_cmd
     if act == "step":
         e = forward.step(date=args.date, modes=tuple(args.mode or scheduler.MODES), run_stress=not args.no_stress,
-                         rerun=args.rerun)
+                         rerun=args.rerun, plumbing_test=args.plumbing_test, plumbing_close=args.plumbing_close)
         if e.get("crashed"):
             _err("; ".join(e["errors"]))
             return 1
@@ -277,6 +277,10 @@ def cmd_forward(args) -> int:
               f"{e['spy']['return_pct']}%) dd={a['drawdown_pct']}% intents={e['counts']['intents_decided']} "
               f"{e['counts']['decisions_by_status']} fills={len(e['sim_advance']['fills'])} "
               f"recon={'ok' if e['reconciliation']['ok'] else e['reconciliation']['mismatches']}")
+        pt = e.get("plumbing_test") or {}
+        if pt.get("state", "none") != "none" or pt.get("requested"):
+            print(f"{pt['label']}: state={pt['state']} pl={pt['pl']} "
+                  f"tonight={[(l['action'], l.get('outcome', l.get('state'))) for l in pt.get('lines', [])]}")
         print(f"funnel: {e['funnel']}")
         print(f"journal: {forward.journal_path()}  day file: {forward.journal_dir() / 'days' / (e['date'] + '.md')}")
         return 0 if e["status"] == "ok" else 1
@@ -352,6 +356,11 @@ def build_parser() -> argparse.ArgumentParser:
     fs.add_argument("--mode", nargs="+", choices=["technical", "pairs", "ml"])
     fs.add_argument("--no-stress", action="store_true", help="skip the stress tests")
     fs.add_argument("--rerun", action="store_true", help="re-run a session that is already journaled (replaces that day's row)")
+    pg = fs.add_mutually_exclusive_group()
+    pg.add_argument("--plumbing-test", action="store_true",
+                    help="place the ONE labelled SPY plumbing-test trade tonight (sim broker only; idempotent; not a strategy)")
+    pg.add_argument("--plumbing-close", "--plumbing-test-close", dest="plumbing_close", action="store_true",
+                    help="close the plumbing-test position at the next open (a later night than the entry)")
     fws.add_parser("report", help="summarise every journaled day")
     fr = fws.add_parser("restore", help="restore sim broker + state DB from the committed snapshot (fresh container)")
     fr.add_argument("--force", action="store_true")

@@ -59,6 +59,45 @@ EXIT_TIF = "day"
 _STOP_TYPES = ("stop", "stop_limit", "trailing_stop")
 _LEG_CLASSES = ("bracket", "oco", "oto")
 
+# ── plumbing test (forward paper test only) ─────────────────
+# ONE clearly labelled trade that exercises the order path (next-open fill, bracket legs, risk checks, sizing,
+# reconciliation, marking, exit) when no candidate is eligible. It is NOT a strategy and never evidence for one.
+# It may bypass exactly one gate, the candidate validation-status requirement, and only when the broker is the
+# offline simulation inside a forward-test process. Everything else in `_submit` applies unchanged.
+PLUMBING_SOURCE = "plumbing_test"
+PLUMBING_STRATEGY_KEY = "plumbing_test"
+PLUMBING_STATUS = "plumbing_test"
+PLUMBING_SYMBOL = "SPY"
+PLUMBING_STOP_PCT = 0.03  # entry-reference stop distance; the platform bracket then puts the take-profit at 3 x ATR
+
+
+class PlumbingTestRefused(RuntimeError):
+    """A plumbing-test intent was requested outside the simulated forward-test broker."""
+
+
+def is_sim_forward_broker(broker: Any) -> bool:
+    """True only for the offline SimBroker (wrapped by AlpacaBroker) in a forward-test process with PAPER_BROKER=sim.
+    Never builds a client: an Alpaca broker with no client yet, a FakeBroker or anything else is False."""
+    if not (config.FORWARD_TEST and config.PAPER_BROKER == "sim"):
+        return False
+    from brokers.sim import SimBroker
+    return isinstance(getattr(broker, "_client", None), SimBroker)
+
+
+def build_plumbing_intent(broker: Any, direction: int, signal_bar_date: str, price: float) -> OrderIntent:
+    """The only constructor of a plumbing-test intent. Raises PlumbingTestRefused unless `broker` is the sim in
+    forward mode (and `_submit` re-checks the same thing, so building the dataclass by hand does not bypass it)."""
+    if not is_sim_forward_broker(broker):
+        raise PlumbingTestRefused("the plumbing test is only possible with the simulated broker (PAPER_BROKER=sim) "
+                                  "inside the forward runner")
+    if direction not in (1, -1) or isinstance(direction, bool) or not _finite(price) or price < MIN_PRICE:
+        raise PlumbingTestRefused("invalid plumbing-test direction or price")
+    atr = price * PLUMBING_STOP_PCT / config.ATR_STOP_MULT   # so the platform's own ATR stop sits PLUMBING_STOP_PCT below
+    return OrderIntent(symbol=PLUMBING_SYMBOL, direction=direction, signal_bar_date=signal_bar_date,
+                       strategy_key=PLUMBING_STRATEGY_KEY, confidence=1.0, validation_status=PLUMBING_STATUS,
+                       atr=atr, price=float(price), source=PLUMBING_SOURCE)
+
+
 DECISION_STATUSES = ("submitted", "rejected", "duplicate", "halted", "error", "dry_run")
 _LEDGER_BLOCKING = ("pending", "unknown")  # a ledger row with no orders row and one of these blocks entries
 
@@ -73,6 +112,7 @@ class OrderIntent:
     validation_status: str
     atr: Optional[float]
     price: float  # last completed close
+    source: str = "strategy"  # "strategy" (normal) | PLUMBING_SOURCE (sim forward test only, see below)
 
 
 @dataclass
@@ -439,7 +479,17 @@ def _submit(intent, broker, conn, now, risk_manager) -> Decision:
         return reject("unknown_symbol")
     if not inst.executable or inst.research_only or not inst.alpaca_trade_symbol:
         return reject("not_executable")
-    if intent.validation_status not in config.ORDER_ELIGIBLE_STATUSES:
+    if intent.source == PLUMBING_SOURCE:
+        # the single, narrow eligibility exception: sim broker in forward mode, SPY, the plumbing strategy/status only
+        broker = broker if broker is not None else default_broker()
+        if not is_sim_forward_broker(broker):
+            return reject("plumbing_test_not_allowed")
+        if (intent.symbol != PLUMBING_SYMBOL or intent.strategy_key != PLUMBING_STRATEGY_KEY
+                or intent.validation_status != PLUMBING_STATUS):
+            return reject("plumbing_test_malformed")
+    elif intent.source != "strategy":
+        return reject("invalid_source")
+    elif intent.validation_status not in config.ORDER_ELIGIBLE_STATUSES:
         return reject("not_deflated" if intent.validation_status == "oos_validated" else "not_validated")
     tsym = inst.alpaca_trade_symbol
     side = _side(intent.direction)
