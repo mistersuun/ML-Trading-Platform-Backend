@@ -1,0 +1,18 @@
+{
+ "cash": 100000.0,
+ "equity_history": [
+  {
+   "cash": 100000.0,
+   "date": "2026-10-05",
+   "equity": 100000.0,
+   "positions": 0
+  }
+ ],
+ "fills": [],
+ "last_date": "2026-10-05",
+ "orders": [],
+ "positions": {},
+ "seq": 0,
+ "start_cash": 100000.0,
+ "version": 1
+}
