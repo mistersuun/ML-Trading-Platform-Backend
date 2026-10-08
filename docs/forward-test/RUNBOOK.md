@@ -202,7 +202,7 @@ Tracks "famous investor" 13F clones, listed vehicles and ETFs next to SPY (defin
 file the latest close is used and the output says so). Each evening, after the normal fetch, top up these tickers
 the same way as the watchlist (`get_price_history` ONE_WEEK or ONE_MONTH, ONE_DAY, `outside_rth=false`, then
 `.venv/bin/python scripts/ingest_ibkr_bars.py <SYMBOL> <file> --topup`, `--asset-class etf` for ETFs). SPY, QQQ,
-AAPL, AMZN, GOOG, META, MSFT, BAC, BRK.B, MKL, L are already in the watchlist top-up.
+AAPL, AMZN, GOOG, META, MSFT and BAC are already in the watchlist top-up. BRK.B (conid 72063691, stored as `BRK_B`), MKL (271460, NYSE) and L (9252, NYSE, Loews) are NOT among the 17 and need their own daily top-up. GURU: skip until its base history is re-fetched (bad 2024-12-18 bar). PSHD (LSE) can carry a partial same-day bar if fetched before the London close; later top-ups supersede it.
 
 | Ticker | conid | Ticker | conid | Ticker | conid |
 |---|---|---|---|---|---|
