@@ -24,6 +24,12 @@
    "date": "2026-10-08",
    "equity": 99997.7721,
    "positions": 1
+  },
+  {
+   "cash": 99223.8421,
+   "date": "2026-10-09",
+   "equity": 100002.4121,
+   "positions": 1
   }
  ],
  "fills": [
@@ -40,7 +46,7 @@
    "type": "market"
   }
  ],
- "last_date": "2026-10-08",
+ "last_date": "2026-10-09",
  "orders": [
   {
    "client_order_id": "SPY-buy-2026-10-06-37ced6de8077",
@@ -103,7 +109,7 @@
  "positions": {
   "SPY": {
    "avg_entry": 776.1579,
-   "last_price": 773.93,
+   "last_price": 778.57,
    "qty": 1.0
   }
  },
