@@ -129,7 +129,7 @@ def test_success_request_shape_ledger_and_store(env, client):
     assert "2026-10-06" in kw["messages"][0]["content"] and "2026" not in ci.STABLE_SYSTEM_PROMPT
     rows = _ledger()
     assert len(rows) == 1 and rows[0]["status"] == "ok" and rows[0]["cost_usd"] == doc["cost_usd"]
-    r = briefing.latest()
+    r = briefing.latest(now=NOW)
     assert r.status == "ok" and r.briefing.headline and r.budget.spent_today_usd == doc["cost_usd"] \
         and "instruction to trade" in r.advisory
 
