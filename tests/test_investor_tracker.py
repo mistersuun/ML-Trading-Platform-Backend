@@ -97,3 +97,31 @@ def test_load_close_from_ibkr_json_and_markdown(tmp_path):
     assert row["portfolios"]["a"]["ret_since_inception"] == pytest.approx(0.2)
     md = tip.render_md([row], d)
     assert "| x |" in md and "+20.00%" in md and "NOPE" in md
+
+
+def test_per_portfolio_inception_pending_then_first_close_with_benchmarks():
+    closes = {"SPY": S([100, 100, 100, 110, 121]), "A": S([10, 10, 10, 11, 12.1]), "Q": S([50, 50, 50, 55, 55])}
+    d = defs({"spy": P({"SPY": 1}),
+              "late": {**P({"A": 1}), "inception_from": "2026-09-04", "benchmarks": ["Q", "SPY"]},
+              "future": {**P({"A": 1}), "inception_from": "2026-09-10"},
+              "rule": {"name": "r", "basis": "b", "positions": {}, "definition_only": True,
+                       "construction": "c", "inception_from": "2026-09-04"}})
+    row = tip.evaluate(d, closes, pd.Timestamp("2026-09-07"))
+    late = row["portfolios"]["late"]
+    assert late["inception_date"] == "2026-09-04"                 # first SPY close on/after the target
+    assert late["ret_since_inception"] == pytest.approx(0.10)     # A: 11 -> 12.1; the pre-inception move is excluded
+    assert late["benchmarks"]["Q"] == pytest.approx(0.0) and late["benchmarks"]["SPY"] == pytest.approx(0.10)
+    assert row["portfolios"]["spy"]["ret_since_inception"] == pytest.approx(0.21)   # global inception unchanged
+    fut = row["portfolios"]["future"]
+    assert fut.get("pending") and "value" not in fut and "vs_spy" not in fut
+    assert row["portfolios"]["rule"] == {"name": "r", "definition_only": True}
+    assert tip.all_tickers(d) == ["SPY", "A", "Q"]                # definition-only entries load nothing
+    md = tip.render_md([row], d)
+    assert "pending" in md and "DEFINITION ONLY" in md and "Q +0.00%" in md
+
+
+def test_asof_before_inception_from_is_pending():
+    closes = {"SPY": S([100, 101, 102, 103, 104])}
+    d = defs({"spy": P({"SPY": 1}), "p": {**P({"SPY": 1}), "inception_from": "2026-09-04"}})
+    row = tip.evaluate(d, closes, pd.Timestamp("2026-09-03"))
+    assert row["portfolios"]["p"].get("pending")

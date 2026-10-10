@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "created": "2026-10-06",
   "inception_target": "2026-10-06",
   "start_value_usd": 10000,
@@ -10,102 +10,380 @@
     "berkshire_13f": {
       "name": "Berkshire 13F clone (top 5)",
       "basis": "Q2 2026 13F top 5 holdings, weights renormalised to 100%, unverified against SEC (secondary sources)",
-      "positions": {"AAPL": 22.0, "AXP": 17.1, "KO": 10.9, "GOOGL": 9.4, "BAC": 9.2},
+      "positions": {
+        "AAPL": 22.0,
+        "AXP": 17.1,
+        "KO": 10.9,
+        "GOOGL": 9.4,
+        "BAC": 9.2
+      },
       "skipped": "CVX, OXY, MCO named as holdings but no weight in the note"
     },
     "tci_13f": {
       "name": "TCI (Hohn) 13F clone",
       "basis": "Q2 2026 13F top 5 holdings, weights renormalised to 100%, unverified against SEC (secondary sources)",
-      "positions": {"GE": 33.6, "V": 19.8, "MCO": 12.3, "SPGI": 10.9, "GOOGL": 9.0},
+      "positions": {
+        "GE": 33.6,
+        "V": 19.8,
+        "MCO": 12.3,
+        "SPGI": 10.9,
+        "GOOGL": 9.0
+      },
       "skipped": "MLM and FER (no weight stated); non-US holdings are not on the 13F"
     },
     "himalaya_13f": {
       "name": "Himalaya (Li Lu) 13F clone",
       "basis": "Q2 2026 13F, 5 of 8 positions with stated weights (GOOGL 24.6 + GOOG 23.4 + PDD 22.2 + BRK.B 15.0 + EWBC 9.7), renormalised to 100%, unverified against SEC (secondary sources)",
-      "positions": {"GOOGL": 24.6, "GOOG": 23.4, "PDD": 22.2, "BRK.B": 15.0, "EWBC": 9.7},
+      "positions": {
+        "GOOGL": 24.6,
+        "GOOG": 23.4,
+        "PDD": 22.2,
+        "BRK.B": 15.0,
+        "EWBC": 9.7
+      },
       "skipped": "3 smaller positions (about 5% of the book, not named)"
     },
     "pershing_13f": {
       "name": "Pershing Square 13F clone",
       "basis": "Q2 2026 13F top 7 holdings, weights renormalised to 100%, unverified against SEC (secondary sources)",
-      "positions": {"UBER": 12.7, "BN": 12.6, "MSFT": 11.9, "AMZN": 10.5, "HHH": 10.2, "QSR": 9.6, "META": 9.3},
+      "positions": {
+        "UBER": 12.7,
+        "BN": 12.6,
+        "MSFT": 11.9,
+        "AMZN": 10.5,
+        "HHH": 10.2,
+        "QSR": 9.6,
+        "META": 9.3
+      },
       "skipped": "V, MA, SPGI, NFLX are new positions with no weight in the note; UMG is not US-listed. BN is the NYSE line (Brookfield Corp)"
     },
     "appaloosa_13f": {
       "name": "Appaloosa (Tepper) 13F clone",
       "basis": "Q2 2026 13F top 5 holdings (AMZN ~15.5% taken as the midpoint of 15 to 16%), weights renormalised to 100%, unverified against SEC (secondary sources). High turnover: a 45-day-late copy is stale",
-      "positions": {"AMZN": 15.5, "MU": 15.0, "TSM": 10.6, "GOOGL": 8.8, "UBER": 7.4},
+      "positions": {
+        "AMZN": 15.5,
+        "MU": 15.0,
+        "TSM": 10.6,
+        "GOOGL": 8.8,
+        "UBER": 7.4
+      },
       "skipped": "AAPL, BA, AAL, CRWV, META, EWY (no weight)"
     },
     "consensus": {
       "name": "Consensus best ideas",
       "basis": "Names held by 3 or more of the 8 managers in the research note (Berkshire, Pershing, Duquesne, Appaloosa, Himalaya, TCI, Akre, Baupost), Alphabet counted once and held as GOOGL, equal weight: GOOGL (7 managers), AMZN (4), V (3: Pershing, TCI, Akre), MCO (3: Berkshire, TCI, Akre)",
-      "positions": {"GOOGL": 1, "AMZN": 1, "V": 1, "MCO": 1},
+      "positions": {
+        "GOOGL": 1,
+        "AMZN": 1,
+        "V": 1,
+        "MCO": 1
+      },
       "skipped": "none"
     },
     "vehicles": {
       "name": "Listed vehicles (USD)",
       "basis": "Equal weight BRK.B, PSHD (Pershing Square Holdings, LSE USD line), MKL, L. FFH is tracked separately because it trades in CAD",
-      "positions": {"BRK.B": 1, "PSHD": 1, "MKL": 1, "L": 1},
+      "positions": {
+        "BRK.B": 1,
+        "PSHD": 1,
+        "MKL": 1,
+        "L": 1
+      },
       "skipped": "FFH (CAD, own portfolio). PSHD trades on the LSE, so its bar can be one session ahead of the US names"
     },
     "fairfax": {
       "name": "Fairfax Financial (FFH.TO, CAD)",
       "basis": "Single listed vehicle on TSX, price in CAD, no FX adjustment; the SPY comparison is not like for like",
-      "positions": {"FFH": 1},
+      "positions": {
+        "FFH": 1
+      },
       "skipped": "none"
     },
     "etfs": {
       "name": "ETF basket (NANC, GURU, GVIP)",
       "basis": "Equal weight congressional-trades and 13F-copying ETFs",
-      "positions": {"NANC": 1, "GURU": 1, "GVIP": 1},
+      "positions": {
+        "NANC": 1,
+        "GURU": 1,
+        "GVIP": 1
+      },
       "skipped": "KRUZ not found by search_contracts"
     },
     "spy": {
       "name": "SPY (control)",
       "basis": "Benchmark",
-      "positions": {"SPY": 1},
+      "positions": {
+        "SPY": 1
+      },
       "skipped": "none"
     },
     "qqq": {
       "name": "QQQ (control)",
       "basis": "Tech-tilt control",
-      "positions": {"QQQ": 1},
+      "positions": {
+        "QQQ": 1
+      },
       "skipped": "none"
+    },
+    "altimeter_13f": {
+      "name": "Altimeter (Gerstner) top-5 clone",
+      "inception_from": "2026-10-10",
+      "benchmarks": [
+        "SMH",
+        "QQQ",
+        "SPY"
+      ],
+      "basis": "Q2 2026 13F top 5, CIK 1541617, weights NVDA 19, CBRS 16, META 8, TSM 7, CRWV 6 renormalised to 100% (top 5 is about 56% of the book); unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). Behaves like levered SOXX/QQQ; the test is whether it adds anything over SMH",
+      "positions": {
+        "NVDA": 19.0,
+        "CBRS": 16.0,
+        "META": 8.0,
+        "TSM": 7.0,
+        "CRWV": 6.0
+      },
+      "skipped": "rest of the book (about 44%, not named)"
+    },
+    "punchcard_13f": {
+      "name": "Punch Card clone",
+      "inception_from": "2026-10-10",
+      "benchmarks": [
+        "SPY"
+      ],
+      "basis": "CIK 1631664, 5 names: BRK.B 42, CROX 27, PDD 12, PYPL 11, plus SGOV with no stated weight (not tracked); unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). SGOV has no stated weight, so it is skipped (the 8% residual, 100 minus 92, would be an inference); the four stated weights are renormalised to 100 by the tracker. SOURCE CONFLICT: one tracker says PYPL was exited; PYPL is kept at 11 as the review lists it, so treat the PYPL leg as doubtful. Near-zero turnover",
+      "positions": {
+        "BRK.B": 42.0,
+        "CROX": 27.0,
+        "PDD": 12.0,
+        "PYPL": 11.0
+      },
+      "skipped": "SGOV (no stated weight, cash-like residual); PYPL kept but conflicted"
+    },
+    "sequoia_nav": {
+      "name": "Sequoia Fund (SEQUX daily NAV)",
+      "inception_from": "2026-10-10",
+      "benchmarks": [
+        "SPY"
+      ],
+      "basis": "Mutual-fund NAV via IBKR FUND contract SEQUX (conid 141447600, FUNDSERV), fetched with security_type FUND and exchange FUNDSERV. NAV is a daily mark (the 10-09 NAV equals 10-08 in the fetched bars, so it can lag a day). Price return of NAV, no distributions. Tests a daily-NAV fund against a 45-day-late 13F clone",
+      "positions": {
+        "SEQUX": 1
+      },
+      "skipped": "Ruane Cunniff 13F top-10 clone not built: holdings need EDGAR (blocked here), owner's machine to add as a separate portfolio"
+    },
+    "fundsmith_13f": {
+      "name": "Fundsmith top-10 (quality control, partial)",
+      "inception_from": "2026-10-10",
+      "benchmarks": [
+        "SPY",
+        "QUAL"
+      ],
+      "basis": "Fundsmith LLP 13F, CIK 1569205. Only the names the review gives are used: MAR, SYK, WAT, V, UBER, equal weight, since no weights are stated; the review lists these followed by an ellipsis, so this is NOT the full top 10; unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). A quality-factor control, not an alpha test",
+      "positions": {
+        "MAR": 1,
+        "SYK": 1,
+        "WAT": 1,
+        "V": 1,
+        "UBER": 1
+      },
+      "skipped": "remaining top-10 names not in the review (need EDGAR); Fundsmith's non-US holdings are not on the 13F"
+    },
+    "activist_13d": {
+      "name": "13D activist event basket",
+      "definition_only": true,
+      "inception_from": "2026-10-10",
+      "positions": {},
+      "basis": "Needs EDGAR (SC 13D filings), blocked in this container. NO HOLDINGS: nothing is fabricated",
+      "construction": "Named activists: Elliott, Starboard, Third Point, Pershing, Trian, ValueAct, Jana, Ancora, Sachem Head, Engaged, Engine No.1, Politan, Icahn, Land & Buildings, Legion. Filter: market cap > $1bn, ADV > $5m. Entry: buy at the next open after the SC 13D filing. Exit: hold 60 trading days or until a 13D/A shows a stake cut. Equal weight, cap 20 names. Benchmarks IWM, SPY, DDDIX. Filing lag is 5 business days since Feb 2024",
+      "populate_note": "The owner's machine (EDGAR access) must populate positions with dated entries before this can be tracked."
+    },
+    "insider_cluster": {
+      "name": "Insider cluster-buy basket",
+      "definition_only": true,
+      "inception_from": "2026-10-10",
+      "positions": {},
+      "basis": "Needs EDGAR (Form 4), blocked in this container. NO HOLDINGS: nothing is fabricated. Shadow only: small/mid caps are outside the D3 tradable universe",
+      "construction": "Feature insider_cluster_30d: 3 or more distinct non-routine code-P (open-market purchase) buyers within 30 days. Market cap $300m to $5bn, ADV > $2m. Entry 2 business days after the filings, hold 3 to 6 months, equal weight. Benchmark IWM",
+      "populate_note": "The owner's machine (EDGAR access) must populate positions with dated entries before this can be tracked."
     }
   },
   "conids": {
-    "AAPL": {"conid": 265598, "exchange": "NASDAQ"},
-    "AXP": {"conid": 4721, "exchange": "NYSE"},
-    "KO": {"conid": 8894, "exchange": "NYSE"},
-    "GOOGL": {"conid": 208813719, "exchange": "NASDAQ"},
-    "GOOG": {"conid": 208813720, "exchange": "NASDAQ"},
-    "BAC": {"conid": 10098, "exchange": "NYSE"},
-    "GE": {"conid": 498843743, "exchange": "NYSE"},
-    "V": {"conid": 49462172, "exchange": "NYSE"},
-    "MCO": {"conid": 6497, "exchange": "NYSE"},
-    "SPGI": {"conid": 229629397, "exchange": "NYSE"},
-    "PDD": {"conid": 326398585, "exchange": "NASDAQ"},
-    "EWBC": {"conid": 4730364, "exchange": "NASDAQ"},
-    "BRK.B": {"conid": 72063691, "exchange": "NYSE", "note": "known id; not returned by search_contracts"},
-    "UBER": {"conid": 365207014, "exchange": "NYSE"},
-    "BN": {"conid": 599900800, "exchange": "NYSE", "note": "US line; the TSX line is 600685522"},
-    "MSFT": {"conid": 272093, "exchange": "NASDAQ"},
-    "AMZN": {"conid": 3691937, "exchange": "NASDAQ"},
-    "HHH": {"conid": 647324601, "exchange": "NYSE"},
-    "QSR": {"conid": 176372132, "exchange": "NYSE"},
-    "META": {"conid": 107113386, "exchange": "NASDAQ"},
-    "MU": {"conid": 9939, "exchange": "NASDAQ"},
-    "TSM": {"conid": 6223250, "exchange": "NYSE"},
-    "MKL": {"conid": 271460, "exchange": "NYSE"},
-    "L": {"conid": 9252, "exchange": "NYSE"},
-    "PSHD": {"conid": 170204225, "exchange": "LSE", "note": "USD line; delayed 15 min"},
-    "FFH": {"conid": 14890639, "exchange": "TSE", "note": "CAD; fetch with no exchange (SMART), TSE gives no market data permission"},
-    "NANC": {"conid": 751081186, "exchange": "BATS"},
-    "GURU": {"conid": 108473907, "exchange": "ARCA"},
-    "GVIP": {"conid": 254147634, "exchange": "ARCA"},
-    "SPY": {"conid": 756733, "exchange": "ARCA"},
-    "QQQ": {"conid": 320227571, "exchange": "NASDAQ"}
+    "AAPL": {
+      "conid": 265598,
+      "exchange": "NASDAQ"
+    },
+    "AXP": {
+      "conid": 4721,
+      "exchange": "NYSE"
+    },
+    "KO": {
+      "conid": 8894,
+      "exchange": "NYSE"
+    },
+    "GOOGL": {
+      "conid": 208813719,
+      "exchange": "NASDAQ"
+    },
+    "GOOG": {
+      "conid": 208813720,
+      "exchange": "NASDAQ"
+    },
+    "BAC": {
+      "conid": 10098,
+      "exchange": "NYSE"
+    },
+    "GE": {
+      "conid": 498843743,
+      "exchange": "NYSE"
+    },
+    "V": {
+      "conid": 49462172,
+      "exchange": "NYSE"
+    },
+    "MCO": {
+      "conid": 6497,
+      "exchange": "NYSE"
+    },
+    "SPGI": {
+      "conid": 229629397,
+      "exchange": "NYSE"
+    },
+    "PDD": {
+      "conid": 326398585,
+      "exchange": "NASDAQ"
+    },
+    "EWBC": {
+      "conid": 4730364,
+      "exchange": "NASDAQ"
+    },
+    "BRK.B": {
+      "conid": 72063691,
+      "exchange": "NYSE",
+      "note": "known id; not returned by search_contracts"
+    },
+    "UBER": {
+      "conid": 365207014,
+      "exchange": "NYSE"
+    },
+    "BN": {
+      "conid": 599900800,
+      "exchange": "NYSE",
+      "note": "US line; the TSX line is 600685522"
+    },
+    "MSFT": {
+      "conid": 272093,
+      "exchange": "NASDAQ"
+    },
+    "AMZN": {
+      "conid": 3691937,
+      "exchange": "NASDAQ"
+    },
+    "HHH": {
+      "conid": 647324601,
+      "exchange": "NYSE"
+    },
+    "QSR": {
+      "conid": 176372132,
+      "exchange": "NYSE"
+    },
+    "META": {
+      "conid": 107113386,
+      "exchange": "NASDAQ"
+    },
+    "MU": {
+      "conid": 9939,
+      "exchange": "NASDAQ"
+    },
+    "TSM": {
+      "conid": 6223250,
+      "exchange": "NYSE"
+    },
+    "MKL": {
+      "conid": 271460,
+      "exchange": "NYSE"
+    },
+    "L": {
+      "conid": 9252,
+      "exchange": "NYSE"
+    },
+    "PSHD": {
+      "conid": 170204225,
+      "exchange": "LSE",
+      "note": "USD line; delayed 15 min"
+    },
+    "FFH": {
+      "conid": 14890639,
+      "exchange": "TSE",
+      "note": "CAD; fetch with no exchange (SMART), TSE gives no market data permission"
+    },
+    "NANC": {
+      "conid": 751081186,
+      "exchange": "BATS"
+    },
+    "GURU": {
+      "conid": 108473907,
+      "exchange": "ARCA"
+    },
+    "GVIP": {
+      "conid": 254147634,
+      "exchange": "ARCA"
+    },
+    "SPY": {
+      "conid": 756733,
+      "exchange": "ARCA"
+    },
+    "QQQ": {
+      "conid": 320227571,
+      "exchange": "NASDAQ"
+    },
+    "NVDA": {
+      "conid": 4815747,
+      "exchange": "NASDAQ"
+    },
+    "CBRS": {
+      "conid": 882732191,
+      "exchange": "NASDAQ"
+    },
+    "CRWV": {
+      "conid": 771759702,
+      "exchange": "NASDAQ"
+    },
+    "SMH": {
+      "conid": 229725622,
+      "exchange": "NASDAQ"
+    },
+    "CROX": {
+      "conid": 37792836,
+      "exchange": "NASDAQ"
+    },
+    "PYPL": {
+      "conid": 199169591,
+      "exchange": "NASDAQ"
+    },
+    "MAR": {
+      "conid": 9358,
+      "exchange": "NASDAQ"
+    },
+    "SYK": {
+      "conid": 4430948,
+      "exchange": "NYSE"
+    },
+    "WAT": {
+      "conid": 1448494,
+      "exchange": "NYSE"
+    },
+    "QUAL": {
+      "conid": 131255429,
+      "exchange": "BATS"
+    },
+    "SEQUX": {
+      "conid": 141447600,
+      "exchange": "FUNDSERV",
+      "security_type": "FUND",
+      "note": "mutual-fund NAV; fetch with security_type FUND and exchange FUNDSERV (without the exchange the call errored)"
+    }
   },
-  "not_resolved": ["KRUZ"]
+  "not_resolved": [
+    "KRUZ"
+  ],
+  "per_portfolio_fields": "Optional per portfolio: inception_from (first SPY close on or after that date, pending until it exists), benchmarks (list, price return over the same window), definition_only (rule only, no holdings)."
 }

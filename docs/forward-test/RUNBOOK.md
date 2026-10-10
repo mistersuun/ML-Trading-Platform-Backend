@@ -214,6 +214,12 @@ AAPL, AMZN, GOOG, META, MSFT and BAC are already in the watchlist top-up. BRK.B 
 | NANC (etf) | 751081186 | GVIP (etf) | 254147634 | GURU (etf) | 108473907 |
 | PSHD (LSE, USD) | 170204225 | FFH (TSX, CAD) | 14890639 | BRK.B | 72063691 |
 | SPY | 756733 | QQQ | 320227571 | | |
+| CBRS | 882732191 | CRWV | 771759702 | CROX | 37792836 |
+| PYPL | 199169591 | SMH (etf) | 229725622 | QUAL (etf) | 131255429 |
+| MAR | 9358 | SYK | 4430948 | WAT | 1448494 |
+| SEQUX (FUND NAV) | 141447600 | | | | |
+
+Added 2026-10-10 (Altimeter, Punch Card, Sequoia, Fundsmith portfolios): NVDA, META, TSM, PDD, V, UBER, BRK.B and SPY/QQQ are already covered above or by the watchlist top-up. Evening top-up checklist for these (10 symbols): CBRS, CRWV, CROX, PYPL, MAR, SYK, WAT and the ETFs SMH, QUAL, plus SEQUX below. The first fetch (ONE_MONTH) is saved as `<SYM>.investor.json`; every evening thereafter `ingest_ibkr_bars.py <SYM> <file> --topup` (ETFs with `--asset-class etf`); both files are merged as top-ups. SGOV is no longer tracked (Punch Card has no stated SGOV weight). SEQUX is a mutual-fund NAV: call `get_price_history` with `security_type=FUND` and `exchange=FUNDSERV` (without the exchange the call errored), `ingest_ibkr_bars.py SEQUX <file> --topup`; the NAV for a day can repeat the prior day's value. These four portfolios (and the two definition-only ones) carry their own `inception_from: 2026-10-10`: inception is the first SPY session on or after that date (Monday 2026-10-12), shown as "pending" until that bar is on file. The 13D activist and insider cluster-buy baskets are `definition_only` (rules in the JSON, no holdings): EDGAR is blocked in the container, so the owner's machine must populate them; nothing is tracked or invented meanwhile.
 
 Notes: fetch FFH and PSHD without an `exchange` argument (SMART; data is delayed 15 min, fine for daily bars; a
 PSHD bar for the current London day can be partial, so fetch after the London close). The tracker only uses SPY

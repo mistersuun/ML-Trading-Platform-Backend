@@ -5,7 +5,10 @@
 Definitions: docs/forward-test/2026-10/investor-portfolios.json. Each portfolio is a buy-and-hold basket with
 weights fixed at inception. Inception is the close of 2026-10-06; while that bar is not on file yet, the latest
 available close is used and the note says so (it is re-resolved on every run, so it moves to 10-06 as soon as the
-bar arrives). Output: one row per as-of date appended to investor-tracking.jsonl (re-running the same date
+bar arrives). A portfolio may carry its own "inception_from" (first available SPY close on or after that date; until
+such a bar exists it is reported as pending, never back-filled), a "benchmarks" list (price return over the same
+window is shown next to it) and "definition_only": true (rule recorded, no holdings, listed in the notes only).
+Output: one row per as-of date appended to investor-tracking.jsonl (re-running the same date
 replaces that row) and investor-tracking.md rewritten. A ticker with no usable bars is dropped, the remaining
 weights are renormalised, and the drop is logged and listed in the row.
 """
@@ -34,6 +37,7 @@ DEFS_PATH = OUT_DIR / "investor-portfolios.json"
 JSONL_PATH = OUT_DIR / "investor-tracking.jsonl"
 MD_PATH = OUT_DIR / "investor-tracking.md"
 BENCH = "SPY"
+ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL"}
 
 
 # --------------------------------------------------------------------------------------------- loading
@@ -44,7 +48,7 @@ def load_definitions(path: Path = DEFS_PATH) -> dict:
 def load_close(symbol: str, root: Optional[Path] = None) -> pd.Series:
     """Close series by session date. Falls back to a plain per-file parse (no OHLC sanity check) when the merged
     frame fails validation, e.g. an old bad High/Low bar in a base file: closes are all this tracker needs."""
-    asset = "etf" if symbol in {"SPY", "QQQ", "NANC", "GURU", "GVIP"} else "equity"
+    asset = "etf" if symbol in ETFS else "equity"
     try:
         df = external_bars.load_bars(symbol, asset, root)
     except external_bars.ExternalBarsError as exc:
@@ -64,7 +68,9 @@ def load_close(symbol: str, root: Optional[Path] = None) -> pd.Series:
 def all_tickers(defs: dict) -> list[str]:
     seen: list[str] = []
     for p in defs["portfolios"].values():
-        for t in p["positions"]:
+        if p.get("definition_only"):
+            continue
+        for t in [*p["positions"], *p.get("benchmarks", [])]:
             if t not in seen:
                 seen.append(t)
     return seen
@@ -108,6 +114,19 @@ def resolve_inception(closes: dict[str, pd.Series], target: str, asof: pd.Timest
         raise RuntimeError(f"no {BENCH} bar on or before {tgt.date()}")
     d = avail[-1]
     return d, f"close of {tgt.date()} not available yet; latest available close {d.date()} used"
+
+
+def resolve_inception_from(closes: dict[str, pd.Series], start: str, asof: pd.Timestamp
+                           ) -> tuple[Optional[pd.Timestamp], str]:
+    """First benchmark (SPY) session on or after `start` and not after `asof`; (None, note) while there is none."""
+    spy = closes.get(BENCH)
+    if spy is None or spy.empty:
+        raise RuntimeError(f"no {BENCH} bars: cannot resolve inception")
+    tgt = pd.Timestamp(start)
+    cand = spy.index[(spy.index >= tgt) & (spy.index <= asof)]
+    if not len(cand):
+        return None, f"pending: no close on or after {tgt.date()} yet"
+    return cand[0], f"first close on or after {tgt.date()}: {cand[0].date()}"
 
 
 def basket_value(positions: dict[str, float], closes: dict[str, pd.Series], start: pd.Timestamp,
@@ -155,6 +174,17 @@ def window_return(positions: dict[str, float], closes: dict[str, pd.Series], end
     return ret, cov
 
 
+def _bench_returns(benches: list[str], closes: dict[str, pd.Series], start: pd.Timestamp,
+                   end: pd.Timestamp) -> dict[str, Optional[float]]:
+    out: dict[str, Optional[float]] = {}
+    for b in benches:
+        s = closes.get(b)
+        p0 = price_at(s, start) if s is not None else None
+        p1 = price_at(s, end) if s is not None else None
+        out[b] = (p1 / p0 - 1.0) if p0 and p1 else None
+    return out
+
+
 def evaluate(defs: dict, closes: dict[str, pd.Series], asof: pd.Timestamp) -> dict:
     """The tracking row for `asof` (see module doc)."""
     capital = float(defs.get("start_value_usd", 10_000))
@@ -164,7 +194,17 @@ def evaluate(defs: dict, closes: dict[str, pd.Series], asof: pd.Timestamp) -> di
     index = spy.index[(spy.index >= incep) & (spy.index <= last)]
     rows: dict[str, dict] = {}
     for key, p in defs["portfolios"].items():
-        val, w, missing = basket_value(p["positions"], closes, incep, last, capital, index)
+        if p.get("definition_only"):
+            rows[key] = {"name": p["name"], "definition_only": True}
+            continue
+        p_incep, p_index = incep, index
+        if p.get("inception_from"):
+            p_incep, p_note = resolve_inception_from(closes, p["inception_from"], last)
+            if p_incep is None:
+                rows[key] = {"name": p["name"], "pending": True, "inception_note": p_note}
+                continue
+            p_index = spy.index[(spy.index >= p_incep) & (spy.index <= last)]
+        val, w, missing = basket_value(p["positions"], closes, p_incep, last, capital, p_index)
         if val.empty:
             rows[key] = {"name": p["name"], "error": "no usable tickers", "missing": missing}
             logger.error("%s: no usable tickers", key)
@@ -185,9 +225,13 @@ def evaluate(defs: dict, closes: dict[str, pd.Series], asof: pd.Timestamp) -> di
             "weights": {t: round(x, 4) for t, x in w.items()},
             "missing": missing,
         }
+        if p.get("inception_from"):
+            rows[key]["inception_date"] = p_incep.strftime("%Y-%m-%d")
+        if p.get("benchmarks"):
+            rows[key]["benchmarks"] = _bench_returns(p["benchmarks"], closes, p_incep, last)
     spy_ret = rows.get("spy", {}).get("ret_since_inception")
     for r in rows.values():
-        if "error" not in r:
+        if "error" not in r and "pending" not in r and "definition_only" not in r:
             r["vs_spy"] = (r["ret_since_inception"] - spy_ret) if spy_ret is not None else None
     return {"date": last.strftime("%Y-%m-%d"), "inception_date": incep.strftime("%Y-%m-%d"),
             "inception_note": note, "start_value_usd": capital, "portfolios": rows}
@@ -219,9 +263,13 @@ def render_md(rows: list[dict], defs: dict) -> str:
            "unverified against SEC.", "",
            "| Portfolio | Value | Since inception | vs SPY | 1d | 1M | 1Y | Missing |",
            "|---|---:|---:|---:|---:|---:|---:|---|"]
-    order = [k for k in defs["portfolios"] if k in cur["portfolios"]]
+    order = [k for k in defs["portfolios"] if k in cur["portfolios"]
+             and not cur["portfolios"][k].get("definition_only")]
     for key in order:
         r = cur["portfolios"][key]
+        if r.get("pending"):
+            out.append(f"| {r['name']} | pending | pending | pending | pending | pending | pending | {r['inception_note']} |")
+            continue
         if "error" in r:
             out.append(f"| {r['name']} | n/a | n/a | n/a | n/a | n/a | n/a | {', '.join(r['missing'])} |")
             continue
@@ -232,20 +280,33 @@ def render_md(rows: list[dict], defs: dict) -> str:
     out += ["", "1M and 1Y are trailing static-weight returns to the as-of date for context; where a ticker has no "
             "history that far back it is left out, the rest renormalised, and the weight coverage is shown.", "",
             "## Daily value of $10,000", ""]
-    keys = [k for k in order if "error" not in cur["portfolios"][k]]
+    keys = [k for k in order if "error" not in cur["portfolios"][k] and not cur["portfolios"][k].get("pending")]
     out.append("| Date | " + " | ".join(cur["portfolios"][k]["name"] for k in keys) + " |")
     out.append("|---|" + "---:|" * len(keys))
     # rebuild value history from the latest row's daily returns (each starts at the start value)
     dates = sorted({d for k in keys for d in cur["portfolios"][k]["daily_returns"]})
     cap = cur["start_value_usd"]
-    out.append(f"| {cur['inception_date']} | " + " | ".join(f"{cap:,.2f}" for _ in keys) + " |")
+    incs = {k: cur["portfolios"][k].get("inception_date", cur["inception_date"]) for k in keys}
+    out.append(f"| {cur['inception_date']} | "
+               + " | ".join(f"{cap:,.2f}" if incs[k] <= cur["inception_date"] else "-" for k in keys) + " |")
     acc = {k: cap for k in keys}
     for d in dates:
         for k in keys:
             acc[k] *= 1.0 + cur["portfolios"][k]["daily_returns"].get(d, 0.0)
-        out.append(f"| {d} | " + " | ".join(f"{acc[k]:,.2f}" for k in keys) + " |")
+        out.append(f"| {d} | " + " | ".join(("-" if d < incs[k] else f"{acc[k]:,.2f}") for k in keys) + " |")
+    bench_rows = [(k, cur["portfolios"][k]) for k in keys if cur["portfolios"][k].get("benchmarks")]
+    if bench_rows:
+        out += ["", "## Portfolios with their own inception and benchmarks (price return since own inception)", "",
+                "| Portfolio | Inception | Since inception | Benchmarks |", "|---|---|---:|---|"]
+        for k, r in bench_rows:
+            bs = ", ".join(f"{b} {_pct(v)}" for b, v in r["benchmarks"].items())
+            out.append(f"| {r['name']} | {r['inception_date']} | {_pct(r['ret_since_inception'])} | {bs} |")
     out += ["", "## Notes", ""]
     for key, p in defs["portfolios"].items():
+        if p.get("definition_only"):
+            out.append(f"- **{p['name']}** (DEFINITION ONLY, no holdings, not tracked): {p['basis']}. "
+                       f"Construction: {p['construction']}. {p.get('populate_note', '')}")
+            continue
         out.append(f"- **{p['name']}**: {p['basis']}. Skipped: {p.get('skipped', 'none')}.")
     return "\n".join(out) + "\n"
 
