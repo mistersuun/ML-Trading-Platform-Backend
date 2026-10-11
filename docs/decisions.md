@@ -218,3 +218,36 @@ Trimmed per the reviewer: ONE significance gate (Deflated Sharpe) on top of the 
 - **Disclosed prior contact.** No bar of B or C was loaded for this registration. Universe A's pre-hold-out bars were seen in the model review (research look, not confirmatory); the 17 names are today's survivors, mostly winners, so universe C inherits that survivorship from A and from the ETF additions only partly offsets it. The 2025-07-01 hold-out is treated as possibly seen (D18(a)); the clean confirmation remains the forward shadow period. The pooled hold-out read of C is a read once, not fresh data.
 - **Implementation prerequisites (all after 2026-10-14; none done by this entry).** (1) `instruments` does not know XLE, XLU, XLV, XLP, XLF, EEM and EFA today (TLT, IEF, GLD are executable); they must be registered as executable ETFs or the runner must not use `registered_universe`; (2) the converter and runner of the long-history runbook; (3) approval of the B and C hashes in `config.POOLED_APPROVED_UNIVERSES` as `D22`, or an in-process equivalent in the runner, and the N floor of 44. None of these may alter the nightly job's imports before the forward week ends.
 - **Revisit:** after the single look; or if fewer than 8 symbols of C survive the history test (then the breadth gate cannot be met by construction, which is reported, not repaired).
+
+## D23 — Owner decisions on the quant playbook (2026-10-11)
+
+- **Status.** Approved by owner 2026-10-11 in chat: "Go with your free recommendations", answering the bracketed recommendations given for the ten decisions of [`docs/research/quant-playbook-2026-10.md`](research/quant-playbook-2026-10.md) §9.3. Nothing below is implemented before 2026-10-15 (D20 freeze); the order follows the playbook §9.2 sequence.
+- **(1) Target.** The core plus trend sleeve is expected to return high single digits a year. 15-20% a year is not a design goal; D3/D4 (no leverage, long-only, sized sleeves) stay as they are.
+- **(2) ICT closed with no trial.** No ICT-derived pattern is registered, R1 `sweep_reclaim20` and R2 `fvg_retrace` included, and no advisory split of P1 trades is added. N is unchanged. Reopening ICT needs a new decision entry and pays its trials.
+- **(3) Bayesian priors and look schedule:** registered separately in D24, before any D22 number is read.
+- **(4) Risk fixes R1 and R2** (playbook §5.1): open heat limited to min(4%, 10% − current drawdown − 0.75%) in `execution._size_buy`; a lifetime capital floor at **80% of `SIGNAL_SLEEVE_EQUITY`** that `risk_manager.resume()` cannot reset. They ship in the **same versioned commit as the D20 clean-up**, so the capped replay changes in one version, not two. They only block entries.
+- **(5) Correlation clusters and the correlation-aware heat cap** (R4/R5): clusters by linkage at rho ≥ 0.6 on Ledoit-Wolf correlations of instrument returns strictly before 2025-07-01, built once and frozen (hash recorded at build), with the sqrt(r'Cr) ≤ 2.5% cap next to the 4% linear cap and the unit caps of the playbook. A D5 risk version; blocks entries only.
+- **(6) Trend sleeve v2 (C2)** approved as the single allocation-layer trial after the D22 read: EWMAC long/flat at published speeds, inverse-volatility legs capped at 2/N, the O3 volatility cap and a 10% trade-to-edge buffer, all at published defaults with no tuning; judged on max drawdown and worst 12 months on 1990+ proxies. Counted in the allocation ledger.
+- **(7) Real CAD account (managed-futures diversifier, FFH.TO):** **no decision.** No recommendation was given for real-money holdings; the platform keeps producing proposals only (D1) and the owner places any trade by hand.
+- **(8) News phase 0** approved: append-only archive with our own received_at timestamps (free IBKR API news providers, EDGAR 8-K, FRED, an earnings calendar chosen at build time from free sources), stale-duplicate filter, frozen FinBERT scoring, top items in the existing Claude nightly briefing. Advisory only, never an order input. The optional Claude news-scoring sub-cap is **not** enabled.
+- **(9) ETF ranker** approved for a single-look test after C2: a 40-50 ETF universe with 15-20 years of history, registered (list and hash) before any bar is loaded, cut at 2025-06-30; result used at most as a ±20% shadow tilt for a year before any further decision. Allocation ledger.
+- **(10) Stop list confirmed:** no further ICT patterns, no volatility-selling ETFs, no bulk 13F copying, no chasing hedge-fund returns, no bandits, no Kelly or conviction sizing, no LLM-scored historical backtests.
+
+## D24 — Bayesian strategy scoreboard: priors and look schedule registered before the D22 look (2026-10-11)
+
+- **Status.** Registered 2026-10-11 under D23 (3), before any long-history (D22) number exists. Advisory: the scoreboard is reported next to the DSR and never replaces it. Built after the D20 freeze lifts (playbook §9.2 step 6).
+- **Priors (spike-and-slab: P(real); if real, the true annual net Sharpe).** Point values are fixed here at the skeptical end of the playbook ranges:
+
+| Class | P(real) | Sharpe if real | Applies to |
+|---|---|---|---|
+| Retail TA | 0.05 | N(0.3, 0.25) | the 20 legacy `PATTERN_REGISTRY` patterns |
+| Practitioner rule with a published form | 0.15 | N(0.3, 0.2) | `rsi2_pullback`; D21 `pullback_uptrend` once frozen |
+| Published anomaly, adapted form | 0.35 | N(0.3, 0.2) | `high52_breakout` (time-series adaptation of George-Hwang) |
+| Replicated, century-long factor | 0.8 | N(0.4, 0.2) | trend sleeve (C2) and any managed-futures diversifier |
+
+- **Likelihood.** Sharpe estimate with the repo's PSR moments and the Bartlett T_eff of `stats/pooled.py`.
+- **Selection offset.** Before a backtest posterior is used as the prior for forward data, the DSR expected-maximum Sharpe for the registered N is subtracted.
+- **Partial pooling** within a family: shrink toward the family mean with tau² = max(0, var(SR) − mean(se²)). Reported as an advisory column in the D22 run.
+- **Look schedule.** One look per calendar month (first trading day), no interim looks. Thresholds: a Bayes factor of at least 10 sustained for 3 consecutive looks; demotion when P(real) falls below its prior or E[Sharpe] < 0 for 3 consecutive looks.
+- **Capital gate (unchanged order of authority).** Paper order eligibility = DSR gate (D18) plus an owner decision; the posterior does not gate it. Real capital (at most 5% of the account, D4) additionally needs PSR(SR > 0) ≥ 0.95 on paper (D6), the sustained Bayes factor, and E[Sharpe] ≥ 0.3 net; sizing at most quarter-Kelly of E[Sharpe], capped at one risk unit.
+- **Changing any prior after a D22 or forward number has been seen** requires a new decision entry and reports both the old and new posteriors.
