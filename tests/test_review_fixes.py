@@ -171,7 +171,7 @@ def test_open_session_and_nightly_refuse_a_bad_config(monkeypatch, env):  # noqa
 # ---------------------------------------------------------------- major: the API token is masked in logs
 def test_api_token_is_masked_in_logs(monkeypatch, caplog):
     import logging_setup
-    secret = "tok-9f8e7d6c5b4a3210"
+    secret = "tok-" + "ab12" * 4   # invented, low-entropy test value (not a credential)
     logging_setup.register_secret(secret)
     f = logging_setup.install_redaction()
     rec = logging.LogRecord("x", logging.INFO, __file__, 1, "token=%s", (secret,), None)
