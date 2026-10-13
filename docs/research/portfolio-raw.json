@@ -1,0 +1,1206 @@
+{
+ "research": [
+  {
+   "track": "static-allocations",
+   "summary": "Static allocations differ mostly in how they fail. Every number below came from search snippets, because the egress proxy blocked portfoliocharts.com, bogleheads.org and advisorperspectives.com. I did not open any primary paper or fund document, and I have not checked any snippet against its source page. Many cells are therefore marked unverified, and every figure should be rechecked at the source before the platform relies on it. The main evidence: 60/40 lost about 17.5% in 2022, its worst year since 1937, and lost about 14.2% in 2008, a year when Treasuries helped. Permanent Portfolio and Golden Butterfly use gold and cash and had shallower 2022 losses, though the search results disagree on how shallow (-12% for the Permanent Portfolio, -14.4% max drawdown for Golden Butterfly). Faber's Ivy timing overlay claims a large drawdown cut (46% to under 10%, 1973-2008), but that is a backtest by the strategy's author and it is not a static allocation. The Doeswijk et al. global market portfolio (1960-2017) is the only peer-reviewed long-sample item, with a 0.69 Sharpe. Several of these portfolios (Golden Butterfly, All Weather retail ETF mix, Permanent Portfolio weights) are tuned to or popularized by historical results, so out-of-sample expectations should be lower than the backtests.",
+   "items": [
+    {
+     "name": "Classic 60/40 (US equities / US bonds)",
+     "definition": "60% US equities, 40% US intermediate/aggregate bonds. Common rebalancing is annual or 5% bands. These are conventional definitions, not verified against a primary document.",
+     "stats": "1928-2022: about 8.1% per year (snippet attributes this to a blog/asset manager; the exact source is unverified). 200-year long-run CAGR of about 7.3%, with stocks and bonds both down in only 16 of 200 calendar years (Eaton Vance blog snippet, https://eatonvance.com/insights/blog/200-years-of-data-affirm-our-long-term-confidence-in-the-6040-portfolio.html). Volatility, max drawdown and Sharpe: unverified.",
+     "out_of_sample_or_2022": "2008: about -14.2% (stocks -37%, 10-year Treasuries +20.1%; search snippet, source page not opened). 2020: unverified. 2022: about -17.5%, worst since 1937 (https://www.fool.com/investing/2023/01/26/2022-was-the-worst-year-since-1937-for-this-invest; BofA via AOL: https://www.aol.com/news/60-40-strategy-worst-year-since-1936-114330825.html).",
+     "strengths": "Simple and cheap. Strong long-sample record. Bonds cushioned 2008 and the bond-friendly decades.",
+     "weaknesses": "The stock-bond correlation turned positive in 2022, and the portfolio had no inflation hedge. About 90% of its risk comes from equities. Worst year in the sample is probably the 1930s or 2022.",
+     "sources": [
+      "https://eatonvance.com/insights/blog/200-years-of-data-affirm-our-long-term-confidence-in-the-6040-portfolio.html",
+      "https://www.fool.com/investing/2023/01/26/2022-was-the-worst-year-since-1937-for-this-invest",
+      "https://www.aol.com/news/60-40-strategy-worst-year-since-1936-114330825.html"
+     ]
+    },
+    {
+     "name": "Bogleheads three-fund portfolio",
+     "definition": "Total US stock market, total international stock market and total US bond market. Weights are set by the investor's risk tolerance. A typical split is 40/20/40 (age-in-bonds style). Rebalance annually or when an asset class drifts 5 points or more. Not verified: bogleheads.org was blocked.",
+     "stats": "Unverified. No sourced CAGR, volatility, drawdown or Sharpe figures. It behaves like a 60/40 variant with some international equity, so the 60/40 figures are a rough proxy only.",
+     "out_of_sample_or_2022": "2008: unverified (expect roughly the 60/40 range). 2020: unverified. 2022: unverified (expect roughly the 60/40 loss of about 15-18%, but this is an inference).",
+     "strengths": "Cheapest and most replicable. It is a market-cap-weighted proxy with almost no tuning, so hindsight bias is low.",
+     "weaknesses": "Same stock-bond risk as 60/40, and international stocks have lagged US stocks for long stretches. The strategy has no explicit inflation or commodity hedge.",
+     "sources": [
+      "https://www.bogleheads.org/wiki/Three-fund_portfolio (fetch blocked, cited for the definition only)"
+     ]
+    },
+    {
+     "name": "Dalio All Weather (retail ETF version)",
+     "definition": "30% stocks, 40% long-term Treasuries, 15% intermediate Treasuries, 7.5% gold, 7.5% commodities (per the freenance.io, heygotrade and etoro search results). This is a retail approximation, not Bridgewater's actual risk-parity fund, which uses leverage. Rebalancing is annual in most backtests. The exact weights are unverified against Dalio's own statements.",
+     "stats": "Historical annualized return about 7.5% with max drawdown near -12% (search snippet, period and source page not opened, so unverified). The retail version's 2022 loss is the largest known failure; I could not source the exact figure, so the 2022 drawdown is unverified.",
+     "out_of_sample_or_2022": "2008: unverified (long Treasuries were strong that year). 2020: unverified. 2022: bad. TLT fell about 30% and IEF about 10% (etoro snippet: https://www.etoro.com/news-and-analysis/in-depth-analysis/ray-dalios-all-weather-portfolio-still-storm-proof-after-2022s-rate-shock). Another snippet says All Weather and Golden Butterfly 'did not decline but returns were poor', which conflicts with the 40% long-bond weight, so treat it as unverified. Computing the loss from those leg returns needs commodity and stock returns I did not source.",
+     "strengths": "Diversified across growth and inflation regimes. Low volatility historically, and it did well when long rates fell (the 1980s-2020).",
+     "weaknesses": "The portfolio is heavily weighted to long-duration bonds, and the backtest period covers a secular bond bull market, a strong hindsight bias. The retail version is not what Bridgewater runs (no leverage). It was hurt badly in rate-shock years like 2022.",
+     "sources": [
+      "https://www.etoro.com/news-and-analysis/in-depth-analysis/ray-dalios-all-weather-portfolio-still-storm-proof-after-2022s-rate-shock",
+      "https://freenance.io/strategies/all-weather-portfolio/",
+      "https://www.heygotrade.com/en/blog/ray-dalios-all-weather-portfolio",
+      "https://stephenmauzy.substack.com/p/what-to-make-of-ray-dalios-all-weather"
+     ]
+    },
+    {
+     "name": "Harry Browne Permanent Portfolio",
+     "definition": "25% US stocks, 25% long-term Treasuries, 25% gold, 25% cash/T-bills. Browne advised rebalancing annually, or when any asset leaves a 15-35% band. Weights are well established, but the rebalancing rule is from memory and not verified against Browne's book.",
+     "stats": "1985 to present (portfolio-charts-style data via search snippet, exact end date unverified): CAGR 7.19%, standard deviation 6.25%, worst year -12.03%, max drawdown -15.58%, Sharpe 0.64. A UK-based 1970-2025 snippet gives 4.2% return, 6.8% volatility and Sharpe 0.62 (source: https://jirong-huang.netlify.com/post/perm_port/ and monevator snippet; I did not open them, so unverified).",
+     "out_of_sample_or_2022": "2008: unverified. 2020: unverified. 2022: about -12% (search snippet, https://freenance.io/strategies/permanent-portfolio-browne/). One snippet said it performed best of the group in 2022 thanks to 25% gold and 25% short rates, though stocks (-18%) and long bonds (-30%) still dragged it.",
+     "strengths": "Smallest drawdowns of the group, with built-in inflation and deflation hedges (gold and cash). Weights were fixed in 1981, before most of the backtest, so out-of-sample bias is lower than for Golden Butterfly.",
+     "weaknesses": "Long stretches of low returns (gold flat for decades, the 1980s-90s). Return is roughly 1-2 points per year below the equity-heavy mixes in most samples. Gold is a poor fit for the platform's equity-and-futures universe unless tradable as GLD or futures.",
+     "sources": [
+      "https://freenance.io/strategies/permanent-portfolio-browne/",
+      "https://monevator.com/the-permanent-portfolio/print/",
+      "https://jirong-huang.netlify.com/post/perm_port/",
+      "https://www.alphacubator.com/portfolios/99/harry-browne-permanent-portfolio"
+     ]
+    },
+    {
+     "name": "Golden Butterfly (Tyler, portfoliocharts.com)",
+     "definition": "20% total US stock market, 20% small-cap value, 20% long-term Treasuries, 20% short-term Treasuries, 20% gold. Weights are as commonly cited and unverified because portfoliocharts.com was blocked. Rebalancing is annual.",
+     "stats": "1985 to present: CAGR 8.29%, standard deviation 7.45%, worst year -11.51%, max drawdown -17.28%, Sharpe 0.69 (search snippet from a portfolio-charts-style source; unverified). 1970-2024: average annual return 8.7%, volatility 7.2%, Sharpe 0.95, max drawdown -14.4% in 2022 (snippet, freenance-style source, unverified). 1972-2025: about 8.5% return, about -14% max drawdown, about 8.5% standard deviation, Sharpe about 0.68 (snippet, unverified). The figures from the different samples are inconsistent with each other (Sharpe ranges from 0.68 to 0.95), so do not cite any one number.",
+     "out_of_sample_or_2022": "2008: unverified. 2020: unverified. 2022: max drawdown reportedly -14.4%; search results disagree on whether it 'did not decline' (unreliable). Treat as a mild loss of low-to-mid teens, unverified.",
+     "strengths": "Equity-like return with Permanent-Portfolio-like drawdown, and it spreads across five regimes including small-value and gold.",
+     "weaknesses": "It was designed in 2015 using the past data, so the backtest is a clear case of hindsight bias, and the small-cap value and gold tilts were picked because they worked historically. Expect weaker out-of-sample results (small-value premium decay after publication is documented in the literature but I did not source a figure).",
+     "sources": [
+      "https://portfoliocharts.com/2015/09/22/catching-a-golden-butterfly/ (fetch blocked)",
+      "https://freenance.io/strategies/golden-butterfly-portfolio/",
+      "https://www.daytrading.com/golden-butterfly-portfolio",
+      "https://www.etfcentral.com/news/golden-butterfly-etf-portfolio"
+     ]
+    },
+    {
+     "name": "Swensen / Yale model (retail version)",
+     "definition": "Two versions turned up. (a) Unconventional Success (2005), as I recall and as a search snippet confirmed: 30% US total market, 15% developed ex-US, 5% emerging, 20% REITs, 15% long-term Treasuries, 15% TIPS (daytrading.com / moneycrashers snippets). (b) A second snippet listed 20/20/10 for US/foreign/EM equities with 20% REITs, 15% bonds and 15% TIPS, which conflicts with (a); I believe (a) is Swensen's actual recommendation but this is unverified. Rebalance annually (typical).",
+     "stats": "Over the 40 years to June 2024, it performed in line with 60/40 and the average endowment (Advisor Perspectives, 2025-03-07, snippet only, page blocked). Over the last 13 years it had the highest compound growth of the compared portfolios but with higher volatility. No exact CAGR, volatility, drawdown or Sharpe: unverified.",
+     "out_of_sample_or_2022": "2008: unverified, but large equity and REIT exposure implies a deep loss (roughly 25%+ is my inference, not sourced). 2020: unverified. 2022: unverified; both the 15% long Treasuries and the REITs fell.",
+     "strengths": "Broad diversification across equities, real assets and bonds. Documented by Swensen in a book before the 2008 test. Good real-asset exposure through REITs and TIPS.",
+     "weaknesses": "The institutional Yale model (private equity, hedge funds) cannot be copied at retail. The retail version failed to beat 60/40 over 40 years, and the 60% equity-like exposure (equities plus REITs) means 2008 and 2022 hurt.",
+     "sources": [
+      "https://www.advisorperspectives.com/commentaries/2025/03/07/like-yale-can-we-invest (fetch blocked, snippet only)",
+      "https://www.daytrading.com/yale-endowment-portfolio-david-swensen",
+      "https://www.moneycrashers.com/david-swensen-portfolio/"
+     ]
+    },
+    {
+     "name": "Faber Ivy Portfolio (5-asset, with 10-month SMA timing)",
+     "definition": "Equal weight, 20% each, in US stocks, foreign stocks, bonds, REITs and commodities. The timed version holds each asset only when its month-end price is above its 10-month simple moving average, otherwise it goes to cash. Monthly check. The buy-and-hold version is the static comparison. From Faber, 'A Quantitative Approach to Tactical Asset Allocation' (SSRN 962461, 2007; updated 2009), which was not opened directly.",
+     "stats": "1973-2008 (Faber paper, via search snippets from investingdaily and canadiancouchpotato): buy-and-hold 9.77% CAGR with 9.73% volatility; timed 11.27% with 6.87% volatility. Drawdown cut from 46% to under 10%; one down year of less than -1%. Through 2012 (40 years): timed 10.48% / 6.99% vs buy-and-hold 9.92% / 10.28% (snippet). Worst year and Sharpe: unverified. The buy-and-hold 46% max drawdown is quoted as the snippet states.",
+     "out_of_sample_or_2022": "2008: timed version reportedly avoided most of the drawdown (Faber 1973-2008 sample includes it, so this is in-sample). 2020: unverified. 2022: unverified. Timing signals would have cut stock, bond and REIT exposure in 2022, but I did not find a sourced number. Canadian Couch Potato posts ('the failed promise of market timing', https://canadiancouchpotato.com/2013/12/30/the-failed-promise-of-market-timing/) criticize post-publication results, though I did not read them.",
+     "strengths": "The timing overlay is a simple, rule-based trend filter that fits the platform's daily-bar infrastructure. The monthly signal means few trades. The data run 35+ years and across all assets in the sample.",
+     "weaknesses": "The published results come from the strategy's own author and are in-sample, and the 10-month SMA parameter was chosen with hindsight. Whipsaw and tax costs. The timed version is not a static allocation, so it is a different kind of strategy from the others.",
+     "sources": [
+      "https://investingdaily.com/articles/18093/avoid-market-crashes-using-the-ivy-portfolio-market-timing-system",
+      "https://canadiancouchpotato.com/2012/05/14/market-timing-goes-to-college/",
+      "https://canadiancouchpotato.com/2013/12/30/the-failed-promise-of-market-timing/",
+      "https://thinkadvisor.com/2015/09/02/most-downloaded-ssrn-paper-ever-says-you-should-be/?amp=1"
+     ]
+    },
+    {
+     "name": "Buffett 90/10",
+     "definition": "90% in a very low-cost S&P 500 index fund (Buffett named Vanguard) and 10% in short-term government bonds. From Buffett's 2013 Berkshire Hathaway shareholder letter, describing instructions for the trustee of his wife's bequest. Rebalancing rule was not stated (my recollection is it was not specified; unverified).",
+     "stats": "No backtest published by Buffett. Treat as an S&P 500 proxy: 90% S&P 500 with 10% T-bills. I did not source CAGR, volatility, drawdown, worst year or Sharpe, so all are unverified.",
+     "out_of_sample_or_2022": "2008: unverified, but a 90% equity weight implies a loss near 30-35% (inference from stocks -37% in 2008 per the 60/40 snippet; not verified). 2020: unverified. 2022: unverified (S&P 500 was about -18% per the all-weather snippet, so a loss of about 16% is implied; inference).",
+     "strengths": "Extremely simple and low cost. The 10% cash buffer is for liquidity, not for tail protection.",
+     "weaknesses": "It is an equity bet with little diversification. It is not a tested allocation but personal estate advice, and it carries survivorship bias from the US market.",
+     "sources": [
+      "https://www.fool.com/investing/2019/09/08/warren-buffetts-investing-plan-for-his-family-why.aspx",
+      "https://www.supermoney.com/encyclopedia/index-funds-warren-buffett",
+      "https://www.wealthmanagement.com/etfs/put-buffett-s-advice-into-action-with-these-two-etfs"
+     ]
+    },
+    {
+     "name": "Global market portfolio (Doeswijk, Lam, Swinkels)",
+     "definition": "Market-cap weights of ten asset classes (equities, real estate, government and non-government bonds, private equity, commodities and so on), rebalanced annually in the paper. Weights vary over time (roughly half equities, half bonds in the paper's long sample, but I did not verify the split). From 'The Global Multi-Asset Market Portfolio 1959-2012' and 'Historical Returns of the Market Portfolio' (Review of Asset Pricing Studies, 2020).",
+     "stats": "1960-2017: compound real return 4.45% in USD, standard deviation of annual returns 11.2%, compounded excess return 3.39%, Sharpe ratio 0.69 (SSRN 2978509 / RAPS 10(3), via search snippets; asset-class Sharpe ratios: government bonds 0.85, non-government bonds 0.83, equities 0.56, real estate 0.43). Max drawdown and worst year: unverified.",
+     "out_of_sample_or_2022": "2008: unverified. 2020: unverified. 2022: unverified. The sample ends in 2017, so 2008 is in-sample and 2020 and 2022 are not covered. Market weights give no protection when stocks and bonds fall together.",
+     "strengths": "Peer-reviewed, long sample, and market-cap weights involve no parameter tuning, so hindsight bias is lowest of the group. It is a useful benchmark for any allocation.",
+     "weaknesses": "It is not directly investable (private equity, non-listed real estate), and the 2017 end date misses 2020-2022. A 0.69 Sharpe is a pre-cost number. Real return, not nominal, so it is not directly comparable to the CAGRs above.",
+     "sources": [
+      "https://papers.ssrn.com/abstract=2978509",
+      "https://academic.oup.com/raps/article/10/3/521/5637830",
+      "https://alphaarchitect.com/2020/11/how-do-you-think-the-global-market-portfolio-has-performed-from-1960-2017/",
+      "https://macrosynergy.com/?p=30167"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Use static allocations as the benchmark the ML and technical signals must beat, not as strategies to replace them. A 60/40 (SPY plus a bond ETF) or a Permanent-Portfolio-style mix (SPY, TLT, GLD, SGOV or BIL) is a cheap, hard-to-beat baseline that should be added to the backtest harness before any signal is trusted.",
+    "The universe has no bond or gold ETFs today (the 17 US symbols are stocks and ETFs, but no TLT, IEF, GLD or TIPS). Adding about 4-6 ETFs (TLT, IEF, GLD, SHY or SGOV, VNQ, TIP) would let the platform run any of these portfolios and add a portfolio-level backtest with rebalancing, which the audit says is missing.",
+    "2022 is the stress test that matters. 60/40 lost about 17.5% and All Weather's long-bond weight hurt, while portfolios with gold plus cash (Permanent Portfolio, Golden Butterfly) lost less. Any portfolio-level test should include 2008, 2020 and 2022 as named scenarios and report max drawdown, not just CAGR.",
+    "For research quality: the best-documented sources in this track are Doeswijk et al. (peer reviewed) and Faber (author backtest, widely replicated). Golden Butterfly and the All Weather retail mix were designed or popularized after the fact, so their backtests deserve a haircut. Apply the same multiple-testing skepticism the audit already calls for.",
+    "A trend-following overlay like Faber's 10-month SMA is the only item here that fits the platform's daily-bar machinery. It needs only monthly rebalancing, which suits low-frequency paper trading and a research screen better than unattended order flow. Test it out of sample, and look at post-publication decay before trusting the 1973-2008 numbers.",
+    "Suggested risk-limit implication: the placeholder 15% total exposure and 10% drawdown halt are far tighter than any of these portfolios (Permanent Portfolio max drawdown is about -15%, 60/40 about -17.5% in 2022). Decide whether the platform is a trading engine or a long-term allocator before setting limits, because a static allocation would trip the current halt in an ordinary bad year."
+   ],
+   "caveats": [
+    "The egress proxy blocked portfoliocharts.com, bogleheads.org and advisorperspectives.com, so I could not read the best sources. I did not open any academic paper or fund document directly. Almost everything comes from WebSearch result summaries, which are second-hand and sometimes conflict.",
+    "Treat every numeric claim as unverified until checked at its source page. The CAGR, volatility, drawdown and Sharpe figures for Permanent Portfolio and Golden Butterfly come from unnamed portfolio-charts-style snippets, and the periods are only roughly stated (for example '1985 to present').",
+    "I could not verify 2008, 2020 or 2022 returns for most portfolios. Where I give an implied loss it is my inference from asset-class returns in the snippets and is labeled as such.",
+    "Weights for the Bogleheads three-fund, Swensen, All Weather and Golden Butterfly mixes, and the rebalancing rules, are partly from memory and partly from secondary web snippets. The Swensen weights conflict across two snippets.",
+    "Hindsight and decay: Golden Butterfly, the All Weather retail mix and the Faber 10-month SMA parameter were fixed after seeing historical data. Permanent Portfolio weights (1981) and Doeswijk's market weights are less tuned. I found no sourced post-publication decay figures.",
+    "Several backtests cover a long bond bull market (about 1981-2020), which flatters portfolios with large long-Treasury weights. Real versus nominal returns and pre- versus post-cost basis are mixed across sources and not comparable without care.",
+    "The searches did not return a Sharpe ratio, risk-free rate or fee assumption for most items, so Sharpe values cannot be compared across portfolios."
+   ]
+  },
+  {
+   "track": "risk-parity-vol-targeting",
+   "summary": "Research was constrained: WebFetch was egress-blocked for every primary host I tried (AQR, Bridgewater, SSRN, Wikipedia, Bogleheads, Lehigh, LBS, Alpha Architect), so I relied on WebSearch result summaries. Treat figures as secondary-sourced unless marked otherwise, and re-verify before building on them. Bottom line: (1) The economic idea behind risk parity (low-risk assets earn higher risk-adjusted returns, so overweight them) is well supported by long-sample evidence (Asness-Frazzini-Pedersen 1926-2010), but the full benefit needs leverage, and the 2022 stock-bond correlation flip showed the strategy is a bet on the stock/bond relationship. (2) Volatility-managed portfolios (Moreira-Muir 2017) look strong in-sample but are fragile out-of-sample according to Cederburg et al. (JFE 2020) and de Miguel et al. (JF 2024); expect little or no gain from vol-timing a single equity position. (3) HRP has weak support: the headline results are from the author's own Monte Carlo, with limited independent real-world evidence. (4) For an unlevered retail ETF version, the robust parts are inverse-vol or risk-budget weighting across a few diverse asset classes (equities, intermediate/long Treasuries, TIPS, gold, maybe commodities) with slow monthly rebalancing. Do not expect 'risk parity returns' without leverage, because unlevered risk parity is just a bond-heavy low-vol portfolio. All of this is subject to hindsight bias: the 1980-2020 falling-rate era flattered bond-heavy and levered-bond strategies, and the strategy names were popularized after strong results.",
+   "items": [
+    {
+     "name": "Bridgewater All Weather / classic risk parity",
+     "definition": "Allocate by risk, not capital, across growth-up, growth-down, inflation-up and inflation-down environments (equities, nominal long bonds, inflation-linked bonds, commodities/gold), levered so the portfolio hits a target volatility (commonly ~10-12%). Retail proxy often quoted: 30% stocks, 40% long Treasuries, 15% intermediate Treasuries, ~7.5% gold, ~7.5% commodities (unlevered, so effectively a bond-heavy portfolio). Bridgewater primary page could not be fetched, so the exact institutional weights and leverage are unverified.",
+     "stats": "AFP 2012 (1926-2010): unlevered risk parity stock/bond excess return 2.20% vs market portfolio 3.84%; levered to the market's 15% vol, risk parity excess return 7.99% (source below, via search summary of the CFA Institute abstract). RPAR ETF: roughly -32% drawdown from its Nov 2021 high through 2022 (secondary source, wealthmanagement.com snippet). Claimed Bridgewater All Weather 2022 drawdown ~22% with stock-bond correlation moving from ~-0.20 to ~+0.65: from a low-quality blog snippet, UNVERIFIED. Retail 'All Weather' ETF-style version: one 10-yr figure of 5.65% annual return, 5.81% vol, -9.9% max drawdown from an Italian site for an adapted version; period unspecified, treat as UNVERIFIED illustration.",
+     "out_of_sample_or_2022": "2022 was the stress test: stocks (about -18%) and bonds (about -13%) fell together per a secondary summary (approximate, UNVERIFIED precise values); levered bond sleeves amplified losses. Columbia Adaptive Risk Allocation and Invesco Balanced-Risk Allocation reportedly slightly beat a traditional balanced portfolio in 2022 (Milliman FRM snippet, UNVERIFIED detail). Risk parity's 2008 relative success and 2010s popularity came during a four-decade bond bull market, so post-publication and hindsight effects are large.",
+     "strengths": "Theoretically grounded (leverage aversion / betting-against-beta logic); diversifies across macro regimes rather than just equity beta; long-sample evidence of higher Sharpe than market-cap portfolio; avoids relying on forecasts of returns.",
+     "weaknesses": "Needs leverage to deliver its edge (financing and margin risk); structurally long duration, so it is exposed when rates and inflation rise together (2022); relies on a stable or negative stock-bond correlation, which was positive in the 1970s-90s and again in 2022; backtests benefit from the 1981-2020 falling-yield era; unlevered versions lose most of the return advantage.",
+     "sources": [
+      "https://rpc.cfainstitute.org/research/financial-analysts-journal/2012/leverage-aversion-and-risk-parity",
+      "https://www.wealthmanagement.com/etfs/can-a-dash-of-momentum-save-risk-parity-a-new-etf-wants-to-try-it",
+      "https://frm.milliman.com/-/media/frm/pdfs/3-1-23_frm-year-end_f.ashx",
+      "https://thegryningtimes.substack.com/p/risk-parity-and-rising-rates",
+      "https://www.milanofinanza.it/news/investimenti-3formati-da-pochi-etf-a-basso-costo-e-senza-necessita-di-continui-ribilanciamenti-i-lazy-2710783"
+     ]
+    },
+    {
+     "name": "Volatility-managed portfolios (Moreira-Muir 2017) and its critiques",
+     "definition": "Scale exposure to a factor/market by the inverse of its trailing realized variance (e.g., prior-month realized vol), holding the scaling constant c fixed so average vol matches the unmanaged portfolio. Moreira-Muir apply it to market, value, momentum, profitability, ROE, investment factors, and the currency carry trade; monthly reweighting.",
+     "stats": "Moreira-Muir (JF 2017; data 1926-2015): reports large alphas and higher Sharpe ratios for vol-managed factors (qualitative via NBER/JF abstract; exact alpha figures, e.g. the commonly cited ~4-5% annual market alpha, UNVERIFIED because I could not fetch the paper). Cederburg, O'Doherty, Wang, Yan (JFE 2020): across 103 equity strategies, spanning-regression alphas are positive but real-time implementable versions generally earn LOWER certainty-equivalent returns and Sharpe ratios than unmanaged portfolios; the cited cause is structural instability in the spanning regressions. Exact share of strategies and Sharpe deltas UNVERIFIED.",
+     "out_of_sample_or_2022": "Cederburg et al. is itself the out-of-sample evidence: the in-sample alphas rely on look-ahead in the scaling constant and unstable regression coefficients. De Miguel, Martin-Utrera, Nogales, Uppal (JF 2024), 'A Multifactor Perspective on Volatility-Managed Portfolios', argues that the Moreira-Muir results are strongest for single factors and that a multifactor approach (managing each factor's vol while accounting for the others) is needed; details of out-of-sample verdict UNVERIFIED beyond the title and general framing. I did not obtain any verified 2022 number for vol-managed equity.",
+     "strengths": "Intuitive and cheap to implement (one scalar per asset); reduces tail exposure from volatility clustering; the fact that realized vol is persistent while expected return is not is a plausible economic basis; useful as a risk-control layer even without alpha.",
+     "weaknesses": "Alpha claims shrink or vanish with real-time constants and transaction costs; heavy turnover at monthly frequency; sensitive to sample (the 1930s and 1987 dominate); post-publication decay likely; works best at factor/long-short level, not obviously for retail long-only ETFs. Be skeptical of using vol targeting as a return enhancer, treat it as a risk dial.",
+     "sources": [
+      "https://www.nber.org/papers/22208",
+      "https://alphaarchitect.com/does-portfolio-timing-based-on-volatility-signals-outperform-buy-and-hold/",
+      "https://www.lehigh.edu/~xuy219/research/COWY.pdf",
+      "https://lbsresearch.london.edu/id/eprint/3716"
+     ]
+    },
+    {
+     "name": "Hierarchical Risk Parity (Lopez de Prado 2016) and inverse-volatility weighting",
+     "definition": "HRP: (1) cluster assets using a correlation-distance matrix (hierarchical tree), (2) quasi-diagonalize the covariance matrix, (3) recursively bisect and allocate inversely to cluster variance. Needs no covariance inversion, so it is stable when the matrix is ill-conditioned. Inverse-vol (IV): w_i proportional to 1/sigma_i, ignoring correlations. Both are long-only, no-leverage by construction.",
+     "stats": "Lopez de Prado (SSRN 2708678, 2016): Monte Carlo experiments show HRP has lower out-of-sample variance than CLA minimum-variance, and per secondary summaries also vs inverse-variance and equal-weight; exact variance numbers UNVERIFIED. These are the author's simulations, not live results; I found no verified long-sample ETF backtest figures for HRP.",
+     "out_of_sample_or_2022": "No verified 2022 figures for HRP or inverse-vol multi-asset portfolios. By construction, an inverse-vol portfolio with a large bond share would have been hurt in 2022 (bonds were the low-vol assets that lost money), so expect drawdowns similar in sign to risk parity, smaller in size due to no leverage (reasoning, not a verified number).",
+     "strengths": "Robust to estimation error; no leverage; very simple IV baseline is hard to beat once estimation noise is considered (a general finding in the covariance-shrinkage literature, cited from general knowledge, UNVERIFIED here); HRP gives sensible clusters for a heterogeneous universe like the owner's 39 symbols.",
+     "weaknesses": "Evidence mainly from the proposer's simulations and later replications of mixed quality; post-publication performance claims are contested; clustering can be unstable across windows; correlation-blind IV overweights low-vol assets (bonds, forex) and can be concentrated in a few clusters.",
+     "sources": [
+      "https://papers.ssrn.com/abstract=2708678",
+      "https://en.wikipedia.org/wiki/Hierarchical_Risk_Parity",
+      "https://quantpedia.com/hierarchical-risk-parity/",
+      "https://www.mathworks.com/help/finance/create-hierarchical-risk-parity-portfolio.html"
+     ]
+    },
+    {
+     "name": "Retail unlevered ETF risk-balanced portfolios (Permanent Portfolio, Golden Butterfly, simple All Weather proxy)",
+     "definition": "Permanent Portfolio: 25% equities, 25% long Treasuries, 25% cash, 25% gold. Golden Butterfly: five equal 20% sleeves in stocks, small-cap value or small caps, long Treasuries, short-term Treasuries/cash, gold. All Weather proxy: roughly 30% stocks, 40% long Treasuries, 15% intermediate Treasuries, 7.5% gold, 7.5% commodities. Typical ETF mapping: VTI/SPY, IWM or small-cap value, TLT/IEF, SHY/BIL, GLD, DBC, TIP.",
+     "stats": "Permanent Portfolio: -8.44% in calendar 2022 (martinschwoerer.substack.com snippet; verify against Portfolio Charts or Portfolio Visualizer). Golden Butterfly, European version: 7.42% return, 7.48% vol, Sharpe 0.89 over 'a decade' (milanofinanza snippet; period unspecified, UNVERIFIED). I could not obtain Portfolio Visualizer long-sample CAGR/maxDD for these portfolios; any specific long-run CAGR from memory is UNVERIFIED.",
+     "out_of_sample_or_2022": "2022: Permanent Portfolio -8.44%, so the gold/cash sleeves limited damage versus the roughly -18% equity and -13% bond moves quoted elsewhere (secondary). It is not a free pass: long bonds still drag.",
+     "strengths": "Transparent, rebalanced, no leverage, low turnover; exposure to gold and cash cushions the stock-bond correlation flip; cheap and fully implementable at Interactive Brokers.",
+     "weaknesses": "Chosen with hindsight (these names are popular because they did well in 1970s-2010s sample); bond duration dominates risk; gold's long-run real return is modest and its role is regime dependent; returns lag equities in bull markets.",
+     "sources": [
+      "https://martinschwoerer.substack.com/p/harry-browne-lives-in-my-head-but",
+      "https://www.milanofinanza.it/news/guadagnare-fino-al-7-4-l-anno-senza-fatica-con-i-portafogli-pigri-quanto-rendono-e-come-funzionano-202607081839011302",
+      "https://www.daytrading.com/golden-butterfly-portfolio"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Add a portfolio layer (currently missing: per-symbol backtests, no allocation). Start with an inverse-volatility weighting across asset-class sleeves, not 39 individual symbols: for example US equity (SPY/QQQ/IWM), long and intermediate Treasuries (via IBKR ETFs such as TLT/IEF, which are outside the current universe), gold, maybe energy/commodities. Rebalance monthly with a no-trade band to avoid churn.",
+    "Use vol targeting as a risk dial, not an alpha source: cap gross exposure at 1.0x (no leverage), scale cash vs risky sleeve using trailing 60-day realized vol with a floor/cap on the scaler, and compare out-of-sample (walk-forward) against a static weights baseline. Given Cederburg et al., prefer to treat any gain as unproven.",
+    "Replace the placeholder 5% per-position / 15% total exposure with risk-based limits derived from the target portfolio vol (e.g., 8-10% annualized) and a per-sleeve risk-contribution cap; the 2% stop / 4% take-profit rules are incompatible with a slow rebalanced allocation and should be dropped for this sleeve.",
+    "Include 2022, 2008, 1970s-style regimes (via long-history proxies or mutual-fund data) in a stress suite; require the allocation to survive a joint stock-bond drawdown scenario before any paper orders. Report results net of costs and with a lagged-signal (next-bar) convention, consistent with the audit's bias findings.",
+    "Treat HRP as an optional research module for the existing 39-symbol universe and 10 pairs (to cluster correlated assets and avoid over-allocating to the crypto and tech clusters); benchmark it against inverse-vol and equal-weight, and accept the result if it is not clearly better. Apply multiple-testing discipline: this adds only a handful of hypotheses, unlike the ~780-hypothesis scans.",
+    "Keep it a research screen / paper-only recommendation engine first (consistent with reviewer advice against live mode); the risk-parity layer outputs target weights and a rebalance list that a human approves, rather than unattended orders."
+   ],
+   "caveats": [
+    "WebFetch was blocked by the network egress proxy for every primary source I tried, so no figures were read from the papers or fund documents themselves; all numbers come from WebSearch result summaries and are secondary. Several are marked UNVERIFIED.",
+    "The Bridgewater All Weather 2022 drawdown (~22%) and the stock-bond correlation values (-0.20 to +0.65) come from a low-quality blog snippet; do not rely on them without primary confirmation.",
+    "The RPAR -32% drawdown and other 2022 numbers are from trade-press snippets; the exact peak-to-trough dates and fund fees/leverage are unverified.",
+    "No Ken French data, Portfolio Visualizer, or Bogleheads long-sample statistics could be pulled; I did not compute my own backtests.",
+    "Hindsight bias: risk parity and the Permanent/Golden Butterfly portfolios were popularized after a 1981-2020 bond bull market; AFP 2012 evidence (1926-2010) ends before the 2022 rate shock and the 2010s-2020s regime, and published anomalies commonly decay after publication.",
+    "Vol-managed results are sensitive to implementation details (scaling constant, window, leverage cap, transaction costs); the critiques (Cederburg et al.) are themselves debated, and de Miguel et al. offer a partially defending multifactor view, so the literature is not settled.",
+    "Nothing here is personalized investment advice; asset-class tradability, shorts and leverage choices depend on the owner's answers to the open questions."
+   ]
+  },
+  {
+   "track": "trend-tactical",
+   "summary": "Trend and tactical rules show a real but modest, regime-dependent edge, and it is mostly risk reduction rather than extra return. Long-sample evidence (Hurst/Ooi/Pedersen, 1880-2016, 67 markets) supports time-series trend. Out-of-sample, the edge decayed: Faber GTAA Sharpe fell from 0.81 (1972-2005) to 0.68 (2006-Mar 2025, a third-party figure); GEM trailed buy-and-hold after about 2010; and the SG Trend index returned roughly 0.4-1.8% a year over 2009-2018 before +27% in 2022. Trend rules did cut drawdowns in 2008 and 2022. They were weak in 2023-2025 and drawn out in the 2010s (SG Trend, CTA index data). VAA/DAA/BAA are the weakest evidence: tuned on the same data, with little genuine post-publication record found. Cost and tax drag is large when turnover is high (monthly rebalancing, taxable accounts). Sourcing caveat: my fetch tool was egress-blocked for most primary sites (AQR, SSRN, Yale PDFs, Advisor Perspectives, CXO, Cambridge). Nearly every number below therefore comes from search-engine summaries of those sources, not from reading the primary document. Treat all numbers as 'secondary-source, verify before relying'. Items I could not find are marked unverified.",
+   "items": [
+    {
+     "name": "Faber GTAA-5 (10-month SMA, 2007 paper and 2018 update)",
+     "definition": "Five asset classes at 20% each: US stocks, foreign stocks, US 10y bonds, REITs, commodities. At each month-end, an asset is held if its price is above its 10-month SMA (about the 200-day MA). Otherwise its 20% slice goes to T-bills. Monthly evaluation. Long-only, no leverage, no shorts.",
+     "stats": "Original backtest 1972-2005: CAGR 11.7%, max drawdown 9.5%, Sharpe 0.81 (secondary summary; original paper unread). 1973-2012: timed 10.5% vs buy-and-hold 9.9% annualized; drawdown cut from about 46% to under 10% (etf.com/Faber summaries via search). 2006-Mar 2025 (third-party replication, not Faber): Sharpe 0.68, CAGR 6.05%, max DD 11.7%. A separate source says Faber's 2018 JPM update reported Sharpe 'from 0.45 to 0.80', but I could not confirm what that compares (possibly buy-and-hold vs timing); treat as unverified.",
+     "out_of_sample_or_2022": "Faber's own 2018 update (JPM) concludes the model 'performed well in real-time, achieving equity-like returns with bond-like volatility and drawdowns' (abstract via search). That is the author grading his own rule. An outside replication shows return decay (11.7% to about 6% CAGR) while the drawdown cap held (about 10-12%). It underperformed stocks in 6 of the 8 years after the 2008-09 bear market (Swedroe/etf.com summary). 2022: the stock-and-bond downturn hit it less than 60/40, but I have no verified 2022 number (unverified).",
+     "strengths": "Simple, fully rule-based, daily or monthly data only. Few parameters, so little overfitting. Consistent drawdown control. Easy to run on ETFs (SPY, EFA, AGG/IEF, VNQ, DBC/GLD). The Sharpe edge came from lower volatility, not higher return.",
+     "weaknesses": "Return lags buy-and-hold in long bull markets. Whipsaw around the MA, with high turnover and short-term gains in taxable accounts. Results are sensitive to rebalance day and to MA lookback (QuantConnect and Bogleheads threads note implementation variance). Hindsight bias: the asset list and 10-month rule were chosen after the 1970s-2000s sample, and the 2007 paper became the most-downloaded SSRN paper, which invites crowding. Post-publication decay is visible.",
+     "sources": [
+      "https://www.etf.com/sections/index-investor-corner/swedroe-why-financial-trends-persist",
+      "https://concretumgroup.substack.com/p/global-tactical-asset-allocation",
+      "https://mebfaber.com/2013/06/08/qtaa-update-global-tactical-5/",
+      "https://www.bogleheads.org/forum/viewtopic.php?t=173272",
+      "https://www.quantconnect.com/forum/discussion/8285/a-quantitative-approach-to-tactical-asset-allocation-gtaa-5-with-simplemovingaverage/",
+      "https://publishedresearch.cambridgeassociates.com/revisiting-tactical-asset-allocation/"
+     ]
+    },
+    {
+     "name": "Antonacci Dual Momentum / GEM (Global Equities Momentum)",
+     "definition": "Monthly. Compare US equities (S&P 500) vs ex-US equities (ACWI ex-US) by trailing 12-month return (relative momentum). If the winner's 12-month return also beats T-bills (absolute momentum), hold it. Otherwise hold aggregate bonds. 100% in one asset at a time.",
+     "stats": "Original backtest 1974-2013: CAGR about 17.4%, max drawdown about -22%, Sharpe about 0.9 (secondary summary). 1971-2026 replication (SSRN, Petit): CAGR 15.18% vs S&P 500 11.27%, max DD 21.7% vs 50.9%, Sharpe 0.83 vs 0.50. 2016-2026: CAGR about 12.3%, max DD -17.8%, Sharpe 0.72 (portfoliodb-style summary, unverified quality). One source says it has trailed a passive index by about 4.8 points a year since 2010, with its worst drawdown in 55 years in 2021-2023. These come from search summaries, not primary reads.",
+     "out_of_sample_or_2022": "Antonacci's own extension (1950-2018) claims two out-of-sample windows (1950-1973 and 2012-2018) that were still attractive. Independent summaries say the post-2010 record lags the S&P 500 and has its deepest drawdown in 2021-2023. That is consistent with the 12-month signal being late at the 2022 equity-bond peak. Newfound/ReSolve notes that the COVID crash of March 2020 whipsawed it and that model-specification risk (the exact lookback, rebalance date, ETF choice) can swing annual returns by hundreds to thousands of bps. I recommend running several implementations.",
+     "strengths": "Very low turnover (12-month lookback, a few switches a year). Clear rules. Big drawdown avoidance in 2000-02 and 2008. Cheap to implement with 3 ETFs.",
+     "weaknesses": "Concentrated: one asset at a time, so high specification risk. Lags in V-shaped markets. Post-2010 US equity dominance penalized the rotation. Switches realize short-term gains (taxes). Only one clean post-2013 out-of-sample decade, and it is mediocre against buy-and-hold. Hindsight: the 12-month lookback, 3-asset universe and 1974 start date were fixed after seeing the data.",
+     "sources": [
+      "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=7427878",
+      "https://investresolve.com/inc/uploads/pdf/global-equity-momentum-a-craftsmans-perspective.pdf",
+      "https://www.advisorperspectives.com/articles/2019/05/06/global-equity-momentum-a-craftsmans-perspective",
+      "https://www.optimalmomentum.com/extended-backtest-of-global-equities-momentum/",
+      "https://www.portfoliodb.com/portfolios/gem-dual-momentum",
+      "https://www.traderounds.com/p/model-autopsy-dual-momentum",
+      "https://blog.thinknewfound.com/category/portfolio-construction/page/6"
+     ]
+    },
+    {
+     "name": "Keller & Keuning VAA / DAA / BAA (canary-universe breadth momentum)",
+     "definition": "VAA: use a fast momentum score (13612W, a weighted average of 1/3/6/12-month returns). If any asset in the offensive universe has negative momentum, go 100% to the best defensive asset. DAA (2018): replace that rule with a separate canary universe (VWO, BND) and use breadth (the share of canaries with negative momentum) to set the cash fraction. BAA (2022): slow relative momentum for the offensive pick plus fast absolute momentum on the canaries; BAA moves to the defensive universe if any canary is negative. Monthly.",
+     "stats": "BAA: Dec 1970-Jun 2022 backtest, returns of 20% or more with monthly max drawdowns of 15% or less (CXO summary of the SSRN paper). BAA spends about 60% of the time defensive. DAA out-of-sample universe test: 1994-Mar 2018. I did not verify per-strategy CAGR, Sharpe, turnover or cost-adjusted numbers (unverified). 20%+ CAGR is far above any live-tracked trend or tactical strategy and should be read as in-sample optimism.",
+     "out_of_sample_or_2022": "Little verified post-publication data. Author-run out-of-sample checks (DAA tested 1994-2018) are partly contaminated because the lineage is the same authors tuning VAA to PAA to DAA to BAA on largely overlapping data. I found no independent live-tracking numbers (Allocate Smartly tracks them behind a paywall) and no verified 2022 or 2023 result: unverified.",
+     "strengths": "Breadth-based canary signal cut the crash-protection lag of single-asset absolute momentum. Public papers, transparent rules, and an explicit out-of-sample attempt. Fits a monthly daily-bar pipeline with about 10-20 ETFs.",
+     "weaknesses": "Highest data-snooping risk of the group: several generations of the same idea tuned on the same history, and the BAA headline of 20% CAGR with 15% drawdown is the kind of result that decays. High turnover (monthly all-in switches to bonds or cash, whole portfolio in 1-3 assets, mostly short-term tax treatment). Concentration. Sensitive to ETF proxies and the data start.",
+     "sources": [
+      "https://www.cxoadvisory.com/strategic-allocation/multi-class-momentum-portfolio-with-canary-crash-protection/",
+      "https://thechartist.com.au/wp-content/uploads/2024/12/5369/SSRN-id4166845.pdf",
+      "https://www.quantconnect.com/forum/discussion/14842/hybrid-asset-allocation/",
+      "https://vvv.quantpedia.com/?p=25576",
+      "https://yagogarcia.substack.com/p/estrategia-baa-una-aproximacion-agresiva"
+     ]
+    },
+    {
+     "name": "Time-series momentum (Moskowitz, Ooi, Pedersen 2012) and a Century of Evidence (Hurst, Ooi, Pedersen 2017)",
+     "definition": "TSMOM: for each liquid futures contract, go long if its trailing 12-month excess return is positive and short if negative, with positions scaled to a constant ex-ante volatility target (about 40% annualized per instrument in the paper), diversified across 58 contracts in equity indices, bonds, commodities and currencies. Century paper: a 1/3/12-month lookback blend with volatility scaling across 67 markets (29 commodities, 11 equity indices, 15 bonds, 12 currency pairs).",
+     "stats": "MOP 2012: 58 futures, 1985-2009; positive risk-adjusted returns in every asset class; a diversified TSMOM portfolio had large abnormal returns with little factor exposure and did best in extreme markets (the 'smile'). Component gross Sharpe numbers from search summaries (e.g., 12-month TSMOM 1.17 for traditional assets, 1.34 for alternatives, 1.60 diversified across groups): unverified per-figure. Century paper 1880-2016: gross return 18.0% annualized, net of 2/20 fees 11.0%, net Sharpe about 0.76 (alternative summary says 0.4 average net Sharpe, which is probably a different cut: unverified, the sources disagree). Net returns were positive in every decade, the lowest being 4.1% (the decade starting 1919). Correlation to stocks and bonds was near zero.",
+     "out_of_sample_or_2022": "Post-2009 decay is documented: a commodity TSMOM replication shows strong pre-2009 and weaker later returns (search summary of an independent study). Managed futures in practice: SG Trend annualized about 0.4-1.8% over 2009-2018 vs a 5.7% full-history average, max drawdown 21.8% (secondary source, angelinvestorsnetwork/IBKR campus). 2022: SG CTA Index +20.1%, best since 2000 inception (Hedgeweek); SG Trend +27.3% (alpha-week/Hedgeweek). 2023: SG Trend -4.16% (toptradersunplugged). AQR and Cambridge Associates both published pieces on trend's recent struggle ('You Can't Always Trend When You Want'). Cambridge concludes that it is not structurally broken. Both are interested parties.",
+     "strengths": "The strongest and longest evidence base: 137 years, 67 markets, positive in every decade. A long-short, multi-asset diversifier with crisis convexity (2008, 2022). Works in the 'bonds and stocks fall together' regime where 60/40 fails.",
+     "weaknesses": "Needs futures, leverage and shorts. A retail platform would use ETF proxies, which weakens it. Long flat or negative stretches (about 2009-2019, 2023-2025). The century paper is by the same authors who run the strategies (AQR), and it is partly in-sample by construction. Fees and costs matter a lot (gross 18% vs net 11%). Instrument-level Sharpe numbers are inflated by in-sample choice of lookback.",
+     "sources": [
+      "https://papers.ssrn.com/abstract=2089463",
+      "https://www.aqr.com/Insights/Research/Journal-Article/A-Century-of-Evidence-on-Trend-Following-Investing?aqrPDF=1",
+      "https://fairmodel.econ.yale.edu/ec439/hurst.pdf",
+      "https://fairmodel.econ.yale.edu/ec439/jpde.pdf",
+      "https://www.cxoadvisory.com/momentum-investing/trend-following-with-intrinsic-momentum-over-the-very-long-run",
+      "https://alphaarchitect.com/trend-following-is-everywhere/",
+      "https://www.hedgeweek.com/trend-followers-turn-leaders-ctas-deliver-record-returns-2022/",
+      "https://www.toptradersunplugged.com/?p=14211",
+      "https://www.aqr.com/Insights/Research/White-Papers/You-Cant-Always-Trend-When-You-Want?aqrPDF=1",
+      "https://www.cambridgeassociates.com/insight/does-trend-followings-recent-struggle-signal-that-the-strategy-is-structurally-broken/",
+      "https://angelinvestorsnetwork.com/market-analysis/managed-futures-cta-funds-hedge-inflation-2026"
+     ]
+    },
+    {
+     "name": "Costs, whipsaw, turnover and tax effects (cross-cutting)",
+     "definition": "Evidence on how implementation frictions change the results of the rules above: monthly signals, ETF or futures execution, and taxable vs tax-advantaged accounts.",
+     "stats": "Century paper shows fees dominate: gross 18.0% to net 11.0% (1880-2016, 2/20 plus costs). Faber and GEM are low-turnover (monthly check, a handful of switches a year); VAA/DAA/BAA are high-turnover. I found no verified turnover percentages or bps-cost figures for any strategy (unverified). Tax: tactical strategies are tax-inefficient in taxable accounts, and short-term gains can offset the alpha (Allocate Smartly/Freefloat summaries; no verified tax-drag number). One analysis finds that after-tax tactical results can be close to pre-tax static results (a worst-case study, secondary).",
+     "out_of_sample_or_2022": "Whipsaw cases: the COVID crash of March 2020 (GEM, trend rules switched late); 2010-2019 flat CTA years; 2023. 2022 was the best case for trend, since both stocks and bonds fell and absolute-momentum filters moved to cash or short bonds. The Faber 2018 update also notes that cash-management choices (T-bills vs other) changed results, which means part of the returns come from the implementation, not the signal.",
+     "strengths": "Monthly cadence and ETF execution make costs small relative to futures CTAs. Tax-advantaged accounts (IRA or similar) neutralize the biggest drag. Low turnover favors Faber and GEM over VAA/DAA/BAA.",
+     "weaknesses": "Short-term gains taxed as ordinary income in taxable accounts. Frequent all-in switches (BAA) magnify slippage and model specification risk. Backtests of tactical models often omit costs, taxes and the exact execution day.",
+     "sources": [
+      "https://allocatesmartly.com/tax-efficient-tactical-asset-allocation/",
+      "https://freefloat.substack.com/p/static-vs-tactical-allocation",
+      "https://www.aqr.com/Insights/Research/Journal-Article/A-Century-of-Evidence-on-Trend-Following-Investing?aqrPDF=1",
+      "https://blog.thinknewfound.com/category/portfolio-construction/page/6"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Add one portfolio-level trend allocator as the first thing built. The platform currently runs per-symbol backtests with no allocation layer. A monthly, long-only, equal-weight 10-month-SMA rule over ETFs already in or near the universe (SPY or IWM, a foreign equity ETF, a bond ETF, GLD or DBC, a REIT ETF) with T-bills as cash is the lowest-risk way to add allocation. It needs about 30 lines of logic, uses daily bars you already have, and has the best-documented drawdown behavior.",
+    "Use the trend rules as the benchmark and risk overlay for the existing ML and pattern signals, not as another alpha scan. Test whether RF/XGB/LGBM and the 20 patterns beat a simple 10-month-SMA benchmark with the same costs. If they do not, that is a strong signal to trim scope.",
+    "Do not expect the published headline numbers. Plan on a Sharpe around 0.5-0.7 and a max drawdown of 10-20% (Faber 2006-2025 replication, GEM 2016-2026), not the 20% CAGR claims of BAA or the 0.8-0.9 in-sample Sharpe figures.",
+    "Treat VAA/DAA/BAA as low priority or research-only: highest turnover, the most data-snooping risk (tuned sequentially on overlapping data), and no verified post-publication record here.",
+    "If you add GEM, run multiple parameterizations (lookback 6/9/12 months, different rebalance days) and average them, because model-specification risk is large.",
+    "Make signal timing explicit for the correction of the same-bar-entry bias: signal on month-end close, trade on the next open or close, and include costs. Trend rules are especially sensitive to look-ahead because the signal is a moving average of the same prices you trade.",
+    "Include post-publication splits in the backtest report: in-sample vs published date (Faber 2007, MOP 2012, Century 2013/2017, GEM 2012-2014) and the 2022 and 2023 windows, so decay is visible. Also report the 2009-2019 flat spell for trend.",
+    "Trend works best as a diversifier. The 39-symbol universe is mostly equity-heavy (17 US stocks and ETFs) plus crypto, forex and futures. A true time-series momentum sleeve across the 7 futures, 7 forex and 8 crypto symbols is possible with ETF or futures proxies, but shorts and leverage are open owner decisions and I would not enable them for live trading first.",
+    "Keep the risk limits in line with the evidence: Faber and GEM drawdowns of roughly 10-22% suggest the 10% drawdown halt would trigger often and would lock in whipsaw losses. Consider a halt of 15-20% for monthly-rebalanced allocations, tested in the backtest first, with the 2% stop and 4% take-profit placeholders removed from the trend sleeve (the rule already is the exit).",
+    "Keep the allocator paper-only or signal-only (order proposals) until Phase 1 (safe order chokepoint) exists. Monthly cadence suits a research screen plus a manual or confirmed paper order, and avoids unattended orders. Use a tax-advantaged IBKR account if it is ever live, because the strategies generate short-term gains."
+   ],
+   "caveats": [
+    "Most primary sources (AQR, SSRN PDFs, Yale-hosted PDFs, CXO, Advisor Perspectives, Cambridge Associates, etf.com) were blocked by the egress proxy when fetched, so numbers come from search-engine summaries of those sources, not from reading the papers. Treat every figure as secondary until checked.",
+    "Several statistics conflict or are unclear: the Faber 2018 update 'Sharpe 0.45 to 0.80' (unclear what is compared), the Century paper Sharpe (0.76 vs 0.4), and the GEM out-of-sample numbers (from third-party sites of unknown rigor, including a source with a 2026 date I could not audit). I labelled these unverified.",
+    "Not found: verified turnover percentages, per-trade cost assumptions, 2022 and 2023 results for Faber, GEM and VAA/DAA/BAA, and any independent live-tracked record for BAA or DAA. These are marked unverified rather than estimated.",
+    "Hindsight and survivorship: every rule here was published after a profitable sample, and the famous ones became crowded (Faber's paper is the most-downloaded on SSRN). Several of the authors (AQR, Cambridge, Faber, Antonacci, Keller) sell or promote the strategies, so conclusions of 'it still works' come from interested parties. The strongest independent evidence of decay is the 2009-2018 CTA lost decade and the GEM underperformance since about 2010.",
+    "The 2022 result (trend strong, crisis alpha) is one regime, and 2023-2025 were weak again. Do not extrapolate either. Trend is best treated as insurance with a cost, not a return enhancer.",
+    "Everything here concerns monthly allocation on daily data, so it does not validate the platform's 20 daily technical patterns, cointegration pairs or ML next-day direction model. Those face the multiple-testing issue noted in the audit."
+   ]
+  },
+  {
+   "track": "signal-evidence",
+   "summary": "Evidence on this platform's signal families (technical rules, pairs, ML next-day direction), searched 2026-10-04 and read as a candid review. Verdict: the published edge in each family is small, decays after publication, and mostly disappears once you correct for data snooping and add realistic costs. A retail trader on daily bars should expect roughly zero alpha from the technical-rule scans. Pairs and ML next-day direction are marginal at best. The strongest long-sample evidence is for slow, diversified trend-following/time-series momentum, which is a risk-premium-like strategy rather than an alpha source. It is built on monthly or longer signals, not daily chart patterns. The platform's own ~780-hypotheses-per-scan design is exactly the setup Harvey-Liu-Zhu and Sullivan-Timmermann-White warn about. Caveats on method: WebFetch was blocked for ideas.repec, aqr.com, cxoadvisory and nber.org, so every number below comes from search-result snippets rather than from reading the papers. Anything not in a snippet is marked unverified.",
+   "items": [
+    {
+     "name": "Classic technical rules (RSI, MACD, MA crosses, breakouts)",
+     "definition": "Brock-Lakonishok-LeBaron (1992) tested 26 simple rules (MA crosses, trading-range breakouts) on DJIA. Later work re-tests them with data-snooping controls: Sullivan-Timmermann-White 1999 (7,846 rules, ~100 years of DJIA daily data, White Reality Check), Park-Irwin 2007 survey, Bajgrowicz-Scaillet 2012 (DJIA daily 1897-2011, false discovery rate).",
+     "stats": "Park-Irwin 2007: 58 of 92 'modern' studies found positive results for technical strategies, but profits were found 'at least until the early 1990s' and most studies suffer data snooping, ex post rule selection, and poor cost/risk estimation. STW 1999: after Reality Check, no significantly profitable rule for DJIA, S&P 500 index, or S&P 500 futures. Bajgrowicz-Scaillet: investors could never have picked the future best rules ex ante, and even in-sample the performance is offset by low transaction costs. No retail-realistic CAGR or Sharpe figure was verified (unverified).",
+     "out_of_sample_or_2022": "Out-of-sample is where these rules fail: STW 1999 extended the BLL rules to later data and to S&P 500 futures and found no significant profitability. No specific 2022 figure for these rules was verified (unverified).",
+     "strengths": "Cheap, transparent, daily. Trend-type rules (MA cross, breakout) are the same idea as the long-sample trend-following evidence below, so a small number of them can have a real risk-premium basis. Useful as risk filters or regime context rather than as standalone alpha.",
+     "weaknesses": "Many rules on few instruments invites false discoveries. Rule performance is not persistent. Costs erase in-sample profits. Oscillator-type patterns (RSI, candlestick-like patterns) have no comparable long-sample support in anything I found (unverified beyond the absence of evidence). Publication and hindsight bias: the rules that look good today were chosen after seeing the data.",
+     "sources": [
+      "https://ideas.repec.org/a/bla/jecsur/v21y2007i4p786-826.html",
+      "https://ideas.repec.org:443/a/eee/jfinec/v106y2012i3p473-491.html",
+      "https://researchonline.lse.ac.uk/id/eprint/119144",
+      "https://academicnewsletter.sufe.edu.cn/info/361689"
+     ]
+    },
+    {
+     "name": "Pairs trading (distance and cointegration)",
+     "definition": "Gatev-Goetzmann-Rouwenhorst (2006) distance method: formation period, trade the top pairs on divergence, close on convergence. Do-Faff (2010, 2012) extend the sample and add costs.",
+     "stats": "GGR: up to ~11% annualized excess return for self-financing pair portfolios, US CRSP 1962-2002 (as summarized in search results; source below). Do-Faff, July 1962-June 2009: top-20-pairs mean excess return 0.86%/month in 1962-1988, 0.37% in 1989-2002, 0.24% in 2003-2009. After commissions, market impact and short fees the strategy remains profitable only at 'much more modest levels', with about 30 bp/month risk-adjusted for well-matched pairs within refined industry groups. Up to 70% of the profit drop was attributed to worsening arbitrage risk.",
+     "out_of_sample_or_2022": "The decline over time is itself the out-of-sample evidence: 0.86% to 0.24% per month across the three sub-periods. Both contrarian strategies Do-Faff examined are largely unprofitable after 2002. 2022 performance was not verified (unverified). The distance-method results are for hundreds of stocks, not 10 hand-picked pairs.",
+     "strengths": "Market-neutral by construction, so it diversifies directional exposure. Economic rationale (relative mispricing), and a documented small positive net edge when pairs are industry-matched. Cointegration screening is more principled than raw distance matching (verification of its edge unverified).",
+     "weaknesses": "Edge has shrunk about 70% since the early sample. Needs shorting and borrow, which conflicts with a long-only paper setup. Daily-bar cost drag is large. Selecting 10 pairs from a 39-symbol universe is a tiny sample, and pair selection on the same data used to backtest is exactly the multiple-testing problem. Cross-asset 'pairs' (SPY/QQQ, XOM/CVX) are cheaper to find but less diversified than the stock-pair universe in the papers.",
+     "sources": [
+      "https://nber.org/papers/w7032",
+      "https://alphaarchitect.com/2013/06/pairs-trading-kicks-butt/",
+      "https://www.cxoadvisory.com/technical-trading/pairs-trading-net-profitability/",
+      "https://rpc.cfainstitute.org/research/financial-analysts-journal/2010/does-simple-pairs-trading-still-work",
+      "https://strathprints.strath.ac.uk/41722/"
+     ]
+    },
+    {
+     "name": "ML next-day direction ensembles (RF/XGB/LGBM)",
+     "definition": "Krauss-Do-Huck (2017): DNN, gradient-boosted trees and random forest, trained on lagged returns of all S&P 500 constituents (survivor-bias eliminated), ensemble long-short portfolio of top/bottom k stocks daily. Gu-Kelly-Xiu (2020): ML (trees, neural nets) on stock-level characteristics, monthly horizon, cross-section of US stocks.",
+     "stats": "Krauss et al. 2017: ensemble out-of-sample returns above 0.45% per day for k=10 BEFORE transaction costs (as summarized in search results). The abstract, which I could not fetch, reportedly says profitability declines after the early-2010s and is weak after costs; I recall this but did not verify it (unverified). Gu-Kelly-Xiu: neural-net value-weighted long-short decile spread earns an annualized out-of-sample Sharpe of 1.35, and an S&P 500 timing strategy using NN forecasts earns Sharpe 0.77 vs 0.51 buy-and-hold (sample period not verified, unverified). Dominant predictive signals across all models: momentum, liquidity, volatility.",
+     "out_of_sample_or_2022": "Krauss: the pre-cost daily edge is large but the daily-turnover long-short design is cost-sensitive; post-2010 decay is unverified. GKX is a true recursive out-of-sample exercise at monthly frequency with large panels. Neither maps onto 17 US names plus a few crypto/forex/futures series with ~1 feature set. No 2022 figure was verified (unverified).",
+     "strengths": "Nonlinear ML on large cross-sections with proper walk-forward validation shows real predictive gains in the academic setting. Ensembles reduce variance. Most useful as a cross-sectional ranker, not a next-day binary classifier.",
+     "weaknesses": "Both papers use hundreds to thousands of stocks and long histories. Your 39 symbols give little cross-section, so the ML edge from those papers does not transfer. GKX gains are concentrated in small, illiquid stocks and are monthly, not daily (concentration claim from memory, unverified). Your audit already notes in-sample ML evaluation, which inflates accuracy. Next-day direction accuracy for liquid large caps is near 50-52% even in good studies (unverified), and costs eat that. Daily turnover is where costs hurt most.",
+     "sources": [
+      "https://cris.fau.de/publications/208534681",
+      "https://ideas.repec.org:443/p/zbw/iwqwdp/032016.html",
+      "https://www.nber.org/papers/w25398.pdf",
+      "https://papers.ssrn.com/abstract=3159577"
+     ]
+    },
+    {
+     "name": "Post-publication decay and multiple testing (meta-evidence)",
+     "definition": "McLean-Pontiff (2016): 97 published return predictors. Harvey-Liu-Zhu (2016): 316 factors and a multiple-testing t-ratio hurdle.",
+     "stats": "McLean-Pontiff: portfolio returns are 26% lower out-of-sample (post-sample, pre-publication) and 58% lower post-publication; the implied publication-informed-trading effect is about 32 points (58 minus 26). Declines are larger for predictors with higher in-sample returns, and returns are higher for high idiosyncratic-risk, low-liquidity stocks. Harvey-Liu-Zhu: 316 factors catalogued, and a new factor should clear a t-ratio above 3.0 rather than 2.0, with the authors arguing most claimed findings in financial economics are likely false.",
+     "out_of_sample_or_2022": "The McLean-Pontiff 26% and 58% are the out-of-sample and post-publication measures. A later paper (arXiv 2206.15365) argues most claimed cross-sectional findings are in fact likely true, so the 'most are false' conclusion is contested. I did not read it, so treat its details as unverified.",
+     "strengths": "Gives a concrete haircut rule: assume at least 50% of any published backtest edge is gone, and demand t > 3 when you tested many variants.",
+     "weaknesses": "These studies cover cross-sectional stock anomalies, not daily chart patterns on indices and crypto, so the numbers are an analogy, not a measurement for this platform. Your scans test about 780 hypotheses per run, so at t > 2 you would expect a large number of false positives by chance alone.",
+     "sources": [
+      "https://Www.Gwern.net/doc/economics/2016-mclean.pdf",
+      "https://ivey.uwo.ca/media/3775549/pontiff.pdf",
+      "https://nber.org/papers/w20592",
+      "https://www.cxoadvisory.com/big-ideas/taming-the-factor-zoo/",
+      "https://arxiv.org/pdf/2206.15365"
+     ]
+    },
+    {
+     "name": "Time-series momentum / diversified trend-following (best-evidenced family)",
+     "definition": "Hurst-Ooi-Pedersen (AQR): long/short trend rules over 67 markets (29 commodities, 11 equity indices, 15 bonds, 12 currency pairs), 1880-2016, monthly-scale signals, volatility-scaled.",
+     "stats": "Gross return 18.0% annualized, net of costs and 2/20 fees 11.0%, with annual volatility 9.7% and a net Sharpe of 0.76 (1880-2016 as reported in search summaries; a different summary quotes about 0.4 average Sharpe after fees in a sub-measure, so the exact figure depends on the specification and I could not reconcile it). Net returns were positive in every decade, the lowest at 4.1% for the decade beginning 1919.",
+     "out_of_sample_or_2022": "The study is built on extending the sample backward to 1880, which is the best defence against data mining here. I did not verify its 2022 performance (unverified, though I recall trend-following did well that year). Note the post-2008 decade was weak for managed futures (from memory, unverified). These figures are for a 67-market, volatility-targeted portfolio, not for a 7-futures retail subset.",
+     "strengths": "Long out-of-sample history, low turnover (monthly), works across asset classes, and diversifies equity risk, especially in crises. Your futures, forex and crypto symbols fit this family far better than daily pattern signals.",
+     "weaknesses": "Returns are lumpy with multi-year drawdowns. The paper's Sharpe is for a diversified portfolio of 67 markets, so a concentrated 39-symbol universe will see a lower Sharpe and bigger drawdowns. AQR is a manager with an interest in the strategy, and backward extension of data (1880 futures proxies) has data-quality issues.",
+     "sources": [
+      "https://www.TrendFollowing.com/whitepaper/Century_Evidence_Trend_Following.pdf",
+      "https://oxfordstrat.com/coasdfASD32/uploads/2016/03/A-Century-of-Evidence-on-Trend-Following-Investing.pdf",
+      "https://alphaarchitect.com/trend-following-is-everywhere/"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Realistic expectation for a retail trader on daily bars, after costs: no reliable alpha from RSI/MACD/pattern scans. Treat any positive backtest from the 20 patterns as noise until it survives a multiple-testing correction (Reality Check/SPA, FDR, or at least Harvey-Liu-Zhu t > 3) and a walk-forward test.",
+    "Apply a haircut: assume published or backtested edges lose about half post-publication (McLean-Pontiff 58%) and that pairs edge is far below the 11% headline (Do-Faff 0.24%/month in 2003-2009 for top-20 pairs). This is a rule of thumb from stock-anomaly studies, not a measurement for your universe.",
+    "Best-evidenced family for this universe is slow trend-following/time-series momentum across your futures, forex, crypto and index ETFs, using monthly or weekly signals, vol scaling and few parameters. Treat it as a risk-premium sleeve, not as a source of alpha, and expect drawdowns of multiple years.",
+    "Pairs: keep as a research/diagnostic tool only. It needs shorts, the documented edge has decayed to near cost level, and 10 hand-selected pairs chosen on the same data is a selection-bias setup. If kept, require out-of-sample cointegration stability and costed results.",
+    "ML ensemble: the papers rely on hundreds to thousands of stocks and walk-forward evaluation. With 39 symbols, in-sample fits and a next-day binary target, expect about coin-flip accuracy out-of-sample. If retained, reframe as a cross-sectional ranker evaluated with purged walk-forward CV and net-of-cost Sharpe, and report it as research output rather than a trading signal.",
+    "Fix the evaluation first (Phase 2 roadmap): next-bar-open entry, costs and slippage, walk-forward only, log the number of hypotheses tested per scan and apply a correction. Evidence from every source above says the evaluation methodology matters more than the signal family.",
+    "Given the weak evidence on signals, the likely payoff of this platform is risk management, diversified allocation and discipline rather than prediction. This supports the reviewer's no-live-trading recommendation and a paper/research-screen scope."
+   ],
+   "caveats": [
+    "WebFetch was blocked for ideas.repec.org, aqr.com, cxoadvisory.com and nber.org, so I could not read primary papers. All numbers come from search-result summaries and are as reliable as those summaries; verify before citing.",
+    "Not verified: Krauss-Do-Huck's post-2010 decay and net-of-cost results, GKX sample period and R-squared, trend-following 2022 and post-2008 performance, and any retail-specific cost figure.",
+    "Hindsight and selection bias apply to the evidence itself: published strategies are those that worked in-sample, and the decay numbers (26%, 58%) are averages over 97 stock anomalies, not over chart patterns or crypto.",
+    "Most academic studies cover US equities with large cross-sections. Your universe has 39 symbols across asset classes, so effect sizes will not transfer directly.",
+    "The Hurst-Ooi-Pedersen Sharpe figures conflict between summaries (0.76 net of fees vs about 0.4 in another summary); I report both rather than choosing one.",
+    "Authors with commercial interest (AQR) wrote the trend-following paper. The Harvey-Liu-Zhu conclusion is contested by later work (arXiv 2206.15365).",
+    "This is research, not investment advice."
+   ]
+  },
+  {
+   "track": "alternatives-crypto",
+   "summary": "Evidence is thin and short-sample for crypto, long-sample but regime-dependent for gold, commodities, REITs and TIPS, and decayed or cost-limited for retail FX carry and trend. This is a first-pass search. Several primary sources (Morningstar, gold.org, NBER) were blocked by the egress proxy, so many figures come from search-result snippets, not from reading the papers. Where I could not confirm a number, I say so. Sizing conclusions: gold 5-10% and TIPS as a ballast sleeve are defensible; REITs and broad commodities are optional diversifiers worth 0-10% each; crypto 1-2% is defensible for someone who accepts the risk, and above 5% it starts to dominate portfolio risk. Retail FX is not a strategic allocation, and I would not build it into the signal platform without an ability to model costs. Most 'optimal' weights below are in-sample and subject to hindsight bias. Bitcoin only has about 15 years of price history and 2.5 years as a spot ETF.",
+   "items": [
+    {
+     "name": "Bitcoin sleeve sizing in a 60/40 portfolio (BlackRock, Bitwise, Grayscale, CoinShares studies)",
+     "definition": "Add 1%, 2%, 2.5% or 5% bitcoin to a 60/40 portfolio, funded pro rata. BlackRock concluded 1-2% is reasonable; Grayscale found Sharpe peaks near 5%; CoinShares found Sharpe gains up to 10%.",
+     "stats": "Per search snippets (underlying papers not opened, so verify): BlackRock Sharpe 0.81 (no BTC) to 0.90 (1% BTC) to 0.96 (2% BTC), max drawdown -20.3% to -20.9% at 2%; 1-2% BTC contributes about 3-7% of total portfolio risk; 5% contributes over 20% of risk and lifts volatility about 16% versus 60/40; 10% lifts volatility about 41%. Bitwise: 60/40 returned 64% over its 10-year window, versus 78% / 101% / 144% with 1% / 2.5% / 5% BTC (exact window unverified). Periods unverified. Sources: https://www.morningstar.com/portfolios/how-much-bitcoin-is-too-much and https://coinshares.com/insights/research-data/just-the-right-amount-of-bitcoin/",
+     "out_of_sample_or_2022": "The BlackRock 2% max-drawdown figure (-20.3% to -20.9%) suggests a small sleeve barely moves portfolio drawdown. I could not verify the window, so I can't say whether it includes 2022. Bitcoin's own peak-to-trough drops were about -83% in 2018 and about -73% in 2022 per a search snippet (https://cointelegraph.com/news/bitcoin-on-verge-of-largest-price-drawdown-of-the-bull-market-analyst). Other commonly quoted figures are about -84% and about -77%, which I could not confirm. Snippets also describe a drawdown from October 2025 to July 2026, but the magnitude was not shown (unverified).",
+     "strengths": "A 1-2% sleeve adds little risk (about 3-7% of risk) and had a large upside in-sample. The sizing logic is consistent across managers: keep it small and cap its risk contribution.",
+     "weaknesses": "Severe hindsight bias. The sample covers roughly 10-15 years, largely one asset's adoption curve. Every study is from a manager with a product to sell (BlackRock, Bitwise, Grayscale, CoinShares). Optimal weights come from in-sample Sharpe maximization, and Sharpe gains depend on bitcoin's historical returns repeating, which cannot be assumed.",
+     "sources": [
+      "https://www.morningstar.com/portfolios/how-much-bitcoin-is-too-much",
+      "https://coinshares.com/insights/research-data/just-the-right-amount-of-bitcoin/",
+      "https://cointelegraph.com/news/bitcoin-on-verge-of-largest-price-drawdown-of-the-bull-market-analyst"
+     ]
+    },
+    {
+     "name": "Crypto correlation regime and spot ETFs (IBIT et al.)",
+     "definition": "Treat bitcoin as a risk asset whose correlation with equities rises in stress. Access via spot ETFs approved January 2024, which are held in IBKR and other brokerage accounts without custody risk.",
+     "stats": "Search snippets (unverified, secondary sources): 50-day rolling correlation with the S&P 500 'typically' -0.1 to 0.2 in the calm periods cited; Oct 2025 to Jul 2026 daily-return correlation with the Nasdaq-100 about 0.49, 90-day rolling not below 0.40 (single source, unverified); an older report put correlation with the Nasdaq at 51% and strongest when the Nasdaq falls sharply. IBIT: surpassed 700,000 BTC (about $76B) 18 months after its January 2024 launch (https://www.theblock.co/post/361525/blackrocks-spot-bitcoin-etf-ibit-surpasses-700000-btc-assets-under-management); a search aggregator showed about $48.7B AUM in October 2026 (unverified, aggregator).",
+     "out_of_sample_or_2022": "2022 is the key test: bitcoin fell alongside equities and bonds, so it did not diversify in a rate-driven drawdown. Correlation has been unstable, so no single number should be hard-coded.",
+     "strengths": "Spot ETFs give a clean, regulated way to hold a small sleeve in an existing brokerage account. No exchange or custody risk, and the position fits a normal portfolio-level rebalance rule.",
+     "weaknesses": "Correlation spikes exactly when diversification is needed. The ETF era is only about 2.5 years, so there is no full-cycle evidence with institutional flows. AUM figures here are not from the issuer.",
+     "sources": [
+      "https://www.theblock.co/post/361525/blackrocks-spot-bitcoin-etf-ibit-surpasses-700000-btc-assets-under-management",
+      "https://www.crowdfundinsider.com/?p=187405",
+      "https://gradientflow.com/one-simple-chart-sp-500-and-bitcoin/"
+     ]
+    },
+    {
+     "name": "Gold as a strategic sleeve",
+     "definition": "Hold gold at roughly 5-10% as a diversifier. Erb and Harvey's market-weight logic implies about 2% on a market-cap basis (gold is about 9% of the stock, bond and gold universe by their estimate). Optimized multi-asset runs give about 5%.",
+     "stats": "World Gold Council: building-block model predicted 8.6% annualized for 1971-2024 versus actual about 8% (https://www.gold.org/goldhub/research/golds-long-term-expected-return). Real return: 2.0% annualized, January 1974 to May 2009; 3.6% for 1993-2009; 5.9% for 1997-2009 (a Journal of Wealth Management article, via an SEC filing, https://www.sec.gov/Archives/edgar/data/1222333/000095012310070080/y03770cfwp.htm). Optimized January 1978-June 2018 mix had gold at 5.3% (https://www.reit.com/news/blog/market-commentary/inflation-protection-from-reits-constructing-a-diversified-inflation-protecting-portfolio). Volatility and correlations: unverified.",
+     "out_of_sample_or_2022": "Gold's link to inflation is weak in the short and medium run; it tracks real interest rates more closely (https://quantpedia.com/understanding-gold-hedge-diversifier-or-overpriced-insurance/). That matters for 2022, when real rates rose sharply. I did not verify 2022 returns, so treat any claim about gold in 2022 as unverified. The WGC is a producer-funded body, so expect a bullish bias.",
+     "strengths": "Long record (50+ years since 1971), low correlation with equities historically, and cheap access through ETFs or futures. Fits the 'permanent portfolio' and risk-parity style as a ballast.",
+     "weaknesses": "The 'golden constant' real return is roughly zero over the very long run, and returns are heavily period-dependent (the 2.0% versus 5.9% gap above). Recent gains create hindsight bias. WGC and SEC-filing figures are not independent.",
+     "sources": [
+      "https://www.gold.org/goldhub/research/golds-long-term-expected-return",
+      "https://quantpedia.com/understanding-gold-hedge-diversifier-or-overpriced-insurance/",
+      "https://www.sec.gov/Archives/edgar/data/1222333/000095012310070080/y03770cfwp.htm",
+      "https://www.reit.com/news/blog/market-commentary/inflation-protection-from-reits-constructing-a-diversified-inflation-protecting-portfolio"
+     ]
+    },
+    {
+     "name": "Broad commodities, REITs and TIPS (inflation-sensitive sleeves)",
+     "definition": "Optimized January 1978-June 2018 weights from an industry (REIT trade group) piece: 45.5% TIPS, 26% stocks, 15% REITs, 8.2% commodities, 5.3% gold. Conditional variant: 35.6% / 30.4% / 20.2% / 8.5% / 5.4%. These are in-sample maximum-Sharpe weights, not recommendations.",
+     "stats": "Gorton and Rouwenhorst, equal-weighted commodity futures, July 1959-December 2004: about 0.89% per month, the same return and Sharpe as US equities, negative correlation with stocks and bonds, positive correlation with inflation (https://www.nber.org/papers/w21243 for the ten-years-later update; the original was read via a summary at https://www.cxoadvisory.com/commodity-futures/classic-paper-empirical-overview-of-commodity-futures). Real returns, 1993-2009: gold 3.6%, S&P GSCI 2.1%, REITs -2.1%; 1997-2009: gold 5.9%, commodities -0.2%, REITs -3.8%, TIPS +3.7% (SEC filing above). TIPS-specific long-sample stats: unverified.",
+     "out_of_sample_or_2022": "Commodities and REITs have been the most dependable protection in high-inflation periods, but commodity returns are poor on average in low-inflation periods (REIT trade-group source). I did not verify 2022 figures for any of these sleeves. The headline commodity results end in 2004, so post-publication decay is likely (the ten-years-later update exists but I could not read it).",
+     "strengths": "TIPS are a direct inflation hedge in a Treasury wrapper. Commodities and REITs diversify equity and bond risk in inflationary regimes. All are available as liquid ETFs or futures.",
+     "weaknesses": "The 45% TIPS optimum shows how unstable mean-variance weights are. REIT-industry sources are biased. Commodity futures returns depend on roll yield and have been weak in some long windows. REITs are highly equity-correlated in crashes.",
+     "sources": [
+      "https://www.nber.org/papers/w21243",
+      "https://www.cxoadvisory.com/commodity-futures/classic-paper-empirical-overview-of-commodity-futures",
+      "https://www.sec.gov/Archives/edgar/data/1222333/000095012310070080/y03770cfwp.htm",
+      "https://www.reit.com/news/blog/market-commentary/inflation-protection-from-reits-constructing-a-diversified-inflation-protecting-portfolio"
+     ]
+    },
+    {
+     "name": "Retail forex: carry and momentum",
+     "definition": "Cross-sectional currency carry (long high-yield, short low-yield) and currency momentum (long past winners, short past losers), accessed through spot FX or CME futures.",
+     "stats": "Menkhoff, Sarno, Schmeling and Schrimpf (Journal of Financial Economics, 2012): winner-minus-loser spread up to 10% per annum, not explained by standard risk factors, partly absorbed by transaction costs, with 'very effective' limits to arbitrage (https://www.bis.org/publ/work366.pdf). Burnside, Eichenbaum and Rebelo review carry and momentum payoffs and three explanations: risk compensation, peso problems, price pressure (https://www2.nber.org/reporter/2012number3/burnside.html). Carry evidence extends back to 1900-2012 (https://ideas.repec.org:443/a/eee/jimfin/v51y2015icp370-389.html). Sharpe ratios, crash magnitudes and post-2012 performance: unverified.",
+     "out_of_sample_or_2022": "Carry has crash risk (the 'peso problem'). I did not retrieve post-publication performance, so decay is unverified, though the cost and limits-to-arbitrage caveat applies strongly to retail execution. A daily-bar platform can evaluate this, but it needs realistic spreads and swap/roll costs.",
+     "strengths": "Documented across long samples and multiple methods. Currency momentum has low correlation with carry and with standard technical rules, so it is a distinct signal.",
+     "weaknesses": "Retail spreads, financing and leverage costs can erase much of the premium. The returns come with crash risk. FX is a zero-sum, low-expected-return asset for a long-only investor, so it earns a place only as a signal sleeve, not as a strategic holding.",
+     "sources": [
+      "https://www.bis.org/publ/work366.pdf",
+      "https://www2.nber.org/reporter/2012number3/burnside.html",
+      "https://ideas.repec.org:443/a/eee/jimfin/v51y2015icp370-389.html",
+      "https://ideas.repec.org/p/yor/yorken/15-07.html"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Add a portfolio-level layer. Per-symbol backtests cannot say how much gold, crypto or FX to hold. Add a target-weight allocator with a rebalance rule and a per-sleeve risk cap, and treat crypto as risk-budgeted: cap it by risk contribution (for example, no more than about 5-10% of portfolio risk) instead of by dollar weight, since 5% in dollars is over 20% of risk per the snippets above.",
+    "Recommended strategic sleeves for a personal portfolio, subject to the unresolved caveats: core equities and TIPS or bonds; gold 5-10%; optional REITs and broad commodities 0-10% each; bitcoin (spot ETF such as IBIT, ideally via the connected IBKR account) 0-2%, hard cap about 5%. These are my judgement, not tested results, and the numbers are lower than the in-sample optima.",
+    "Do not treat crypto as a hedge. Test the platform's crypto signals separately in 2018 and 2022, and require them to survive the rising-correlation regime. Use a regime-aware correlation estimate, not a fixed number.",
+    "Retail forex and the seven futures: keep them only as signal-research sleeves. FX carry and momentum need realistic spreads, swap costs and stops modeled before they count as evidence. With 780 hypotheses per scan and no multiple-testing correction, the technical-pattern FX signals are the likeliest to be false positives.",
+    "The current universe has no gold, TIPS, REIT or commodity ETFs. If the owner wants a diversified paper portfolio, add GLD or IAU, TIP, VNQ and DBC or PDBC. Daily-bar data are sufficient, but these should be allocated by rule, not by ML signal.",
+    "Use IBKR as the source of truth for instruments. Futures contract search is available, and spot ETFs avoid the need for crypto exchange integrations. This also fits the reviewer's advice to avoid a live-trading mode: keep orders behind the Phase 1 chokepoint and paper-only for now.",
+    "Record the hindsight-bias and post-publication-decay caveat in any report the platform emits. Crypto allocation studies cover roughly one adoption cycle, and the factor papers (commodities through 2004, FX momentum in 2012) predate years of arbitrage."
+   ],
+   "caveats": [
+    "Several primary sources (morningstar.com, gold.org, nber.org) were blocked by the egress proxy, so most numbers come from search-result snippets, not the papers. I flagged each unconfirmed figure as unverified. Please re-check the Sharpe, drawdown and correlation figures before relying on them.",
+    "The Bitwise 10-year window, the BlackRock study's exact dates, and Grayscale's and CoinShares' exact figures were not confirmed.",
+    "No gold, TIPS, REIT or commodity numbers for 2022 were retrieved. The 2018 and 2022 bitcoin drawdowns come from a single news snippet (-83% and -73%), and other commonly quoted figures (about -84% and -77%) are unverified.",
+    "The October 2025 to July 2026 bitcoin drawdown and the Nasdaq-100 correlation of 0.49 come from one snippet of unknown provenance; the IBIT AUM of about $48.7B comes from an aggregator.",
+    "The portfolio-weight optimization (45% TIPS etc.) comes from a REIT trade-group blog, and the WGC and bitcoin studies come from sellers of those products. Treat all as advocacy, with in-sample optimization and hindsight bias.",
+    "I did not find a Bogleheads wiki page or Portfolio Visualizer data. Search surfaced neither, so the long-sample retail-portfolio evidence is thin. This is not investment advice."
+   ]
+  },
+  {
+   "track": "risk-sizing",
+   "summary": "Caveat on evidence: WebFetch was blocked by the egress proxy for most primary hosts (Duke, Berkeley, qoppac, Wikipedia, davidhbailey.com). Everything below rests on WebSearch snippets, not full-text reads. Numbers I could not confirm from a snippet are marked \"unverified\" and come from my background knowledge. The practitioner consensus is consistent across sources. (1) Size by risk, not by notional: Turtle-style 1% of equity per unit with stop at 2N, or Carver-style volatility targeting. (2) Never use full Kelly. Carver says use half the Kelly risk target, and Kelly vol target equals the Sharpe ratio under i.i.d. Gaussian returns. Estimation error in the Sharpe/edge makes even half Kelly aggressive for an unvalidated strategy, so a quarter of an honestly haircut Sharpe is the sane starting point. (3) Cap aggregate risk in layers: per-position, per-correlated-cluster, per-portfolio. The Turtles used 4 units per market, 6 per closely correlated group and about 12 total (a secondary web source, not the original rules). (4) De-risk on drawdown as a continuous scale-down (Grossman-Zhou / CPPI logic) with a hard halt that needs manual restart. (5) Do not scale up until live or paper results are out-of-sample and long enough to beat the multiple-testing problem. For this platform (about 780 hypotheses per scan, biased backtests), the realistic prior is that expected Sharpe is near zero, so the right default is small, capped, paper-only sizing. Recommended defaults are at the end under takeaways. They are my own synthesis. Parameter choices (for example 12% vol target, 7% heat) are judgment calls, not sourced figures.",
+   "items": [
+    {
+     "name": "Turtle rules: fixed-fractional unit sizing (1% of equity per unit, 2N stop)",
+     "definition": "Unit = 1% of account equity / (N x dollar value per point), where N = 20-day ATR (Wilder smoothing). Stop at 2N from entry, so one unit risks about 1% (loss is capped at 1% only if the stop fills). Limits per web summary: max 4 units per market, 6 units across closely correlated markets, about 12 units across the whole portfolio. The 4/6/12 limits come from a secondary MQL5 article, not the original Faith/Curtis Faith rules; unverified against the primary text.",
+     "stats": "Not a backtest, so no CAGR or Sharpe is given. Turtle program ran 1983-1988 (background knowledge, unverified in this session). Worst-case if all 12 units stop out together is about 12% x 2N-stop = 12% of equity in a gap-free world. Gaps make it worse.",
+     "out_of_sample_or_2022": "Unverified. Widely reported that trend-following CTAs (a related style) did well in 2022, but I did not verify any number here. The Turtle edge itself (Donchian breakouts) is a famous example of post-publication decay, and the rules were public from about 1996 onward, so do not assume the original returns persist.",
+     "strengths": "Simple, auditable, risk is explicit per trade. Volatility-normalised: same dollar risk in quiet and wild markets. Explicit correlation-cluster and total caps. Works on daily bars, which matches this platform.",
+     "weaknesses": "Stop-based risk assumes the stop fills at its level (gaps, crypto weekends, forex news breach it). 1% per unit with 12 units is aggressive for an individual with unvalidated signals. Cluster limits are crude (static buckets, not measured correlation). Hindsight: the Turtle record is a survivorship story from a small group.",
+     "sources": [
+      "https://www.mql5.com/en/articles/23448",
+      "https://it.tradingview.com/script/OAVDLYGG"
+     ]
+    },
+    {
+     "name": "Carver 'Systematic Trading': volatility target + half-Kelly risk target",
+     "definition": "Pick one annualised volatility target for the whole account. Carver's example is 25% (the web summary says he targets 25% average, with an instrument diversification multiplier, IDM, used to hit it across a portfolio). Position size per instrument = (cash vol target x forecast scaling x IDM x instrument weight) / instrument cash volatility, using recent daily return vol (he annualises daily vol by x16, about sqrt(256)). Kelly rule: optimal risk target equals expected Sharpe ratio (SR 0.5 means 50% vol). Carver recommends half of that, so 25% for SR 0.5. His blog also discusses 0.226 SR giving 22.6% full-Kelly vol, an illustration of the formula, not a recommendation.",
+     "stats": "No performance stats in the sources I could read. Kelly arithmetic from the Carver summaries: full-Kelly vol = SR; half-Kelly vol = SR/2. With a realistic post-haircut SR of 0.3, half-Kelly is 15% vol and quarter-Kelly is 7.5%. These are my calculations, not Carver's numbers.",
+     "out_of_sample_or_2022": "Unverified. Carver publishes live futures results for his own account, but I could not retrieve them. Note his 25% target assumes a diversified futures book with a believed Sharpe near 0.5 or higher. That is a much stronger prior than this platform has.",
+     "strengths": "One risk dial for the whole portfolio. Consistent across asset classes, so it fits a mixed universe of stocks, crypto, forex and futures. It explains how to derive the dial from the Sharpe you believe in, which forces honesty about expected Sharpe. Directly replaces the placeholder '5% per position' with a volatility-aware rule.",
+     "weaknesses": "The target is only as good as the Sharpe estimate, and the Sharpe estimate from this platform's biased backtests is inflated. Realised vol is a lagging estimate and fails at regime breaks. The 25% target is high for a retail account with no validated edge. Needs a covariance or IDM estimate that is itself noisy with 39 symbols.",
+     "sources": [
+      "https://www.cxoadvisory.com/big-ideas/a-few-notes-on-systematic-trading",
+      "https://qoppac.blogspot.com/2020/03/how-much-risk-should-we-take.html",
+      "https://qoppac.blogspot.com/2022/06/vol-targeting-cagr-race.html",
+      "https://harriman-house.com/systematic-trading"
+     ]
+    },
+    {
+     "name": "Fractional Kelly (MacLean-Thorp-Ziemba) and estimation error",
+     "definition": "Full Kelly maximises long-run log growth: f* = W - (1-W)/R for a simple bet, or mu/sigma^2 for a continuous asset. Fractional Kelly invests fraction f of the Kelly portfolio and 1-f in cash. Common choices are 1/2 or 1/4. Half Kelly is described as keeping about 75% of full-Kelly growth with about 25% of the variance (a widely repeated approximation from a secondary page, not read in the primary paper).",
+     "stats": "Secondary sources: with perfect inputs, full Kelly has about a 50% chance of the account halving at some point (idealised model). Expected max drawdown roughly 50-80% of account (luxalgo, unverified quality). If true win rate is 55% but estimated at 60%, full Kelly overbets by about 50% (secondary source). None of these are from the primary paper text, so treat as indicative.",
+     "out_of_sample_or_2022": "Not applicable (a theory, not a strategy). Thorp's own use (blackjack, Princeton-Newport) is a survivorship story: I did not verify returns here.",
+     "strengths": "Gives a principled upper bound on bet size. Asymmetry is the key lesson: overbetting beyond about 2x Kelly drives growth to zero or negative, while underbetting is mildly costly, so errors should go toward smaller sizes. Pairs naturally with vol targeting (Carver).",
+     "weaknesses": "Requires knowing edge and variance. In practice both are estimated with large error, especially edge, so estimated Kelly is biased upward by selection (picking the best of about 780 hypotheses). Assumes i.i.d. returns and a known distribution. Fat tails make true Kelly lower. For a strategy whose edge is not yet proven, the right Kelly fraction may be effectively zero.",
+     "sources": [
+      "https://www.stat.berkeley.edu/~aldous/157/Papers/Good_Bad_Kelly.pdf",
+      "https://him-application.uni-bonn.de/uploads/media/DavisLleoKellyChapter.pdf",
+      "https://www.luxalgo.com/library/concept/kelly-criterion/",
+      "https://qoppac.blogspot.com/2020/03/how-much-risk-should-we-take.html"
+     ]
+    },
+    {
+     "name": "Volatility-managed exposure (Harvey, Hoyle, Korgaonkar, Rattray, Sargaison, Van Hemert, 'The Impact of Volatility Targeting', JPM Fall 2018)",
+     "definition": "Scale exposure inversely to trailing realised volatility (standard deviation of daily returns) to hit a constant volatility target. The paper used a 10% target across 60 assets (equity, bond, credit, currency, commodity), daily data starting as early as 1926 and ending 2017.",
+     "stats": "Qualitative from the abstract: vol targeting improves Sharpe for risk assets (equity, credit), explained by the leverage effect. Negligible Sharpe impact for bonds, currencies and commodities. Reduces the probability of extreme returns, with left tail less severe because crashes occur in high-vol regimes. Specific Sharpe numbers were not retrievable (Duke PDF blocked).",
+     "out_of_sample_or_2022": "The paper ends in 2017 so 2022 is out of sample, and I did not verify 2022 results. Known caveat from background knowledge (unverified here): vol targeting can lag in fast V-shaped reversals and was hurt in March 2020 rebound and in 2022 when stocks and bonds fell together. Benefits to Sharpe have been reported to be weaker for post-publication periods; unverified.",
+     "strengths": "Long sample (1926-2017). Multi-asset. Mostly a tail and drawdown benefit, which is exactly what a small retail account needs. Cheap to implement with daily bars.",
+     "weaknesses": "Sharpe gain is concentrated in equities and credit, so for this universe the gain applies to the 17 stock/ETF symbols but not much to forex or futures. Authors are from a trend-following CTA (AHL), a possible conflict of interest. Lag in vol estimation. Transaction costs from rebalancing, which the paper's frictionless numbers may understate.",
+     "sources": [
+      "https://alphaarchitect.com/volatility-targeting-improves-risk-adjusted-returns/",
+      "https://scholars.duke.edu/publication/1370354",
+      "https://www.cxoadvisory.com/equity-premium/benefits-of-volatility-targeting-across-asset-classes",
+      "https://people.duke.edu/~charvey/Research/Published_Papers/P135_The_impact_of.pdf"
+     ]
+    },
+    {
+     "name": "Drawdown-based de-risking (Grossman-Zhou 1993 / CPPI) with halt-and-restart",
+     "definition": "Grossman-Zhou: for CRRA investors who want drawdown never to exceed a fixed fraction of the running peak, optimal risky exposure is proportional to the 'surplus' W_t - alpha*M_t (wealth minus the allowed fraction of the running maximum). CPPI is the same idea: risky allocation = multiplier x (wealth - floor), the rest in cash. Practical version: exposure scale = max(0, (equity - floor)/(peak - floor)) or a stepwise cut at set drawdown levels. A hard halt needs a defined restart rule. See the arXiv drawdown-with-restart paper for a data-driven approach.",
+     "stats": "No numeric results retrieved. These are theory papers; numbers on drawdown limits are chosen by the user (the 'alpha'), not estimated.",
+     "out_of_sample_or_2022": "Not tested here. Known downside from theory (and background knowledge, unverified): CPPI can 'cash out' at the bottom and miss the rebound (gap risk and whipsaw), and the Lund paper title notes the Grossman-Zhou strategy is 'not always optimal'.",
+     "strengths": "Makes risk reduction mechanical and pre-committed, removing emotional decisions. Continuous scaling avoids the cliff of a single halt. Matches the platform's existing '10% drawdown halt' concept, but smoother.",
+     "weaknesses": "Locks in losses after a drawdown (path-dependent). If the strategy has no edge, de-risking just slows the bleed, it does not fix it. Needs a restart rule or the account stays off forever. Theory assumes continuous trading and no gaps.",
+     "sources": [
+      "https://ideas.repec.org/a/bla/mathfi/v3y1993i3p241-276.html",
+      "https://arxiv.org/pdf/2303.02613",
+      "https://lup.lub.lu.se/record/223851",
+      "https://www.wikipedia.org/wiki/CPPI"
+     ]
+    },
+    {
+     "name": "Minimum track record and multiple-testing discipline (Bailey, Borwein, Lopez de Prado, Zhu 2014; Deflated Sharpe Ratio)",
+     "definition": "The more configurations you try, the longer the backtest (or out-of-sample record) needed for a given Sharpe to be believable. Minimum Backtest Length (MinBTL) formalises this. The Deflated Sharpe Ratio adjusts the observed Sharpe for the number of trials, non-normality and track length.",
+     "stats": "From the search snippet: after trying only 7 strategy configurations, a researcher is expected to find at least one 2-year backtest with annualised Sharpe above 1 when the true out-of-sample Sharpe is 0. The '45 trials needs 5 years' figure I recalled could not be confirmed in the snippet: unverified. This platform's roughly 780 hypotheses per scan is far above 7.",
+     "out_of_sample_or_2022": "Applies to any period. The paper is a statistical argument, not a market study.",
+     "strengths": "Directly relevant: the audit found about 780 hypotheses per scan with no multiple-testing correction. It gives a quantitative reason to demand a long out-of-sample record before scaling.",
+     "weaknesses": "MinBTL assumes independent trials, which overstates the penalty when the 780 hypotheses are correlated (many patterns on correlated symbols). Does not tell you a specific paper-trading duration without a Sharpe and trial count input.",
+     "sources": [
+      "https://scholarworks.wmich.edu/math_pubs/40/",
+      "https://www.advisorperspectives.com/articles/2013/10/22/how-many-monkeys-does-it-take-to-find-a-successful-strategy",
+      "https://papers.ssrn.com/abstract=2460551"
+     ]
+    },
+    {
+     "name": "Regulatory context: US pattern day trader rule change (2026)",
+     "definition": "SEC approved FINRA's amendments to Rule 4210 on April 14, 2026, eliminating the $25,000 minimum equity requirement and the 'pattern day trader' designation. Effective June 4, 2026 with a phase-in ending October 20, 2027. It is replaced by margin requirements proportional to intraday exposure. Broker implementation may vary during the phase-in.",
+     "stats": "Dates only, from web summaries of the rule change (tastytrade, quantinsti, acaglobal, others). I did not read the FINRA notice itself.",
+     "out_of_sample_or_2022": "Not applicable.",
+     "strengths": "Makes small-account intraday systems less constrained by a flat $25k floor. Relevant only if the platform ever trades intraday; it is daily-bar based so mostly moot.",
+     "weaknesses": "Broker-specific, still in phase-in as of today (2026-10-04), so verify with IBKR/Alpaca directly. Lower rules barrier does not make intraday trading advisable for a daily-signal system.",
+     "sources": [
+      "https://www.acaglobal.com/industry-insights/finra-ends-the-pattern-day-trader-rule/",
+      "https://www.quantinsti.com/articles/finra-pdt-rule-removal-2026/"
+     ]
+    }
+   ],
+   "takeaways_for_this_platform": [
+    "Replace flat '5% per position' with risk-based sizing: size = (risk budget per trade) / (stop distance in dollars), where stop distance = 2 x ATR(20) (Turtle) rather than a fixed 2% stop. A fixed 2% stop on daily bars is inside normal daily noise for crypto and high-beta stocks like TSLA/NVDA/AMD, so it will mostly measure noise (reasoning, not a sourced number).",
+    "Default risk per trade: 0.5% of equity (range 0.25% to 1.0%). Justification: Turtles used 1% with an edge believed to be strong. This platform's edge is unproven and its backtests are biased, so start at half or less of that. Judgment call, not a sourced figure.",
+    "Keep a hard per-position notional cap of 10% of equity (the Phase 1 chokepoint should enforce it), so a tight stop cannot create an oversized position. With 0.5% risk and a 2N stop of about 4% to 6%, notional is about 8% to 12% of equity, so the cap is about right. The existing 5% cap is acceptable for a first paper phase and is conservative.",
+    "Portfolio heat (sum of open-risk-to-stop across positions): cap at 5% of equity at start (equals 10 positions at 0.5%). Turtle analogue is about 12 units x 1% = 12%, which I would not copy for an unproven system. Raise toward 8% only after the scale-up gates below are met. Unverified as a standard; my synthesis.",
+    "Gross exposure: cap at 100% of equity (no leverage) in the first phase, versus the current 15% total exposure placeholder, which is so low that results will be dominated by cash. Alternatively keep 15% to 30% for the very first paper weeks to test the plumbing. Net cap by direction separately; start long-only for equities unless the owner decides on shorts.",
+    "Max concurrent positions: 8 to 10, with at most 2 per correlated cluster (US index ETFs SPY/QQQ/IWM/DIA are effectively one cluster; mega-cap tech AAPL/MSFT/NVDA/AMZN/META/GOOG is another; energy XOM/CVX; banks JPM/GS/BAC; crypto as one cluster). Turtle analogue: 4 per market, 6 per correlated group (secondary source). Use measured 60-day return correlation as an additional check (reject if corr > 0.7 with an open position in same direction; the 0.7 threshold is a judgment call, unverified).",
+    "Volatility target for the whole book once portfolio-level allocation exists: start at 8% to 10% annualised, not Carver's 25%. Derivation: Kelly vol = Sharpe. If you honestly haircut expected Sharpe to 0.3 (given the audit findings), half-Kelly = 15% and quarter-Kelly = 7.5%. Pick about 10% initially. Raise only with validated out-of-sample evidence. Harvey et al. used a 10% target in their study, which gives a supporting reference point.",
+    "Fractional Kelly: treat Kelly only as a ceiling, never a target. Use at most quarter Kelly computed from a shrunk (haircut) edge estimate, and take the minimum of the Kelly size, the fixed-fractional size, and the notional cap. Because of selection bias from about 780 hypotheses, the edge for any 'winning' pattern should be shrunk heavily (or set to zero until it survives out-of-sample).",
+    "Daily loss limit: halt new entries for the rest of the day at -1.5% equity (about 3 full-risk stop-outs at 0.5%). Weekly: halt at -3%. These are judgment calls, unverified as industry standards. Prop firms commonly use daily loss limits of about 3% to 5% (background knowledge, unverified).",
+    "Drawdown de-risking ladder, replacing the single 10% halt: scale risk per trade to 50% at -5% from the equity peak, to 25% at -8%, hard halt with manual restart review at -10% (keeps the existing 10% halt as the final backstop). Continuous variant: exposure multiplier = (equity - floor)/(peak - floor) with floor = 0.90 x peak (Grossman-Zhou / CPPI form). Warn that this locks in losses and cannot rescue a strategy with no edge.",
+    "Gate to scale up, not a time-only rule. Require ALL of: (a) at least 6 months and at least 100 closed trades of unattended paper trading with realistic fills (next-bar open, costs, slippage), (b) paper Sharpe shrunk by a deflated-Sharpe style correction for the number of strategies tried still above 0, (c) realised max drawdown within the modelled budget (not more than 1.5x the backtest expectation), (d) zero risk-limit breaches by the order chokepoint. Reference: Bailey et al. say 7 trials can produce a 2-year Sharpe above 1 by luck, so short windows prove little. The 6 months / 100 trades numbers are my judgment, unverified as a standard.",
+    "Scale-up steps after the gate: double risk per trade only once per quarter, and only if the preceding quarter met the gates. Never above 1% per trade or 8% heat without a year of live (small real-money) results. Consider tiny live size on IBKR only after paper results; reviewer already recommended no live-trading mode, so keep this a human-gated decision.",
+    "Implement all of this in the Phase 1 safe-order chokepoint as a single risk engine: per-trade risk, notional cap, heat, cluster count, daily/weekly loss, drawdown ladder, max order, kill switch. Log every rejection with the reason. Unit-test the limits (Phase 0). The $1000 max order can stay as an absolute backstop during paper."
+   ],
+   "caveats": [
+    "Most primary sources (Duke paper, Berkeley Kelly paper, Carver blog, Bailey paper, Wikipedia) were unreachable via WebFetch due to egress blocking. Claims rely on WebSearch snippets and secondary pages; none of the Kelly numbers (75% growth, 25% variance, 50% halving probability, 50-80% max drawdown) were read in the primary paper, so treat as unverified.",
+    "The Turtle limits (4/6/12 units) come from a secondary MQL5 article and TradingView script description, not the original Turtle rules document.",
+    "Carver's 25% vol target and half-Kelly rule come from snippets of his blog and a CXO Advisory summary, not from the book text.",
+    "Volatility-targeting results end in 2017 and the authors work at a CTA (AHL). Post-publication decay and regime dependence are likely, and the 2022 outcome is unverified.",
+    "Hindsight bias: Turtles, Thorp and famous CTAs are survivors. Selection of famous examples overstates the generality of their sizing rules.",
+    "All specific default numbers in the takeaways (0.5% risk, 5% heat, 10% vol target, 1.5% daily loss, drawdown ladder at 5/8/10%, 6 months/100 trades) are my own judgment calls derived from the cited frameworks and the platform's biased-backtest context. They are not sourced standards.",
+    "No portfolio-level backtest of these rules on the platform's universe was performed. Recommend validating the risk engine on paper data before trusting any number.",
+    "This is research, not investment advice. The PDT rule change dates should be checked with the specific broker, since the phase-in runs to October 20, 2027."
+   ]
+  }
+ ],
+ "data": {
+  "method": "Source: Interactive Brokers MCP get_price_history (read-only), US primary listings (SPY, VEA ARCA, VWO ARCA, TLT/IEF/SHY NASDAQ, TIP/GLD/DBC/VNQ/VBR ARCA), ONE_MONTH bars, FIVE_YEARS, RTH only, include_corporate_actions=true. Bars cover Oct-2021 to Oct-2026; the last (Oct-2026) bar is partial and was dropped. Returns run from the Oct-2021 month-end close to the Sep-2026 close (59 monthly returns). Closes are raw (not dividend-adjusted), but IBKR returned cash dividends with ex-dates for every ETF except GLD (no dividends). I built TOTAL-RETURN series: monthly return = (close + dividends going ex in the month)/prior close - 1, with dividends not reinvested intra-month (small understatement). Price-only results are also reported (notes) so the dividend effect is visible. All portfolios rebalanced to target weights monthly, no costs or taxes. Substitutions: Permanent uses SHY in place of cash/BIL; Golden Butterfly small-cap value = VBR (Vanguard Small-Cap Value); VEA used for EFA; VWO and TIP were fetched and saved but not used in any portfolio. Faber GTAA: signal is month-end close > 10-month SMA of month-end closes (price), else SHY, applied the following month. Dual momentum: SPY vs VEA by trailing 12-month total return; if the winner's 12m return < SHY's 12m return, hold IEF. Warm-up gap: only 5 years were available, so the 10m SMA is first live in Jul-2022 and the 12m momentum in Oct-2022. Before that the Faber portfolio is simply fully invested equal-weight Ivy 5 and dual momentum holds SPY. This flatters nothing for 2022 in dual momentum (SPY fell) but means the 2022 figures for the two timing strategies are NOT true signal results, and Faber's 2022 gets only a partial protective signal. Files: raw closes /home/user/research/data/monthly_closes_raw.csv, dividends /home/user/research/data/dividends_exdate.csv, monthly portfolio returns /home/user/research/data/portfolio_monthly_returns_TR.csv, results /home/user/research/data/portfolio_results.csv, code /home/user/research/backtest.py and /home/user/research/data/raw_input.py (hand-transcribed from the tool output).",
+  "portfolio_results": [
+   {
+    "name": "100% SPY",
+    "weights": "SPY 100",
+    "cagr": 0.1238,
+    "vol": 0.1556,
+    "max_drawdown": -0.2392,
+    "sharpe_rf0": 0.83,
+    "return_2022": -0.1816,
+    "notes": "Total return. Price-only: CAGR 10.87%, Sharpe 0.74, 2022 -19.48%. Best CAGR/Sharpe, but the sample starts in the 2022 trough and ends after a very strong 2023-26 equity run."
+   },
+   {
+    "name": "60/40",
+    "weights": "SPY 60 / IEF 40",
+    "cagr": 0.0662,
+    "vol": 0.1132,
+    "max_drawdown": -0.2049,
+    "sharpe_rf0": 0.62,
+    "return_2022": -0.1663,
+    "notes": "Price-only: CAGR 4.48%, Sharpe 0.44, 2022 -18.05%. Bonds failed as a hedge in 2022 (IEF -15.1% TR)."
+   },
+   {
+    "name": "Three-fund (approx)",
+    "weights": "SPY 48 / VEA 32 / IEF 20",
+    "cagr": 0.0874,
+    "vol": 0.1313,
+    "max_drawdown": -0.2338,
+    "sharpe_rf0": 0.7,
+    "return_2022": -0.164,
+    "notes": "Total-market US/intl/bond proxy (Bogleheads-style 60/40 with 40% of the equity abroad; no VWO or total-US fund). Price-only: CAGR 6.32%, Sharpe 0.53, 2022 -18.13%."
+   },
+   {
+    "name": "All Weather (retail)",
+    "weights": "SPY 30 / TLT 40 / IEF 15 / GLD 7.5 / DBC 7.5",
+    "cagr": 0.0205,
+    "vol": 0.1078,
+    "max_drawdown": -0.2154,
+    "sharpe_rf0": 0.24,
+    "return_2022": -0.1929,
+    "notes": "Worst performer: 40% TLT (TLT -31.2% TR in 2022, ended Sep-2026 below its 2022 low) overwhelmed the commodity/gold sleeve. Price-only: CAGR -0.46%, Sharpe 0.01, 2022 -20.70%. A bad-regime test for long-duration risk parity, not a verdict on the idea."
+   },
+   {
+    "name": "Permanent Portfolio",
+    "weights": "SPY 25 / TLT 25 / SHY 25 / GLD 25",
+    "cagr": 0.0592,
+    "vol": 0.0935,
+    "max_drawdown": -0.1724,
+    "sharpe_rf0": 0.66,
+    "return_2022": -0.1381,
+    "notes": "SHY substitutes for cash/T-bills. Price-only: CAGR 3.87%, Sharpe 0.45, 2022 -14.93%. Gold (+~120% over the period) did the heavy lifting."
+   },
+   {
+    "name": "Golden Butterfly",
+    "weights": "SPY 20 / VBR 20 / TLT 20 / SHY 20 / GLD 20",
+    "cagr": 0.0648,
+    "vol": 0.1027,
+    "max_drawdown": -0.1743,
+    "sharpe_rf0": 0.66,
+    "return_2022": -0.1272,
+    "notes": "Small-cap value = VBR (Vanguard Small-Cap Value; VBR 2022 TR -9.4%, outperforming SPY). Price-only: CAGR 4.38%, Sharpe 0.47, 2022 -13.98%."
+   },
+   {
+    "name": "Ivy 5 equal weight",
+    "weights": "SPY / VEA / IEF / VNQ / DBC, 20 each",
+    "cagr": 0.0683,
+    "vol": 0.1136,
+    "max_drawdown": -0.1721,
+    "sharpe_rf0": 0.64,
+    "return_2022": -0.1163,
+    "notes": "DBC (+19.3% in 2022) cushioned the bond and equity losses. Price-only: CAGR 3.85%, Sharpe 0.38, 2022 -13.49%."
+   },
+   {
+    "name": "Faber GTAA on Ivy 5",
+    "weights": "20% each of SPY/VEA/IEF/VNQ/DBC, each swapped to SHY when month-end close < 10m SMA",
+    "cagr": 0.0412,
+    "vol": 0.0778,
+    "max_drawdown": -0.1009,
+    "sharpe_rf0": 0.56,
+    "return_2022": -0.0913,
+    "notes": "Lowest vol and drawdown, but lowest-but-one return and Sharpe below buy-and-hold Ivy 5 here (whipsaw; frequent SHY holding during the 2023-26 rally). Signal fully live only from Aug-2022; before then fully invested (warm-up), so 2022 result is only partly a timing result. Price-only: CAGR 1.11%, Sharpe 0.18, 2022 -10.81%. On the common signal-live window (Nov-2022 to Sep-2026) CAGR 7.1%, vol 6.2%, MDD -3.8% vs Ivy 5 buy-and-hold CAGR 12.3%, MDD -7.9%."
+   },
+   {
+    "name": "Simple dual momentum",
+    "weights": "100% in one of SPY / VEA / IEF, chosen monthly",
+    "cagr": 0.1046,
+    "vol": 0.1572,
+    "max_drawdown": -0.2392,
+    "sharpe_rf0": 0.71,
+    "return_2022": -0.1603,
+    "notes": "Warm-up: held SPY until the 12m signal exists (Oct-2022), so it did NOT avoid the 2022 drawdown (MDD identical to SPY) -- a data-length artifact; it needs a 12m lookback and the sample has no earlier history. Price-only: CAGR 8.47%, Sharpe 0.59, 2022 -17.51%. Signal-live window Nov-2022 to Sep-2026: CAGR 18.0% vs SPY 20.6%, MDD -10.7% vs -8.3%."
+   }
+  ],
+  "correlations_note": "Monthly returns, price-only, SPY vs TLT: Nov-2021 to Dec-2022 (14 obs) +0.48; Jan-2023 to Sep-2026 (45 obs) +0.57; full sample +0.55. Correlation was clearly positive in both halves, so TLT did not diversify equities in this sample (SPY vs IEF +0.59 / +0.48; TLT vs IEF +0.94). Note the sample cannot show the pre-2022 negative stock/bond correlation of the 2000s-2010s because it begins in Oct-2021; the pre-2022 regime is essentially absent, and the 'before' window is just the 2022 rate-shock year. Rolling 12m SPY-TLT correlation (total return) ran 0.42 (Oct-2022), 0.80 (Oct-2023), 0.78 (Oct-2024), 0.25 (Oct-2025), 0.23 (Sep-2026), i.e. it has been falling lately but is unstable. Other full-sample TR correlations: SPY-GLD 0.16, SPY-DBC 0.10, TLT-DBC -0.22, SPY-VEA 0.81, SPY-VNQ 0.79. Real diversifiers here were gold and commodities, not long bonds. 2022 total returns: SPY -18.2%, TLT -31.2%, IEF -15.1%, SHY -3.9%, GLD -0.8%, DBC +19.3%, VNQ -26.2%, VBR -9.4%.",
+  "csv_path": "/home/user/research/data/portfolio_results.csv",
+  "limitations": [
+   "Five years (59 monthly returns) is a tiny sample: one regime (2022 rate shock then 2023-26 equity bull and a gold surge). Rankings are not evidence about the long-run merit of any portfolio; the Sharpe differences are well inside statistical noise.",
+   "Start-date bias: the window begins right before the 2022 bond/equity drawdown, hurting all long-bond-heavy portfolios (All Weather, 60/40) and flattering commodities and gold-heavy mixes.",
+   "Total return is approximated from raw closes plus ex-dividend cash, not reinvested within the month and not adjusted for ETF distribution timing; IBKR returned no dividend record for GLD (correct, it pays none). Price-only understates returns by about 3.0 pts/yr for IEF/SHY, 3.2 for TLT, 3.9 for TIP (measured), and 1.5 pts/yr for SPY; portfolio-level price-only CAGR is 1.5 to 3.0 pts/yr lower than total return, so price-only numbers materially distort bond-heavy portfolios.",
+   "Timing strategies (Faber, dual momentum) lack the history for their lookbacks in the early months; warm-up defaults (invested Ivy 5 / SPY) were used, so their 2022 figures and full-period stats are not pure signal results. Signal-live-window stats are in the notes.",
+   "Monthly closes only (monthly bars: IBKR's first bar was dated 2021-10-04 and was treated as the Oct-2021 close, matching known SPY values); intramonth drawdowns are understated, month-end rebalancing and signal timing assumed, no transaction costs, taxes or bid/ask.",
+   "Substitutions: SHY for cash/BIL, VBR for small-cap value, VEA/SPY/IEF as a three-fund proxy (no total-US or total-international bond funds), VWO and TIP fetched but unused. Recommendation caveat: this is a historical backtest, not investment advice; the closes were hand-transcribed from tool output into raw_input.py, so a transcription error is possible though the arrays were length-checked (61 bars each).",
+   "Data is from the connector's feed as of 2026-10-04; Oct-2026 bar partial and excluded."
+  ]
+ },
+ "rec": {
+  "bottom_line": "This is educational research for a personal project, not individualized financial advice. Here is the direct version. (1) No famous portfolio dominates. They differ mainly in how they fail. 60/40 and the retail All Weather fail when stocks and bonds fall together (2022: about -17% and -19% total return in our 5-year IBKR check). Gold-plus-cash mixes (Permanent, Golden Butterfly) failed less in 2022 but lag in equity bull markets. The trend overlays (Faber GTAA, dual momentum) cut drawdowns but lagged in 2023-26 and decayed after publication. (2) The evidence that the platform's signals add value is weak. The 20 daily technical patterns have essentially no edge after data-snooping correction and costs (Sullivan-Timmermann-White; Bajgrowicz-Scaillet). Pairs edges fell about 70% to near cost (Do-Faff). A next-day-direction ML model on 39 symbols does not inherit the large-cross-section results of Krauss et al. or Gu-Kelly-Xiu. Only slow, diversified trend-following has a long, broad evidence base, and it buys drawdown control more than extra return. (3) So the money should sit in a diversified, low-tuning core allocation with a modest rule-based trend sleeve. The platform's discretionary signals get no real capital until they pass pre-registered out-of-sample gates. The platform's best job is to become a portfolio-level research, benchmarking and risk tool: total-return portfolio backtester, ETF universe, rebalance proposals, risk engine. It should stay paper-only, with no live mode, as the reviewer advised. (4) Replace the risk placeholders with two separate regimes. The core allocation gets rebalance bands and no stops. The signal sleeve gets risk-based sizing (0.5% risk per trade, 2xATR stop, 5% heat, 10% per-symbol notional cap, de-risking ladder ending in a 10% halt). The current sizing code also ignores the stop entirely (risk_manager.py sizes by notional), so the stated '2% stop' never controls risk today.",
+  "comparison_table": [
+   {
+    "portfolio": "100% SPY (Buffett 90/10 is close)",
+    "weights_or_rule": "SPY 100 (Buffett: 90 S&P 500 / 10 T-bills)",
+    "long_run_stats": "Equity-like: about 10% nominal long run, max drawdown about -50% (2008) and worse in the 1930s. Buffett published no backtest; 90/10 is estate advice, not a tested allocation.",
+    "recent_5y_check": "CAGR 12.4%, vol 15.6%, MDD -23.9%, Sharpe(rf0) 0.83, 2022 -18.2%. Best return, flattered by a 5-year window that ends after a strong 2023-26 equity run.",
+    "verdict": "Highest expected return and the deepest drawdowns. Fine for someone who can hold through -50%. Most people sell at the bottom, which is the real risk. It does not diversify."
+   },
+   {
+    "portfolio": "Classic 60/40",
+    "weights_or_rule": "60 US equity / 40 intermediate Treasuries; annual or 5-pt band rebalance",
+    "long_run_stats": "About 8% 1928-2022 and about 7.3% over 200 years (Eaton Vance; secondary). 2008 about -14%; 2022 about -17.5%, worst since 1937.",
+    "recent_5y_check": "CAGR 6.6%, vol 11.3%, MDD -20.5%, Sharpe 0.62, 2022 -16.6%. IEF fell 15.1% in 2022. SPY-IEF correlation about +0.5 across the sample.",
+    "verdict": "A good cheap default when stock-bond correlation is negative. It has no inflation hedge and about 90% of its risk is equity. Use it as a benchmark, not the end state."
+   },
+   {
+    "portfolio": "Bogleheads three-fund",
+    "weights_or_rule": "Total US / total international / total bond (proxy 48 SPY / 32 VEA / 20 IEF)",
+    "long_run_stats": "No sourced figures; behaves like 60/40 with international equity. Lowest tuning and hindsight bias of the named retail portfolios.",
+    "recent_5y_check": "CAGR 8.7%, vol 13.1%, MDD -23.4%, Sharpe 0.70, 2022 -16.4% (this proxy is equity-heavier, at 80%, than a typical 60/40).",
+    "verdict": "The most honest, least overfit retail choice and the best simple anchor. Same 2022 failure mode as 60/40."
+   },
+   {
+    "portfolio": "Dalio All Weather (retail ETF version)",
+    "weights_or_rule": "30 stocks / 40 long Treasuries / 15 intermediate Treasuries / 7.5 gold / 7.5 commodities",
+    "long_run_stats": "Claimed about 7.5% with about -12% max drawdown, but the backtest sits inside the 1981-2020 bond bull. Unlevered, it is not Bridgewater's product. AFP 2012 shows the risk-parity edge needs leverage (2.2% vs 3.8% excess return unlevered).",
+    "recent_5y_check": "Worst of the group: CAGR 2.0%, Sharpe 0.24, MDD -21.5%, 2022 -19.3%. TLT -31% in 2022 and still below its 2022 low in Sep-2026.",
+    "verdict": "Not recommended as a retail copy. It is a long-duration bet that looked safe because of 40 years of falling rates. The risk-balancing idea is sound; this implementation is not."
+   },
+   {
+    "portfolio": "Harry Browne Permanent Portfolio",
+    "weights_or_rule": "25 stocks / 25 long Treasuries / 25 gold / 25 cash; rebalance at 15-35% bands",
+    "long_run_stats": "1985+: about 7.2% CAGR, 6.3% vol, MDD about -16%, Sharpe about 0.64 (portfolio-charts-style snippets, unverified). Weights fixed in 1981, so less hindsight than Golden Butterfly.",
+    "recent_5y_check": "CAGR 5.9%, vol 9.4%, MDD -17.2%, Sharpe 0.66, 2022 -13.8% (SHY used for cash). Gold (+~120%) carried it.",
+    "verdict": "Shallow, robust drawdowns, at the cost of roughly 1-2 pts/yr of return versus equity-heavy mixes. A reasonable choice for a very conservative profile. 25% long bonds and 25% gold are both large single bets."
+   },
+   {
+    "portfolio": "Golden Butterfly",
+    "weights_or_rule": "20 total US / 20 small-cap value / 20 long Treasuries / 20 short Treasuries / 20 gold",
+    "long_run_stats": "Figures conflict across sources: CAGR 8.3-8.7%, vol 7.2-8.5%, MDD -14 to -17%, Sharpe 0.68-0.95. Designed in 2015 on the same history it is tested on.",
+    "recent_5y_check": "CAGR 6.5%, vol 10.3%, MDD -17.4%, Sharpe 0.66, 2022 -12.7% (VBR for small-cap value).",
+    "verdict": "Good-looking but the most curve-fit of the static mixes. Haircut its backtest. It borrows sound ideas (gold plus short bonds as ballast) without needing its exact weights."
+   },
+   {
+    "portfolio": "Swensen retail (Unconventional Success)",
+    "weights_or_rule": "30 US / 15 developed ex-US / 5 EM / 20 REITs / 15 long Treasuries / 15 TIPS",
+    "long_run_stats": "About in line with 60/40 and the average endowment over the 40 years to mid-2024 (Advisor Perspectives snippet). No verified stats.",
+    "recent_5y_check": "Not run. REITs fell 26% in 2022 and are 0.79 correlated with SPY in our sample, so expect 60/40-like results.",
+    "verdict": "A sensible idea (real assets via TIPS) but 20% REITs adds equity risk, not diversification. Borrow the TIPS sleeve, not the REIT weight."
+   },
+   {
+    "portfolio": "Global market portfolio (Doeswijk-Lam-Swinkels)",
+    "weights_or_rule": "Market-cap weights across all investable asset classes (roughly half equity, half bonds)",
+    "long_run_stats": "1960-2017: 4.45% real compound return, 11.2% vol, Sharpe 0.69. Peer-reviewed and untuned.",
+    "recent_5y_check": "Not directly investable; the three-fund portfolio is the nearest proxy (see above).",
+    "verdict": "The best-evidenced neutral benchmark. It is the conceptual anchor for the recommended core: hold the market, then add modest real-asset ballast."
+   },
+   {
+    "portfolio": "Ivy 5 buy-and-hold",
+    "weights_or_rule": "20 each SPY / VEA / IEF / VNQ / DBC",
+    "long_run_stats": "1973-2008: 9.8% CAGR, 9.7% vol, but about -46% max drawdown (Faber, author's backtest).",
+    "recent_5y_check": "CAGR 6.8%, vol 11.4%, MDD -17.2%, Sharpe 0.64, 2022 -11.6% (DBC +19% saved it).",
+    "verdict": "Fine diversification; its 2022 resilience is one commodity spike, not a structural property."
+   },
+   {
+    "portfolio": "Faber GTAA (10-month SMA on Ivy 5)",
+    "weights_or_rule": "Each 20% sleeve held only if month-end close > 10-month SMA, else T-bills; monthly",
+    "long_run_stats": "1973-2008: 11.3% CAGR, 6.9% vol, MDD under 10% (author, in-sample). Independent 2006-2025 replication: about 6% CAGR, Sharpe 0.68, MDD about 12%. Return decayed; drawdown control held.",
+    "recent_5y_check": "CAGR 4.1%, vol 7.8%, MDD -10.1%, Sharpe 0.56, 2022 -9.1% (signal only partly live in 2022). Signal-live window: 7.1% vs 12.3% for buy-and-hold Ivy 5, with half the drawdown.",
+    "verdict": "The most defensible tactical rule: few parameters and consistent drawdown control. It costs return in bull markets. Use it as a partial overlay, not the whole portfolio."
+   },
+   {
+    "portfolio": "Antonacci dual momentum (GEM)",
+    "weights_or_rule": "100% in US or ex-US equity by 12m return, or bonds if the winner trails T-bills; monthly",
+    "long_run_stats": "Backtest 1974-2013: about 17% CAGR, -22% MDD. Since about 2010 it has trailed the S&P 500 by several points a year, with its worst drawdown in 2021-23 (secondary). High specification risk.",
+    "recent_5y_check": "CAGR 10.5%, MDD -23.9% (12m warm-up meant it held SPY through 2022). Signal-live window: 18.0% vs SPY 20.6%, with a deeper drawdown (-10.7% vs -8.3%).",
+    "verdict": "Too concentrated (one asset at a time) and too sensitive to lookback and rebalance date. Research only."
+   },
+   {
+    "portfolio": "VAA / DAA / BAA (Keller canary momentum)",
+    "weights_or_rule": "Breadth-based canary momentum, all-in switches, monthly",
+    "long_run_stats": "Claims 20%+ CAGR with MDD of 15% or less, tuned over several generations on the same data. No independent live record found.",
+    "recent_5y_check": "Not run.",
+    "verdict": "Highest data-snooping risk of anything reviewed. Do not use."
+   },
+   {
+    "portfolio": "Recommended core (this report; weights chosen BEFORE the data check)",
+    "weights_or_rule": "35 US equity / 15 intl developed / 15 intermediate Treasuries / 10 TIPS / 10 T-bills / 10 gold / 5 broad commodities; 5-pt band rebalance",
+    "long_run_stats": "No long backtest of this exact mix was run. By construction it is the market-portfolio-like three-fund with the evidence-backed ballast (gold, cash, TIPS) from the Permanent Portfolio and the 2022 lesson, and with no long-duration concentration.",
+    "recent_5y_check": "CAGR 8.3%, vol 9.7%, MDD -17.1%, Sharpe 0.87, 2022 -11.5%. With 20% Faber sleeve: 7.5% / 9.1% / -15.4% / 0.85 / -11.0%. This window flatters gold and commodities; the rank is NOT evidence. The point is that it has no catastrophic regime in this sample.",
+    "verdict": "Recommended default for a balanced investor. Its merit is a priori robustness (no single bet over about 50% of capital, inflation and deflation ballast, little tuning), not its 5-year rank."
+   }
+  ],
+  "recommended_design": "Three layers, sized by strength of evidence. Weights below are for a balanced profile; see alternatives for others.\n\nLAYER 1 - Strategic core, about 80% of investable capital (for example in the IBKR account). Implementation: low-cost ETFs, ideally tax-advantaged. Weights: 35% US total market (VTI/SPY), 15% developed ex-US (VEA), 15% intermediate Treasuries (IEF), 10% TIPS (TIP/SCHP), 10% T-bills (SGOV/BIL/SHY), 10% gold (GLD/IAU/GLDM), 5% broad commodities (PDBC/DBC). Why: equity plus global diversification is the untuned market-portfolio anchor (Doeswijk Sharpe 0.69, 1960-2017). Gold, cash and TIPS are the parts of Permanent/Golden Butterfly that survived 2022 (gold -0.8%, SHY -3.9% vs IEF -15%, TLT -31%). Commodities were the one sleeve that rose in the 2022 inflation shock. No long-duration Treasuries, which was the All Weather failure. Equity is 50%, and no sleeve other than equity exceeds 15%. Rebalance: check monthly, trade only when a sleeve drifts more than 5 points absolute or 25% relative from target, or annually. No stops, no take-profits, no drawdown halt on the core: selling a diversified core after a 15% drop locks in exactly the loss the ballast is meant to ride out. Optional crypto: 0-2% of the core via a spot bitcoin ETF (IBIT/FBTC), rebalanced like any sleeve and capped at 5% of portfolio risk. Treat it as a speculative sleeve, not a hedge (it fell with equities in 2022).\n\nLAYER 2 - Rule-based trend sleeve, about 15-20% of capital. Faber GTAA-style: an equal-weight universe of 5-7 ETFs (SPY, VEA, IEF, GLD, DBC, VNQ, optionally VWO). Hold each sleeve only when its month-end close is above its 10-month SMA, otherwise hold T-bills. Trade at the next session after the signal, monthly, long-only, no leverage. Why: time-series trend is the only signal family with a century-long, multi-market record (Hurst-Ooi-Pedersen 1880-2016). It pays off in stock-bond co-crash regimes like 2022 (SG Trend +27%). Expect it to cost return in bull markets (2009-2019 flat, Faber lagging in 2023-26). Its job is to cut the portfolio drawdown by a few points (about -17% to about -15% in our sample), not to raise returns. Keep it a sleeve, not a full overlay, because 100% timing has whipsaw and specification risk. To reduce rebalance-day luck, average across 3 lookbacks (8/10/12 months) instead of one SMA.\n\nLAYER 3 - Platform signal satellite: 0% real capital now; at most 5% of capital later, and only by passing gates. Technical patterns, pairs and the ML ensemble run in paper only, as a research screen plus a pre-registered paper experiment. They graduate to a real-money satellite (hard cap 5% of total capital, never leverage, never shorts) only if all of these hold: (a) Phase 2 correct engine (next-bar entry, costs, walk-forward ML); (b) BH/Holm-corrected significance across all hypotheses tested in the scan; (c) at least 6 months and 100+ closed paper trades with paper-vs-backtest divergence inside tolerance; (d) net-of-cost Sharpe that beats an exposure-matched SPY/trend baseline after a Deflated-Sharpe-style haircut; (e) zero risk-engine breaches. The prior from the literature (McLean-Pontiff: -58% post-publication; Bailey et al.: 7 trials can produce a spurious 2-year Sharpe above 1; STW Reality Check) is that few or none will pass. That is an acceptable, honest outcome, and the platform still earns its keep through layers 1-2.\n\nROLE OF THE PLATFORM: its main value is as the owner's allocation and risk cockpit. It should (1) backtest the core and trend sleeves at portfolio level with total-return data and named stress windows; (2) produce a monthly rebalance proposal (drift report plus trend signals) for the owner to approve and place manually in IBKR; (3) enforce the risk engine for any paper orders; (4) treat every signal as a challenger that must beat the static and trend benchmarks. Live trading stays out of scope.",
+  "alternatives_by_profile": [
+   {
+    "profile": "Conservative / capital preservation (cannot tolerate a drawdown over about 12-15%)",
+    "design": "About 30% equity (20 US / 10 intl), 20% intermediate Treasuries, 15% TIPS, 20% T-bills, 10% gold, 5% commodities. This is the Permanent Portfolio idea without long bonds. Optionally run 25% of it through the Faber rule. Expect about 1.5-2.5 pts/yr less long-run return than balanced and a worst year of around -10% (judgment, not a backtest)."
+   },
+   {
+    "profile": "Balanced (default recommendation)",
+    "design": "Core 80% (35 US / 15 intl / 15 IEF / 10 TIPS / 10 T-bills / 10 gold / 5 commodities) plus a 20% Faber-style trend sleeve; signal satellite at 0% until it passes the gates. 5-year check: about 7.5% CAGR, -15% MDD, -11% in 2022. Plan for a long-run worst drawdown of -20 to -25%."
+   },
+   {
+    "profile": "Growth / long horizon (can hold through -35% or more)",
+    "design": "Core: 55 US / 20 intl / 10 IEF / 5 T-bills / 5 gold / 5 commodities, with 0-2% bitcoin ETF allowed, plus a 15% trend sleeve. Or simply the three-fund at 80/20 equity/bonds. Accept a -35 to -45% drawdown in a 2008-type year. Do not lever up to reach for returns."
+   },
+   {
+    "profile": "Simplest possible (minimal maintenance)",
+    "design": "Three-fund (for example 45 VTI / 20 VXUS / 35 BND or 25 BND + 10 TIP), rebalanced once a year. Use the platform only as a benchmark and education tool. This has the least overfitting risk of anything reviewed."
+   },
+   {
+    "profile": "Owner who mainly wants to trade / learn systematic trading",
+    "design": "Keep the balanced core untouched in the main account. Run all trading in Alpaca paper (or IBKR paper) against a notional 10% 'satellite' budget, using the signal-sleeve risk limits below. Real money only after the gates, capped at 5% of total capital, long-only. Measure the satellite against SPY and the trend sleeve, not against zero."
+   }
+  ],
+  "risk_defaults": [
+   {
+    "parameter": "Scope of risk limits",
+    "current": "One set of limits applied to everything",
+    "recommended": "Two regimes. CORE/TREND sleeves: target weights + rebalance bands, no per-trade stops. SIGNAL sleeve: per-trade risk rules below. The risk engine must know which sleeve an order belongs to.",
+    "rationale": "Stops and take-profits are incompatible with a rebalanced allocation (a 2% stop on a diversified ETF fires on ordinary noise). The current halt would trip in an ordinary bad year for any static portfolio (60/40 -17% in 2022)."
+   },
+   {
+    "parameter": "Core rebalance rule",
+    "current": "None (no portfolio layer)",
+    "recommended": "Check monthly; trade a sleeve only when it drifts more than 5 pts absolute or 25% relative from target; otherwise rebalance annually. Trend sleeve: monthly signal, execute next session.",
+    "rationale": "Standard band rebalancing keeps turnover and taxes low while controlling drift; monthly cadence matches the evidence for the trend rules."
+   },
+   {
+    "parameter": "Core drawdown response",
+    "current": "10% drawdown halt",
+    "recommended": "No automatic halt on core. Review trigger only (alert + human review) at -20% from peak for balanced, -12% for conservative.",
+    "rationale": "Diversified portfolios routinely draw down 15-20% (Permanent -17%, Golden Butterfly -17%, 60/40 -20% in our 5-year check). An automatic sell would crystallize losses at the worst time."
+   },
+   {
+    "parameter": "Per-position sizing (signal sleeve)",
+    "current": "5% of capital as notional, scaled by 'confidence' = win_rate*profit_factor; the stop distance is computed but not used (risk_manager.py:59-101)",
+    "recommended": "Risk-based: shares = (0.5% of sleeve equity) / (stop distance), stop distance = 2 x ATR(20). Allowed range 0.25-1.0%. Drop the confidence multiplier.",
+    "rationale": "Turtle/Carver practice sizes by risk, not notional. 0.5% is half the Turtles' 1%, which suits an unproven edge. The confidence metric is an in-sample, biased statistic and should not scale size."
+   },
+   {
+    "parameter": "Per-symbol notional cap",
+    "current": "5% (MAX_POSITION_SIZE_PCT, used as notional)",
+    "recommended": "10% of sleeve equity per symbol (hard cap enforced at the chokepoint). Size = min(risk-based size, notional cap, max order).",
+    "rationale": "With 0.5% risk and a 2xATR stop of about 4-6%, positions land near 8-12%; the cap stops a tight stop from creating an oversized position."
+   },
+   {
+    "parameter": "Total exposure / portfolio heat",
+    "current": "15% total exposure",
+    "recommended": "Gross exposure at most 100% of sleeve equity (no leverage); open risk-to-stop ('heat') at most 5%; net long only. In the first 2-4 weeks of plumbing tests, gross can be capped at 30%.",
+    "rationale": "A 15% gross cap leaves results dominated by cash and tells you nothing. Heat is the quantity that actually bounds a bad day. 5% heat = 10 full-risk positions at 0.5%."
+   },
+   {
+    "parameter": "Stop loss",
+    "current": "Fixed 2%",
+    "recommended": "2 x ATR(20) initial stop referenced to the actual fill price (OTO/post-fill), plus a time stop (exit after N bars if the signal's horizon has passed) and exit on opposite signal.",
+    "rationale": "A fixed 2% is inside daily noise for TSLA/NVDA/AMD and crypto (stopped out by noise) and too loose for SPY. The roadmap reviewer flagged the signal-price vs fill-price mismatch."
+   },
+   {
+    "parameter": "Take profit",
+    "current": "Fixed 4% (2:1)",
+    "recommended": "Remove fixed TP. Use a trailing stop (for example a 3 x ATR chandelier) or the signal exit.",
+    "rationale": "A fixed TP caps the right tail that trend-type signals depend on; there is no evidence that 4% is meaningful across assets with very different volatilities."
+   },
+   {
+    "parameter": "Correlated positions",
+    "current": "MAX_CORRELATED_POSITIONS = 3",
+    "recommended": "At most 2 open positions per cluster (US index ETFs; mega-cap tech; banks; energy; crypto), and reject a new entry with 60-day return correlation above 0.7 to an open same-direction position. Max 8 concurrent positions.",
+    "rationale": "SPY/QQQ/DIA/IWM and AAPL/MSFT/NVDA/META/GOOG/AMZN are effectively single bets; Turtle-style cluster limits."
+   },
+   {
+    "parameter": "Daily / weekly loss limit",
+    "current": "None",
+    "recommended": "Stop new entries for the day at -1.5% of sleeve equity; for the week at -3%. Max 5 new orders per day.",
+    "rationale": "About 3 full-risk stop-outs per day; prevents a bug or a regime break from compounding (judgment call)."
+   },
+   {
+    "parameter": "Drawdown halt (signal sleeve)",
+    "current": "10% hard halt",
+    "recommended": "Ladder: risk per trade x0.5 at -5% from the sleeve peak, x0.25 at -8%, hard halt with a manual restart review at -10%. The halt state must persist in SQLite and fail closed if state is missing.",
+    "rationale": "Grossman-Zhou/CPPI-style de-risking is smoother than a single cliff. Keeping 10% as the backstop is appropriate for an unvalidated sleeve (but not for the core)."
+   },
+   {
+    "parameter": "Max order notional",
+    "current": "$1000 (PAPER_TRADE_MAX_ORDER_VALUE)",
+    "recommended": "min(10% of sleeve equity, configured $ cap). Keep $1000 as the absolute cap during the first paper weeks, then switch to the percentage rule. Never removed, only raised by explicit config change.",
+    "rationale": "An absolute backstop against unit and sizing bugs (the audit found max(1, ...) with no ceiling in paper_trader.py). Note that $1000 is 1% of a $100k paper account, so it silently overrides the risk sizing; make the binding constraint visible in logs."
+   },
+   {
+    "parameter": "Portfolio volatility target",
+    "current": "None",
+    "recommended": "Core about 9-10% realized vol by construction (no leverage). If vol targeting is ever applied to the signal sleeve: 8-10% annualized, scaler capped at 1.0x (no leverage) and floored at 0.25x.",
+    "rationale": "Kelly vol = Sharpe; with an honest haircut Sharpe near 0.3, half Kelly is 15% and quarter Kelly 7.5%. Vol targeting is a risk dial, not an alpha source (Cederburg et al. 2020)."
+   },
+   {
+    "parameter": "Crypto allocation",
+    "current": "Crypto symbols scanned and potentially tradable",
+    "recommended": "0-2% of core via a spot ETF; hard cap 5% of portfolio risk contribution; no direct crypto trading from signals.",
+    "rationale": "1-2% BTC contributes about 3-7% of portfolio risk, while 5% contributes over 20% (BlackRock, via snippet). Drawdowns of -73% to -83%; correlation with equities rises in stress."
+   },
+   {
+    "parameter": "Scale-up gate",
+    "current": "None",
+    "recommended": "Double risk per trade at most once per quarter, only after 6+ months, 100+ trades, corrected Sharpe above 0, realized drawdown within 1.5x of modeled, zero breaches. Ceiling 1% per trade, 8% heat, 5% of total capital in the satellite.",
+    "rationale": "Bailey et al.: short windows prove little when many variants were tried; selection from about 780 hypotheses inflates any estimated edge."
+   }
+  ],
+  "answers_to_open_questions": [
+   {
+    "question": "Unattended paper orders vs research screen (roadmap Q1)",
+    "recommendation": "Research screen by default. The core and trend sleeves produce a monthly rebalance proposal that the owner approves and places manually (IBKR). Unattended orders are allowed only in PAPER, only after the Phase 1 chokepoint plus a Phase 2 BH/Holm correction exist, and only for a small frozen set (5 or fewer) of pre-registered strategies. The purpose of that experiment is to measure paper-vs-backtest divergence and build an out-of-sample record, not to make money. Expect few or zero orderable signals after the fixes; accept that as the honest result. No live mode (keep paper=True hard-coded with a test)."
+   },
+   {
+    "question": "Which asset classes are tradable (Q2)",
+    "recommendation": "Executable in paper: US-listed ETFs (the core and trend universe) and the US large-cap equities, long-only. Crypto: exposure only through spot ETFs in the core; the 8 crypto symbols stay research-only (no shorting, no brackets on Alpaca, weekend gaps). Forex and futures: research-only, used as trend-signal inputs. Drop the futures pairs GC/SI and especially CL/NG (no stable economic link) from the default scan. Add bond, TIPS, gold, commodity and T-bill ETFs, which the current universe lacks entirely."
+   },
+   {
+    "question": "Shorts / margin (Q3)",
+    "recommendation": "No shorts, no margin, no inverse or leveraged ETFs. A SELL signal means exit the long or hold cash, and the sell qty is capped at the held qty. Consequence: pairs trading cannot be executed and stays a research diagnostic. Its documented edge has decayed to near cost anyway (Do-Faff: 0.24%/month 2003-09 before borrow costs). For pairs research, MAX_POSITION_SIZE should mean gross exposure across both legs (Q5)."
+   },
+   {
+    "question": "Risk limits (Q4)",
+    "recommendation": "See risk_defaults. In short, for the signal sleeve: 0.5% risk per trade with a 2xATR(20) stop, 10% per-symbol notional cap, 100% gross / 5% heat, at most 8 positions with at most 2 per cluster, at most 5 orders/day, -1.5% daily and -3% weekly entry halts, drawdown ladder 5/8/10% ending in a persisted manual-restart halt, max order = min(10% equity, $ cap). For the core: band rebalancing, no stops, review trigger at -20%."
+   },
+   {
+    "question": "Scope trim",
+    "recommendation": "Keep and fix: data layer (now with total-return/dividend-adjusted data and 15-20+ years of history), the backtester (next-bar entry, costs), the risk engine and chokepoint, stress tests (add named 2008/2020/2022 windows), and the React frontend. Add: portfolio backtester, ETF universe, trend sleeve, rebalance proposals. Freeze: the 20 patterns (keep 2-3 trend-type rules such as MA cross and Donchian breakout as benchmarks; mark oscillator and candlestick-style patterns research-only), the ML next-day classifier (no new models; if revisited, reframe as a cross-sectional ranker with purged walk-forward), and pairs (diagnostic only). Drop: live mode (WS1.6 live parts), intraday timeframes (Q6: daily bars only, monthly for allocation), per-symbol pattern tuning (Q12: global fixed rules), Kalman/triple-barrier/meta-labelling (WS5.4), the LLM orchestrator and eval harness (WS5.1 beyond a cheap summary), the Streamlit dashboard once React has parity (Q9), and the heavy Phase 4 stack (keep BH plus one Deflated Sharpe gate, PBO advisory). Also fix survivorship: the watchlist is hand-picked winners (NVDA, META, TSLA, SOL), so add broad-index controls and some laggards to any signal study."
+   }
+  ],
+  "platform_changes": [
+   {
+    "change": "Pin the sizing bug and paper-only guarantee: test that calculate_position_size ignores stop distance (sizes by notional, risk_per_share unused); test paper=True; snapshot 15-20y of daily bars for the new ETF universe alongside the watchlist with a hash",
+    "why": "The current '2% stop' never controls risk. Changes to sizing must be attributable. A frozen baseline is the reviewer's top amendment.",
+    "roadmap_phase": "Phase 0 (WS0.3 bug pins, reviewer's frozen real-data snapshot)",
+    "files": "ML-Trading-Platform-Backend/risk_manager.py, paper_trader.py, tests/ (new), data snapshot dir"
+   },
+   {
+    "change": "ETF/allocation universe in the instrument registry: VTI/SPY, VEA, VWO, IEF, TLT (benchmarks only), TIP, SGOV/BIL/SHY, GLD, PDBC/DBC, VNQ, VBR, IBIT, each tagged with asset_class, cluster, sleeve eligibility (core/trend/signal) and an executable flag (ETFs/US equities yes; crypto spot, FX, futures research-only)",
+    "why": "The universe has no bonds, TIPS, gold, commodities or cash, so no diversified portfolio can be modeled. Cluster tags drive the correlation caps.",
+    "roadmap_phase": "Phase 1 (WS1.2 instrument registry and capability matrix)",
+    "files": "config.py (WATCHLIST to ALLOCATION_UNIVERSE + registry), new instruments.py, data_fetcher.py"
+   },
+   {
+    "change": "Risk engine with two regimes (allocation vs signal sleeve) and the new defaults: ATR-based risk sizing, notional cap, heat, cluster caps, daily/weekly loss, drawdown ladder with persisted fail-closed halt, max orders/day, max order = min(% equity, $ cap); remove fixed TP and confidence scaling; log every rejection with its reason",
+    "why": "Replaces the placeholders with evidence-consistent limits and makes them enforceable at a single chokepoint.",
+    "roadmap_phase": "Phase 1 (WS1.3 chokepoint, WS1.4 persisted RiskManager/kill switch)",
+    "files": "risk_manager.py, config.py (RISK section), paper_trader.py, main.py"
+   },
+   {
+    "change": "Rebalance proposal workflow: compute current vs target weights (from IBKR positions via read-only reconciliation, or manual input), band-based trade list, trend sleeve signals; output a human-approved order list. No auto-submission to IBKR; optional auto-submission to Alpaca paper only through the chokepoint",
+    "why": "Matches the research-screen answer and keeps the real account human-gated while still making the platform useful every month.",
+    "roadmap_phase": "Phase 1 (alongside WS1.3/WS1.6 minus live mode), UI in Phase 3",
+    "files": "new allocation.py, new routes/allocation_routes.py, main.py CLI command `rebalance`, frontend src/pages/Allocation.tsx (new), src/api/client.ts"
+   },
+   {
+    "change": "Portfolio-level backtester: multi-asset target weights, monthly evaluation, band or calendar rebalancing, signal at month-end close with execution at next open/close, costs, cash yield, total-return (dividend-adjusted) prices, metrics (CAGR, vol, MDD, worst year, Sharpe with a stated rf, turnover)",
+    "why": "The platform only backtests single symbols with no allocation. The data check showed price-only data understates bond ETFs by about 3 pts/yr, which badly distorts bond-heavy portfolios.",
+    "roadmap_phase": "Phase 2 (extends WS2.2 engine correctness; shares metrics.py)",
+    "files": "new portfolio_backtester.py, metrics.py (from WS2.2), data_fetcher.py (adjusted/total-return series), backtester.py"
+   },
+   {
+    "change": "Benchmark suite as mandatory baselines: 60/40, three-fund, Permanent, Golden Butterfly, All Weather retail, recommended core, core+trend, SPY; every signal strategy report shows its result vs an exposure-matched benchmark",
+    "why": "Static and trend portfolios are the hurdle any signal must clear; this operationalizes 'beat the simple thing first'.",
+    "roadmap_phase": "Phase 2 (WS2.3 validation_status: add a 'beats_benchmark' criterion)",
+    "files": "portfolio_backtester.py, new benchmarks.py, routes/backtest_routes.py"
+   },
+   {
+    "change": "Trend sleeve module: Faber-style 10-month SMA (with an 8/10/12-month ensemble option), long-only, T-bills when off; monthly; reports in-sample vs post-publication splits (pre/post 2007) and named windows",
+    "why": "The best-evidenced signal family; low turnover, fits daily-bar infrastructure; gives the platform's signals a legitimate home.",
+    "roadmap_phase": "Phase 2 (built on the portfolio backtester); paper execution after Phase 1",
+    "files": "new trend.py, portfolio_backtester.py, main.py"
+   },
+   {
+    "change": "Named stress windows and long-history proxies: 2008, Mar-2020, 2022, 2023, plus 1970s-style inflation via mutual-fund/index proxies where available; report the stock-bond correlation regime",
+    "why": "Five years of ETF data covers one regime; 2022 must be a named test and the 1981-2020 bond bull must not be the only sample.",
+    "roadmap_phase": "Phase 2 (WS2.4 stress test correctness)",
+    "files": "stress_test.py, routes/stress_routes.py, frontend src/pages/StressTestLab.tsx"
+   },
+   {
+    "change": "Multiple-testing correction across each scan (BH or Holm on random-entry-null p-values) and a hypothesis count logged per run; signal paper orders gated on it",
+    "why": "About 780 hypotheses per scan; Bailey et al. and STW show uncorrected scans produce spurious winners. The reviewer requires this before any order eligibility.",
+    "roadmap_phase": "Phase 2 (WS2.3), then a single DSR gate in Phase 4 (WS4.2, trimmed)",
+    "files": "backtester.py / new validation.py, main.py, pattern_routes.py"
+   },
+   {
+    "change": "ML scope change: walk-forward only, freeze new models; if retained, evaluate as a cross-sectional ranker with purged CV and net-of-cost Sharpe against the trend baseline",
+    "why": "In-sample ML and next-day binary targets on 39 symbols do not inherit the large-cross-section evidence.",
+    "roadmap_phase": "Phase 2 (WS2.5 leakage fixes), reframing optional in Phase 4 (WS4.4)",
+    "files": "ml_patterns.py, features.py, routes/ml_routes.py"
+   },
+   {
+    "change": "Pairs as a diagnostic only: no executable path while shorts are disabled; drop CL/NG and GC/SI from the default scan; define size as gross across both legs",
+    "why": "Needs shorting; edge decayed to near cost; 10 hand-picked pairs selected on the same data.",
+    "roadmap_phase": "Phase 2 (WS2.6 correctness), WS4.5 kept small",
+    "files": "pairs_trading.py, config.py PAIRS, routes/pairs_routes.py"
+   },
+   {
+    "change": "Paper-vs-backtest divergence monitor and heartbeat alert for the paper experiment; scale-up gate dashboard (trades, months, corrected Sharpe, breaches)",
+    "why": "The only real out-of-sample evidence the owner can generate; the reviewer flagged both as missing.",
+    "roadmap_phase": "Phase 1 (heartbeat, WS1.7 alerts) and Phase 3 (divergence report)",
+    "files": "alerts.py, new monitoring.py, frontend src/pages/Dashboard.tsx"
+   },
+   {
+    "change": "Optional research modules: inverse-vol/HRP weighting across sleeves, vol-targeting dial, crypto ETF sleeve analysis",
+    "why": "Weak or mixed evidence (HRP mostly from the author's simulations; vol-managed alpha fragile out of sample) so they are opt-in comparisons, not defaults.",
+    "roadmap_phase": "Phase 5 (WS5.4-style opt-in, kept only if out-of-sample improves)",
+    "files": "new allocation_research.py"
+   }
+  ],
+  "what_not_to_do": [
+   "Do not add a live-trading mode or let the platform place orders in the real IBKR account; keep paper=True hard-coded and human-approve real rebalances.",
+   "Do not copy the retail All Weather (40% long Treasuries): it is a duration bet that only looked safe in the 1981-2020 bond bull; it was the worst portfolio in the 5-year check (2.0% CAGR, -19% in 2022).",
+   "Do not choose weights from the 5-year data check or from Golden Butterfly/BAA-style backtests; the window flatters gold and commodities and the Sharpe differences are statistical noise.",
+   "Do not apply a 10% drawdown halt, 2% stops or 4% take-profits to a diversified allocation; they will force selling at the bottom of ordinary bad years.",
+   "Do not size by 'confidence' derived from in-sample win_rate*profit_factor, and do not use full Kelly from backtested Sharpe; at most quarter Kelly from a haircut estimate, and in practice the fixed 0.5% risk rule.",
+   "Do not enable shorts, margin, leverage, inverse/leveraged ETFs or direct crypto trading.",
+   "Do not treat a positive pattern/ML/pairs backtest as an edge until it survives the multiple-testing correction, walk-forward, costs and a paper record; expect most to fail.",
+   "Do not use VAA/DAA/BAA or single-asset dual momentum as the core; they carry the highest data-snooping and concentration risk.",
+   "Do not treat bitcoin as a hedge or size it in dollar terms above about 2%; it becomes the dominant portfolio risk.",
+   "Do not build all of Phases 3-5; cut scope to what serves allocation, risk and honest validation.",
+   "Do not rely on any single research figure here without checking the primary source: most numbers came from search snippets because primary sites were egress-blocked."
+  ],
+  "sources": [
+   "Data check (IBKR monthly bars, total-return, Oct-2021 to Sep-2026): /home/user/research/data/portfolio_results.csv, /home/user/research/data/portfolio_monthly_returns_TR.csv, /home/user/research/backtest.py",
+   "Recommended-core sanity check (weights fixed before running): /tmp/claude-0/-home-user/302d0d00-5f48-57c3-82ae-87f9b6d48eb7/scratchpad/rec.py",
+   "Robustness roadmap and reviewer amendments: /home/user/research/robustness-roadmap.md",
+   "Platform code reviewed: /home/user/ML-Trading-Platform-Backend/config.py (risk placeholders lines 93-98, 167; watchlist 15-50), /home/user/ML-Trading-Platform-Backend/risk_manager.py (calculate_position_size 59-101 sizes by notional, ignores stop)",
+   "Doeswijk, Lam, Swinkels, Historical Returns of the Market Portfolio, RAPS 2020: https://papers.ssrn.com/abstract=2978509",
+   "Asness, Frazzini, Pedersen, Leverage Aversion and Risk Parity, FAJ 2012: https://rpc.cfainstitute.org/research/financial-analysts-journal/2012/leverage-aversion-and-risk-parity",
+   "Faber, A Quantitative Approach to Tactical Asset Allocation (SSRN 962461) and third-party replication: https://concretumgroup.substack.com/p/global-tactical-asset-allocation",
+   "Hurst, Ooi, Pedersen, A Century of Evidence on Trend-Following: https://www.aqr.com/Insights/Research/Journal-Article/A-Century-of-Evidence-on-Trend-Following-Investing",
+   "Moskowitz, Ooi, Pedersen, Time Series Momentum: https://papers.ssrn.com/abstract=2089463",
+   "Antonacci GEM critique (ReSolve): https://investresolve.com/inc/uploads/pdf/global-equity-momentum-a-craftsmans-perspective.pdf",
+   "Cederburg, O'Doherty, Wang, Yan, On the performance of volatility-managed portfolios (JFE 2020): https://www.lehigh.edu/~xuy219/research/COWY.pdf",
+   "Harvey et al., The Impact of Volatility Targeting (JPM 2018): https://people.duke.edu/~charvey/Research/Published_Papers/P135_The_impact_of.pdf",
+   "Sullivan-Timmermann-White / Park-Irwin survey of technical analysis: https://ideas.repec.org/a/bla/jecsur/v21y2007i4p786-826.html",
+   "Bajgrowicz-Scaillet, Technical trading revisited (JFE 2012): https://ideas.repec.org:443/a/eee/jfinec/v106y2012i3p473-491.html",
+   "Do and Faff, Does Simple Pairs Trading Still Work? (FAJ 2010): https://rpc.cfainstitute.org/research/financial-analysts-journal/2010/does-simple-pairs-trading-still-work",
+   "Krauss, Do, Huck 2017: https://cris.fau.de/publications/208534681 ; Gu, Kelly, Xiu 2020: https://www.nber.org/papers/w25398.pdf",
+   "McLean-Pontiff 2016: https://ivey.uwo.ca/media/3775549/pontiff.pdf ; Harvey-Liu-Zhu: https://nber.org/papers/w20592",
+   "Bailey, Borwein, Lopez de Prado, Zhu, Pseudo-mathematics and financial charlatanism (MinBTL): https://papers.ssrn.com/abstract=2460551",
+   "Carver on risk targets and Kelly: https://qoppac.blogspot.com/2020/03/how-much-risk-should-we-take.html",
+   "Grossman-Zhou 1993 drawdown control: https://ideas.repec.org/a/bla/mathfi/v3y1993i3p241-276.html",
+   "Bitcoin sizing (BlackRock via Morningstar): https://www.morningstar.com/portfolios/how-much-bitcoin-is-too-much",
+   "60/40 in 2022: https://www.fool.com/investing/2023/01/26/2022-was-the-worst-year-since-1937-for-this-invest",
+   "Permanent Portfolio stats (secondary): https://freenance.io/strategies/permanent-portfolio-browne/ ; Golden Butterfly: https://portfoliocharts.com/2015/09/22/catching-a-golden-butterfly/",
+   "Caveat: most external figures are from search-result snippets (primary sites egress-blocked) and should be verified at source before the platform relies on them."
+  ]
+ },
+ "crit": {
+  "verdict": "Directionally sound but oversold. Five recommendations are right: a diversified low-tuning core; 0% real capital in the platform's signals until they pass gates; paper only with no live mode; separate risk regimes for the allocation and the signal sleeve; and fixing the sizing bug. I confirmed the bug at risk_manager.py:84-90: shares = capital*pct/entry_price, and risk_per_share is never used. Three things are weaker than the report claims. (1) The recommended core is itself built around 2022, the very hindsight it criticises in Golden Butterfly. Its sleeves (gold, commodities, cash, TIPS, no long duration) are the ones that worked in that window. Its rationale cites numbers from the data check, so 'weights chosen BEFORE the data check' cannot be true in any meaningful sense. Its in-sample lead over 60/40 is mostly gold: GLD rose 128% and compounded at 18.3%/yr. With gold moved to cash, core CAGR falls from 8.3% to 6.6%. The core-minus-60/40 monthly difference has t = 0.9. (2) The Sharpe ratios use a zero risk-free rate. Measured as excess return over SHY, core excess Sharpe is 0.68 vs SPY 0.71; 60/40 is 0.46 and Faber 0.32. Adding the 20% trend sleeve LOWERED excess Sharpe from 0.68 to 0.64 and cost about 0.8 pts/yr of CAGR for a 1.7-pt drawdown improvement. (3) Some cited facts are wrong or misattributed. TIPS fell 12.1% in 2022 and did not 'survive' it. The Doeswijk Sharpe of 0.69 is inconsistent with the paper's own figures. The AFP risk-parity numbers are misdescribed. The SG Trend +27% (a long/short futures index) is used to justify a long-only ETF timing sleeve. The report also ignores taxes, account type and jurisdiction, under-treats behavioural risk, and builds a deflation hole into the core. Its risk design has two gaps. The 'allocation regime' label is an unguarded bypass of stops and halts. The paper-graduation gates are statistically underpowered: 'corrected Sharpe > 0' after 6 months passes about half of zero-edge strategies. Several proposals also conflict with roadmap amendments: the order-eligibility gate, the WS0.4 duplicate-buy interlock, the fixed calendar hold-out, and the scope cut. Revise before publishing.",
+  "wrong_or_unsupported": [
+   {
+    "claim": "Recommended core weights were 'chosen BEFORE the data check'; its merit is a priori robustness",
+    "problem": "The design rationale cites the data check's own 2022 total returns (gold -0.8%, SHY -3.9%, IEF -15%, TLT -31%) and 'the 2022 lesson'. Every distinctive sleeve (10% gold, 5% commodities, 10% cash, 10% TIPS, no long bonds) is one that did well or less badly in Oct-2021 to Sep-2026. Running rec.py after choosing weights does not remove hindsight acquired from knowing 2022.",
+    "correction": "Drop the 'before the data check' claim. State that the core reflects 2022-informed judgment. Test it out of sample on pre-2021 history (2000-02, 2008, 2013 taper, 2020, and 1980-2000 disinflation via mutual-fund or index proxies) before calling it robust."
+   },
+   {
+    "claim": "'Gold, cash and TIPS are the parts of Permanent/Golden Butterfly that survived 2022'",
+    "problem": "TIP total return in 2022 was -12.1% (computed from /home/user/research/data). That is close to IEF's -15.1%, not a survivor. TIP also compounded at -0.4%/yr over the whole window. A 7-year-duration TIPS fund is mainly a real-rate bet, not an inflation hedge over short horizons.",
+    "correction": "Say gold and cash held up; TIPS did not. If the sleeve's purpose is near-term inflation protection, use short-duration TIPS (VTIP/STIP/SCHP-short), or explicitly accept that TIP adds duration."
+   },
+   {
+    "claim": "Doeswijk-Lam-Swinkels global market portfolio 1960-2017: 4.45% real, 11.2% vol, Sharpe 0.69",
+    "problem": "The 4.45% real and 11.2% vol figures are confirmed. The paper reports a compounded return 3.39 pts above the riskless rate, which implies a Sharpe of about 0.30-0.36, not 0.69. The 0.69 figure appears in no source checked.",
+    "correction": "Cite a Sharpe of about 0.3 (3.39% excess / 11.2% vol), or drop the Sharpe. Note too that the GMP contains credit and non-US bonds but no gold or commodities. The core (15% gold+commodities, 0% credit, 0% non-US bonds, 0% EM) is a tilt away from the GMP, not an implementation of it."
+   },
+   {
+    "claim": "AFP 2012 shows the risk-parity edge needs leverage '(2.2% vs 3.8% excess return unlevered)'",
+    "problem": "In the Asness-Frazzini-Pedersen 1926-2010 test, 2.2% is unlevered risk parity's excess return and about 3.84% is the value-weighted MARKET's. It is not an unlevered-vs-levered comparison. Levered RP was much higher. The report also omits the published rebuttal: Anderson-Bianchi-Goldberg (FAJ 2012) found that realistic borrowing and trading costs erode levered RP's advantage.",
+    "correction": "Rephrase: unlevered RP earned less than the market (2.2% vs 3.8% excess) with a higher Sharpe; RP beats only when levered at near-risk-free financing; Anderson et al. dispute that net of costs."
+   },
+   {
+    "claim": "Trend pays off in stock-bond co-crash regimes like 2022 (SG Trend +27%), used to justify the Faber sleeve",
+    "problem": "SG Trend +27.3% in 2022 is confirmed, but it is a leveraged long/short futures index that was short bonds. A long-only, monthly, 5-ETF 10-month SMA rule can only go to cash: in this window Faber lost 9.1% in 2022 (partly in warm-up). Hurst-Ooi-Pedersen's century of evidence is likewise diversified, vol-scaled long/short futures. That evidence does not transfer to the proposed sleeve.",
+    "correction": "Cite Faber-type long-only evidence for the sleeve: Faber's in-sample 1972-2005 11.7% CAGR / 9.5% MDD, and the independent 2006-Mar-2025 replication at 6.05% CAGR / Sharpe 0.68 / 11.7% MDD (confirmed). Present the sleeve as drawdown insurance with an expected return cost, not crisis alpha. If crisis alpha is wanted, evaluate a managed-futures fund as an alternative."
+   },
+   {
+    "claim": "Sharpe figures (rf0) and 'recommended core Sharpe 0.87' as an indicator of quality",
+    "problem": "T-bills paid about 4-5% for most of 2023-26, so zero-rf Sharpe flatters low-vol mixes. Excess Sharpe vs SHY: core 0.68, SPY 0.71, three-fund 0.57, 60/40 0.46, Permanent 0.47, Golden Butterfly 0.49, Faber 0.32, core+20% Faber 0.64. The standard error of a 5-year Sharpe is about 0.5, and the core-minus-60/40 return difference has t = 0.9.",
+    "correction": "Report excess-return Sharpe everywhere (rf = BIL/SGOV or the 3-month T-bill). State plainly that the core did not beat SPY risk-adjusted in-sample, that the trend sleeve reduced risk-adjusted return here, and that no ranking is significant."
+   },
+   {
+    "claim": "Recommended core and Permanent backtests use 'T-bills' (core 10% T-bills)",
+    "problem": "Both rec.py and backtest.py use SHY (about 1.9-year duration; -3.9% in 2022; only 1.8%/yr CAGR in the window) for cash. Actual T-bills (BIL/SGOV) returned roughly +1.5% in 2022 and 4-5% in 2023-25. The cash sleeve, the Faber 'off' state and the rf are all misstated.",
+    "correction": "Rerun with a T-bill series (FRED DTB3, or BIL total return) for cash, the Faber off-state and rf. Keep SHY only if the recommendation really is short Treasuries."
+   },
+   {
+    "claim": "Bitcoin: '1-2% contributes about 3-7% of portfolio risk, while 5% contributes over 20%' (BlackRock)",
+    "problem": "BlackRock (Dec-2024) says 1-2% gives about the same risk share as one Magnificent 7 stock in a 60/40, about 4% each, and that above 2% risk rises sharply. The '5% contributes over 20%' figure was not found in the checked coverage. The report also recommends 0-2% bitcoin for a core that is lower-vol than 60/40, which raises bitcoin's risk share.",
+    "correction": "Cite BlackRock's actual claim (1-2% \u2248 4% of 60/40 risk). Compute bitcoin's marginal risk contribution in the actual 9-10%-vol core, and cap it on risk contribution (e.g. \u22645%), which will likely bind below 2% notional."
+   },
+   {
+    "claim": "Balanced profile: 'plan for a long-run worst drawdown of -20 to -25%'",
+    "problem": "Untested. A rough 2007-09 proxy calculation puts the core at about -22% (US -51%, EAFE -57%, IEF +20%, gold +25%, DBC -33%). That is within range but depends on intermediate Treasuries carrying all the deflation hedging at 15% weight. A 1973-74 or 1980-2000-type real loss, or a 2008 with monthly granularity, could be worse.",
+    "correction": "Label the range as an estimate, and attach a long-history proxy backtest (mutual-fund/index proxies back to at least 1990, ideally 1972) before stating any figure."
+   },
+   {
+    "claim": "Paper-graduation and scale-up gates: 6 months, 100+ trades, 'corrected Sharpe above 0'",
+    "problem": "Six months of daily-strategy returns gives a Sharpe standard error of about 1.4 annualized. A zero-edge strategy shows a positive Sharpe about half the time after a modest haircut, so the gate cannot separate skill from luck. It risks graduating false positives, the exact failure the report warns about. A '100 trades' requirement is also impossible for monthly trend rules (about 10-30 switches in 6 months).",
+    "correction": "Graduation should rest on a pre-registered BACKTEST test (BH/Holm plus DSR p<0.05 on a fixed calendar hold-out, per the roadmap). Paper trading then serves only as an implementation check: divergence within tolerance and no breaches. For scale-up, require PSR(SR>0) \u2265 0.95 on live paper returns, which in practice means 18-24+ months. Set separate trade-count rules per strategy horizon."
+   },
+   {
+    "claim": "Retail All Weather backtest 'about 7.5%, -12% MDD' and Permanent/Golden Butterfly long-run stats",
+    "problem": "These come from snippets of low-quality or marketing sites (freenance.io and similar). The roadmap reviewer explicitly flagged citing such sources. The report acknowledges the caveat but still puts the figures in the comparison table.",
+    "correction": "Replace with figures from a reproducible source: portfoliocharts calculators, Simba's backtesting spreadsheet (Bogleheads), or the platform's own proxy backtest. Otherwise mark them 'unverified marketing figures' in the table itself."
+   }
+  ],
+  "biases": [
+   "Hindsight/2022 design bias: the core's distinctive sleeves (gold, commodities, cash, no long bonds) are exactly the 2022 survivors. A 5% commodity sleeve is justified almost entirely by DBC's +19% in 2022, though long-run broad commodity futures returns are near zero after roll (Erb-Harvey 2006; DBC had a negative return over 2008-2020).",
+   "Recency/regime bias against duration: the report generalises 'no long Treasuries' from one rate shock. Long Treasuries were the best hedge in 2008 (TLT about +34%) and 2020 (about +18%). TLT's Sep-2026 price (77.78) is far below its 2022 low (96.11), so starting long yields are now much higher than in 2021. The forward case for some duration is stronger now, not weaker. Stock-bond correlation has fallen back to about 0.23 (rolling 12m).",
+   "Gold momentum/valuation bias: a 10% gold weight is set after GLD rose 128% in 5 years to record highs. Gold has had multi-decade real drawdowns (about -80% real 1980-2001) and a long-run real return near zero. It also provides the core's whole in-sample edge over 60/40.",
+   "Inflation-regime bias: the core is tilted for stagflation. In a 1980-2000-style disinflation, the 25-35% in gold, commodities, TIPS and cash would likely lag 60/40 by 1-3 pts/yr for decades, the kind of lag owners abandon.",
+   "US home bias and EM omission: 70% of equity is US (35/50) vs roughly 60-64% of global float. EM gets 0% in the core even though VWO was fetched, and there are no non-US bonds. US equity valuations in 2026 are high relative to ex-US, which argues for at least market weight abroad. Quoting '~10% nominal long run' for SPY uses trailing returns, not valuation-conditioned expectations (most 10-year capital market assumptions are well below that).",
+   "Start-date and window bias: 59 monthly observations with a start just before 2022, and the full-period SPY number is flattered by the 2023-26 run. The report acknowledges this, then still reports and uses ranks.",
+   "Survivorship of famous portfolios: the reviewed set consists of portfolios that became famous because their backtests looked good, so comparing them inherits selection bias. The report applies this skepticism to Golden Butterfly and BAA but not to its own blend.",
+   "Evidence-transfer bias for trend: the report borrows long/short managed-futures evidence (Hurst-Ooi-Pedersen; SG Trend 2022) for a long-only ETF timing sleeve. In this data the sleeve lowered excess Sharpe (0.68 to 0.64).",
+   "Measurement bias: zero-rf Sharpe in a 4-5% cash-rate era, and SHY used as 'cash', both distort comparisons between low-vol and high-vol mixes.",
+   "Investor-profile assumption: the report silently assumes a US-taxable individual with tax-advantaged space and USD liabilities. Jurisdiction, account type (individual, retirement or corporate), horizon and liabilities were never established."
+  ],
+  "missing": [
+   "Taxes and account location. GLD/IAU are taxed as collectibles (up to 28% long-term in US taxable accounts). DBC issues a K-1 (PDBC avoids it, but distributions are ordinary income). TIPS inflation accruals are taxed annually ('phantom income'). The monthly Faber sleeve and 5/25 band rebalancing realise short-term gains. Treasury interest is state-tax-exempt. Wash-sale interactions arise between the core and the trend sleeve holding the same ETFs. Recommendation needed: trend sleeve, TIPS and commodities in tax-advantaged accounts; core rebalancing via new cash flows first.",
+   "Non-US investor considerations, if applicable: US-situs estate tax exposure on US-domiciled ETFs above $60k, 30% dividend withholding, and currency of liabilities. UCITS equivalents may be required.",
+   "Expense ratios and implementation costs. DBC 0.85% vs PDBC 0.59%, GLD 0.40% vs GLDM about 0.10%, TIP 0.18% vs SCHP 0.03%. No costs were modelled in any backtest. Spreads on small monthly trend trades and odd-lot rounding on small accounts are also omitted.",
+   "Behavioural and tracking-error risk. In-sample the core trailed SPY by 4 pts/yr (8.3% vs 12.4%) and in 2023-26 by 6 pts/yr (14.4% vs 20.6%). An owner who builds trading platforms is the profile most likely to abandon a lagging diversified core or override the trend sleeve. Missing pieces: a written Investment Policy Statement, pre-committed review dates, an explicit 'expected underperformance vs SPY' statement, and rules against discretionary overrides.",
+   "Operational burden of manual monthly execution: about 12 tickers across core and trend sleeves, placed by hand in IBKR, with the trend sleeve's signal-date and execution-date discipline. The report should consider quarterly core checks and a lower-maintenance trend implementation.",
+   "A deflation/recession hedge analysis. With 15% IEF and 10% TIP the core's duration is about 1.75 years, and 2008/2020-type shocks are not stress-tested. Missing: a named 2008/2020 proxy run and a decision on 5-10% long duration given 2026 starting yields.",
+   "A long-history proxy backtest of the recommended core and core+trend. The report states no long backtest was run but still gives drawdown expectations. The data source for 15-20y total-return ETF history is unspecified. Alpaca's adjusted history is short, the IBKR MCP is a chat connector rather than platform code, and Tiingo is a Phase-5 item in the roadmap.",
+   "Rebalance-band interaction with small volatile sleeves. The 25% relative band on 10% gold or 5% commodities triggers at \u00b12.5 or \u00b11.25 pts, which would have forced repeated taxable gold sales during its 128% rise. This is not discussed.",
+   "Gap and event risk in the signal sleeve. A 2xATR stop does not cap losses on overnight or earnings gaps: a 10%-of-sleeve position with a -20% gap loses 2% of the sleeve, 4x the planned 0.5%. Missing: earnings blackouts for single stocks, or gap-aware sizing.",
+   "Guardrails on the 'allocation regime'. Without them, any order labelled core/trend skips stops, halts and loss limits. Needed: an allow-list of instruments, versioned target weights, a requirement that the order moves weights toward target within band tolerance, a human-approval token, and the global kill switch still applying in paper.",
+   "Reconciliation with roadmap gates. Allocation orders have no validation_status, so the roadmap's order-eligibility rule (oos_validated, later deflated_validated) would reject them. The WS0.4 interlock that skips a BUY when a long exists would block rebalance top-ups. Neither conflict is addressed.",
+   "Roadmap amendment on the fixed calendar hold-out. The signal gates do not say the hold-out is a fixed calendar cut-off recorded in the ADR and consulted once per strategy version.",
+   "Net scope accounting. The proposals add about 8 new modules or pages (ETF registry, two-regime risk engine, allocation, rebalance routes and UI, portfolio backtester, benchmarks, trend, stress proxies, divergence monitor) against a reviewer finding that the plan is already too large for one owner. There is no estimate showing scope actually shrinks, and no consideration of using an external backtester for allocation research.",
+   "Liquidity, emergency fund, horizon and contribution schedule. These are prerequisites for any profile assignment and are not mentioned."
+  ],
+  "revised_recommendations": [
+   "Rewrite the core's justification honestly. Present it as a judgment-based, 2022-informed tilt of the global market portfolio. Remove 'weights chosen before the data check' and the Doeswijk Sharpe of 0.69. Report excess-return Sharpe (rf = T-bills) for every row, and state in the table that the core did not beat SPY risk-adjusted in-sample (0.68 vs 0.71) and that its 60/40 lead is mostly gold.",
+   "Revise the balanced core toward the global market and away from 2022-specific bets, with lower fees: 32% US total market, 18% developed ex-US, 5% EM (equity 55%; US share of equity 58%, roughly market weight); 20% Treasuries split intermediate and long (e.g. 13 IEF/VGIT + 7 TLT/VGLT, restoring a deflation hedge now that long yields are high); 7% TIPS (prefer short-duration TIPS if the aim is inflation protection); 8% T-bills (SGOV/BIL); 5% gold (GLDM/IAUM); 0-5% broad commodities (PDBC, optional, labelled as insurance with near-zero expected premium). Then validate on long proxies rather than the 5-year window.",
+   "Before any drawdown or return expectations are published, run the core, core+trend and the benchmark set on a long proxy history. Use mutual-fund/index proxies (VFINX/VTSMX, VGTSX/EAFE, VFITX/VUSTX, VIPSX from 2000, gold spot, a commodity index, 3-month T-bill from FRED), at least 1990 onward and ideally 1972+. Name the 2000-02, 2008, 2013, 2020, 2022 and 1980-2000-disinflation windows. Replace SHY-as-cash with a real T-bill series.",
+   "Downgrade the trend sleeve to explicitly priced insurance. Start at 10% (not 15-20%), hold it in tax-advantaged accounts only, and keep the 8/10/12-month ensemble. State the expected cost (about 0.5-1 pt/yr of sleeve return in bull markets) and the in-sample result that it lowered excess Sharpe. Stop citing SG Trend 2022 or Hurst-Ooi-Pedersen as evidence for it. Optionally benchmark against a liquid managed-futures fund as the 'real' crisis-alpha alternative, with its fees disclosed.",
+   "Add a tax and account-location section. Trend sleeve, TIPS, commodities and REITs go in tax-advantaged accounts. Gold in taxable is noted as a collectible. Rebalance with new contributions and dividends first, and use bands of max(5 pts, 25% relative) with a minimum 2-pt trade for sleeves under 10%. Watch wash sales between sleeves. Make the whole report conditional on confirming jurisdiction, account type (individual, retirement or corporate) and horizon. If the investor is non-US, substitute UCITS funds.",
+   "Add a one-page Investment Policy Statement covering targets, bands, the review schedule (quarterly core check, monthly trend only if automated), the expected tracking error vs SPY (e.g. 'may trail SPY by 3-6 pts/yr for years'), a rule against discretionary overrides, and the conditions under which the policy may change. This is the main defense against behavioural risk.",
+   "Harden the two-regime risk engine against bypass. An allocation-regime order is accepted only if (a) the instrument is on the allocation allow-list, (b) it moves the sleeve toward a versioned target within band tolerance, (c) the per-order dollar cap and global kill switch still apply, and (d) in Phase 1 it is paper-only and human-approved. Sleeve equity must be a hard-configured dollar amount, never derived from account equity.",
+   "Resolve the roadmap conflicts explicitly. Add a 'policy_allocation' eligibility class to the WS1.3 chokepoint, with its own checks, instead of exempting it from validation_status. Amend the WS0.4 interlock to allow BUYs that reduce drift toward target for allocation-tagged orders. Adopt the reviewer's fixed calendar hold-out date for all signal gates. Keep live mode out, with the paper=True test.",
+   "Fix the signal-graduation gates. Statistical evidence must come from the pre-registered backtest (BH/Holm in WS2.3, then one DSR gate, on a fixed hold-out). Paper trading is an implementation check: divergence within tolerance and zero breaches. Scale-up requires PSR(SR>0) \u2265 0.95 on paper or live-equivalent returns (realistically 18-24+ months), not 'corrected Sharpe > 0' after 6 months. Use horizon-specific trade minimums.",
+   "Adjust signal-sleeve risk defaults. Add an earnings/event blackout for single stocks, or size on max(2xATR, historical gap percentile). Drop the 5% heat cap to 4% or allow more positions, because 8 positions x 0.5% makes 5% heat non-binding. Reconcile the 'notional 10% satellite budget' (profile table) with the '5% of total capital' cap. Keep the $1000 absolute order cap during plumbing tests and log when it binds.",
+   "Size bitcoin by risk contribution in the actual core. Compute its marginal risk share at the core's 9-10% vol and cap it at \u22644-5% of portfolio risk, likely below 2% notional. Cite BlackRock accurately (1-2% \u2248 one Magnificent 7 stock's about 4% risk share in a 60/40).",
+   "Cut net scope. Do allocation research first with an external or spreadsheet backtester or a minimal portfolio_backtester.py (target weights, monthly, total return, T-bill cash, costs). Build the rebalance-proposal CLI before any React Allocation page. Defer the divergence dashboard, stress-proxy UI and optional HRP/vol-targeting modules until the platform's validation phases (2 and 4) are done. Name a 15-20y total-return data source (Tiingo or stored mutual-fund proxies) in Phase 0 alongside the frozen snapshot.",
+   "Replace snippet-sourced figures in the comparison table with reproducible numbers or explicit 'unverified' labels. Verified in this review: Do-Faff 0.86% \u2192 0.37% \u2192 0.24%/month; Faber replication 2006-2025 6.05% CAGR, Sharpe 0.68, 11.7% MDD; SG Trend 2022 +27.3%; Doeswijk 4.45% real, 11.2% vol, 3.39% excess. Corrected: AFP figures, the Doeswijk Sharpe, and TIPS in 2022 (-12.1%)."
+  ]
+ }
+}

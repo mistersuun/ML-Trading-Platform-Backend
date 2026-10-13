@@ -1,0 +1,189 @@
+"""Bug-pinning tests for order execution / signal selection (WS0.3: ORD-*, SIG-1).
+
+xfail(strict) tests assert the CORRECT behaviour and currently fail with AssertionError.
+ORD-7 is a normal passing guard test.
+"""
+from types import SimpleNamespace
+
+import numpy as np
+import pandas as pd
+import pytest
+
+import config
+import main
+import validation
+from services import pairs as pairs_svc, report as report_svc, scan as scan_svc, session as session_svc
+import backtester, data_fetcher
+import paper_trader
+from brokers.alpaca import AlpacaBroker
+from risk_manager import RiskManager
+from tests.fixtures.fake_broker import init_state, pretend_validated
+
+BUG = dict(strict=True, raises=AssertionError)
+
+
+# --------------------------------------------------------------------------- helpers
+def _frame(n=60, price=10.0, last_signal=1):
+    idx = pd.bdate_range("2024-01-01", periods=n)
+    df = pd.DataFrame({"Open": price, "High": price * 1.01, "Low": price * 0.99,
+                       "Close": price, "Volume": 1_000_000}, index=idx)
+    df["signal"] = 0
+    df.iloc[-1, df.columns.get_loc("signal")] = last_signal
+    return df
+
+
+def _fake_result(win_rate=0.6, profit_factor=1e10, trades=20):
+    r = SimpleNamespace(is_valid=True, win_rate=win_rate, profit_factor=profit_factor,
+                        total_trades=trades, total_return_pct=0.1)
+    r.summary = lambda: {"symbol": "X", "pattern": "stub", "win_rate": win_rate,
+                         "profit_factor": profit_factor}
+    return r
+
+
+@pytest.fixture
+def paper_env(monkeypatch, fake_broker, tmp_path):
+    """FakeBroker + tmp state DB; 'unvalidated' is treated as eligible so the order path can be exercised."""
+    init_state(monkeypatch, tmp_path)
+    pretend_validated(monkeypatch)
+    return fake_broker
+
+
+@pytest.fixture
+def scan_env(monkeypatch, paper_env):
+    """Stub out alerts and the backtest so scan_technical only exercises order routing."""
+    monkeypatch.setattr(session_svc, "get_broker", lambda: AlpacaBroker(paper_env))
+    monkeypatch.setattr(session_svc, "send_alert", lambda *a, **k: True)
+    monkeypatch.setattr(scan_svc, "format_signal_alert", lambda *a, **k: "msg")
+    monkeypatch.setattr(backtester, "classic_backtest", lambda df, sym, pat: _fake_result())
+
+    def stub_pattern(df):
+        return df.copy()
+
+    monkeypatch.setattr(scan_svc, "PATTERN_REGISTRY", {"stub_a": stub_pattern, "stub_b": stub_pattern})
+    # D11 (Phase 3): the legacy in-sample tier is retired, so a signal is reported only when it is validated or
+    # OOS-positive; stub the validation run to say every (symbol, pattern) is OOS-positive (still 'unvalidated').
+    monkeypatch.setattr(scan_svc.validation, "evaluate_candidates", lambda frames, patterns, *a, **k: [
+        validation.CandidateResult(symbol=s, pattern=p, params={}, n_oos_trades=config.MIN_TRADES_OOS + 10,
+                                   oos={"sharpe": 1.0}) for s in frames for p in patterns])
+    monkeypatch.setattr(scan_svc.signals, "latest_atr", lambda df, *a, **k: 0.2)  # flat synthetic frame has ATR ~0.2
+    return paper_env
+
+
+def _submits(broker):
+    return [c[1][0] for c in broker.calls_to("submit_order")]
+
+
+# --------------------------------------------------------------------------- ORD-1
+def test_ORD_1_qty_bounded_when_profit_factor_huge(paper_env):
+    price = 10.0
+    # an out-of-range "confidence" (the old win_rate * profit_factor) is rejected outright
+    paper_trader.execute_signal("AAPL", 1, confidence=0.6 * 1e10, current_price=price, atr=0.2)
+    assert _submits(paper_env) == []
+    paper_trader.execute_signal("MSFT", 1, confidence=1.0, current_price=price, atr=0.2)
+    orders = _submits(paper_env)
+    assert len(orders) == 1
+    notional = float(orders[0].qty) * price
+    assert notional <= config.MAX_ORDER_NOTIONAL
+
+
+# --------------------------------------------------------------------------- ORD-2
+def test_ORD_2_one_order_per_symbol_bar(scan_env):
+    data = {"AAPL": _frame(last_signal=1)}
+    scan_svc.scan_technical(data, paper_trade=True)  # two patterns both fire
+    scan_svc.scan_technical(data, paper_trade=True)  # repeated run, same bar
+    keys = [(o.symbol, str(o.side)) for o in _submits(scan_env)]
+    assert len(keys) == len(set(keys)) and len(keys) <= 1
+
+
+def test_ORD_2b_no_rebuy_on_same_bar_after_position_closed(scan_env):
+    data = {"AAPL": _frame(last_signal=1)}
+    scan_svc.scan_technical(data, paper_trade=True)
+    assert len(_submits(scan_env)) == 1
+    # the order filled and the position was closed between runs: broker state is clean again
+    scan_env.orders.clear()
+    scan_env.positions.clear()
+    scan_svc.scan_technical(data, paper_trade=True)  # same bar, second run
+    assert len(_submits(scan_env)) <= 1, "same (symbol, bar) bought twice"
+
+
+# --------------------------------------------------------------------------- ORD-3
+def test_ORD_3_risk_manager_blocks_orders_when_halted(scan_env, monkeypatch):
+    rm = RiskManager()
+    rm.halt("test")
+    assert rm.check().allowed is False
+    scan_svc.scan_technical({"AAPL": _frame(last_signal=1)}, paper_trade=True)
+    assert _submits(scan_env) == []
+
+
+# --------------------------------------------------------------------------- ORD-4
+def test_ORD_4_no_non_equity_symbol_reaches_broker(scan_env):
+    data = {s: _frame(last_signal=1) for s in ("GC=F", "EURUSD=X", "^GSPC")}
+    scan_svc.scan_technical(data, paper_trade=True)
+    bad = [o.symbol for o in _submits(scan_env) if any(t in o.symbol for t in ("=F", "=X", "^"))]
+    assert bad == []
+
+
+# --------------------------------------------------------------------------- ORD-5
+def test_ORD_5_sell_without_position_rejected(paper_env):
+    assert paper_env.positions == []
+    paper_trader.execute_signal("AAPL", -1, confidence=1.0, current_price=100.0)
+    sells = [o for o in _submits(paper_env) if "sell" in str(o.side).lower()]
+    assert sells == []
+
+
+# --------------------------------------------------------------------------- ORD-6
+def test_ORD_6_ml_sell_confidence_at_least_half(monkeypatch, fake_broker):
+    # Phase 2 (WS2.5/2.7): scan_ml evaluates through ml_scan_candidate (purged walk-forward, OOS rows only);
+    # only the stub plumbing changed here, the assertions below are untouched.
+    oos = _frame(n=250, last_signal=0)
+    oos["signal"] = 0
+    oos["ml_confidence"] = 0.5
+    oos.iloc[-1, oos.columns.get_loc("signal")] = -1
+    oos.iloc[-1, oos.columns.get_loc("ml_confidence")] = 0.15  # prob_up -> strong SELL
+
+    class StubDetector:
+        def train(self, df):
+            return {"mean_cv_accuracy": 0.6, "top_features": {}}
+
+    cand = {"symbol": "AAPL", "direction": -1, "confidence": 0.85, "oos_auc": 0.62, "baseline_auc": 0.53,
+            "oos_start": str(oos.index[0].date()), "oos_validated": True, "oos_frame": oos,
+            "oos_backtest_summary": {"win_rate": 0.6, "profit_factor": 1.5, "total_trades": 40}}
+    intents = []
+    monkeypatch.setattr(scan_svc, "MLPatternDetector", StubDetector)
+    monkeypatch.setattr(scan_svc, "ml_scan_candidate", lambda df, sym: cand)
+    monkeypatch.setattr(backtester, "classic_backtest", lambda df, s, p: _fake_result(profit_factor=1.5))
+    scan_svc.scan_ml({"AAPL": _frame(n=250, last_signal=0)}, paper_trade=True, intents=intents)
+    assert len(intents) == 1 and intents[0].direction == -1
+    assert intents[0].confidence >= 0.5
+
+
+# --------------------------------------------------------------------------- SIG-1
+def test_SIG_1_latest_nonzero_signal_wins():
+    df = _frame(n=10, last_signal=0)
+    col = df.columns.get_loc("signal")
+    df.iloc[-3, col] = 1
+    df.iloc[-1, col] = -1  # latest non-zero within the window is a SELL
+    assert scan_svc.check_recent_signal(df) == -1
+    df2 = _frame(n=10, last_signal=0)
+    df2.iloc[-3, col] = -1
+    df2.iloc[-1, col] = 1
+    assert scan_svc.check_recent_signal(df2) == 1
+
+
+# --------------------------------------------------------------------------- ORD-7 (passing)
+def test_ORD_7_trading_client_is_always_paper(monkeypatch):
+    seen = {}
+
+    class SpyClient:
+        def __init__(self, *args, **kwargs):
+            seen["args"], seen["kwargs"] = args, kwargs
+
+    import alpaca.trading.client as alpaca_client
+    monkeypatch.setattr(alpaca_client, "TradingClient", SpyClient)
+    monkeypatch.setattr(paper_trader, "_client", None)
+    monkeypatch.setattr(config, "ALPACA_API_KEY", "k")
+    monkeypatch.setattr(config, "ALPACA_SECRET_KEY", "s")
+    client = paper_trader._get_broker().client
+    assert isinstance(client, SpyClient)
+    assert seen["kwargs"].get("paper") is True
+    monkeypatch.setattr(paper_trader, "_client", None)  # don't leak the spy

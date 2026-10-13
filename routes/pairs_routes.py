@@ -1,14 +1,15 @@
-"""Pairs trading endpoints."""
+"""Pairs trading endpoints (WS2.6): thin adapters over services.pairs."""
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-from typing import Optional
-from data_fetcher import fetch_ohlcv
-from pairs_trading import (
-    analyze_pair, is_valid_pair, generate_pair_signals,
-    backtest_pair, scan_all_pairs, compute_spread, compute_half_life,
-)
-import config
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from api.concurrency import HEAVY, HEAVY_RESPONSES, heavy_endpoint
+from api.errors import ERROR_RESPONSES, reply
+from api.serialize import to_native
+from routes.helpers import PERIOD_MAX, PERIOD_MIN, check_symbol
+from services import models as M
+from services import pairs
+from services.providers import DataProvider, get_provider
 
 router = APIRouter()
 
@@ -16,112 +17,36 @@ router = APIRouter()
 class PairRequest(BaseModel):
     symbol_a: str
     symbol_b: str
-    period_days: int = 504
+    period_days: int = Field(504, ge=PERIOD_MIN, le=PERIOD_MAX)
+
+    _a = field_validator("symbol_a")(check_symbol)
+    _b = field_validator("symbol_b")(check_symbol)
+
+    @model_validator(mode="after")
+    def _distinct(self):
+        if self.symbol_a == self.symbol_b:
+            raise ValueError("symbol_a and symbol_b must differ")
+        return self
 
 
-@router.get("/configured")
+_native = to_native  # backwards-compatible names
+_sanitize = to_native
+
+
+@router.get("/configured", response_model=M.PairsConfiguredResponse, responses=ERROR_RESPONSES)
 def get_configured_pairs():
     """Get list of configured pairs."""
-    return {"pairs": [{"a": a, "b": b} for a, b in config.PAIRS]}
+    return reply(M.PairsConfiguredResponse, pairs.configured_pairs())
 
 
-@router.post("/analyze")
-def analyze(req: PairRequest):
+@router.post("/analyze", response_model=M.PairAnalysisResponse, responses=ERROR_RESPONSES)
+def analyze(req: PairRequest, provider: DataProvider = Depends(get_provider)):
     """Run full cointegration analysis on a pair."""
-    df_a = fetch_ohlcv(req.symbol_a, period_days=req.period_days)
-    df_b = fetch_ohlcv(req.symbol_b, period_days=req.period_days)
-
-    if df_a.empty or df_b.empty:
-        return {"error": "Failed to fetch data for one or both symbols"}
-
-    # Align
-    common = df_a.index.intersection(df_b.index)
-    if len(common) < 60:
-        return {"error": "Insufficient overlapping data"}
-
-    df_a = df_a.loc[common]
-    df_b = df_b.loc[common]
-
-    analysis = analyze_pair(df_a, df_b, req.symbol_a, req.symbol_b)
-    valid = is_valid_pair(analysis)
-
-    # Spread and z-score for charting
-    spread = compute_spread(df_a["Close"], df_b["Close"], analysis.hedge_ratio)
-    spread_mean = spread.rolling(60).mean()
-    spread_std = spread.rolling(60).std()
-    zscore = ((spread - spread_mean) / (spread_std + 1e-10))
-
-    spread_data = []
-    for idx in spread.index:
-        s_val = spread.loc[idx]
-        z_val = zscore.loc[idx] if idx in zscore.index else None
-        if s_val is not None:
-            entry = {"date": idx.isoformat(), "spread": round(float(s_val), 4)}
-            if z_val is not None and not (isinstance(z_val, float) and z_val != z_val):
-                entry["zscore"] = round(float(z_val), 4)
-            spread_data.append(entry)
-
-    # Price series for chart
-    prices_a = [{"date": idx.isoformat(), "price": round(float(row["Close"]), 4)}
-                for idx, row in df_a.iterrows()]
-    prices_b = [{"date": idx.isoformat(), "price": round(float(row["Close"]), 4)}
-                for idx, row in df_b.iterrows()]
-
-    # Generate signals and backtest
-    signals = generate_pair_signals(df_a, df_b, analysis)
-    bt = backtest_pair(signals, analysis)
-
-    return {
-        "symbol_a": req.symbol_a,
-        "symbol_b": req.symbol_b,
-        "is_cointegrated": bool(analysis.is_cointegrated),
-        "is_valid": bool(valid),
-        "coint_pvalue": round(float(analysis.coint_pvalue), 6),
-        "hedge_ratio": round(float(analysis.hedge_ratio), 4),
-        "half_life": round(float(analysis.half_life), 1),
-        "correlation": round(float(analysis.correlation), 4),
-        "current_zscore": round(float(analysis.current_zscore), 4),
-        "spread_data": spread_data,
-        "prices_a": prices_a,
-        "prices_b": prices_b,
-        "backtest": _sanitize(bt),
-    }
+    return reply(M.PairAnalysisResponse, pairs.analyze(provider, req.symbol_a, req.symbol_b, req.period_days))
 
 
-def _sanitize(obj):
-    """Recursively convert numpy types to Python natives for JSON serialization."""
-    import numpy as np
-    if isinstance(obj, dict):
-        return {k: _sanitize(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_sanitize(v) for v in obj]
-    if isinstance(obj, np.bool_):
-        return bool(obj)
-    if isinstance(obj, np.integer):
-        return int(obj)
-    if isinstance(obj, np.floating):
-        if np.isnan(obj) or np.isinf(obj):
-            return None
-        return float(obj)
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    return obj
-
-
-@router.post("/scan")
-def scan_pairs():
-    """Scan all configured pairs."""
-    # Fetch data for all symbols in pairs
-    symbols = set()
-    for a, b in config.PAIRS:
-        symbols.add(a)
-        symbols.add(b)
-
-    data = {}
-    for sym in symbols:
-        df = fetch_ohlcv(sym, period_days=config.PAIRS_LOOKBACK)
-        if not df.empty:
-            data[sym] = df
-
-    results = scan_all_pairs(data)
-    return {"count": len(results), "pairs": results}
+@router.post("/scan", response_model=M.PairsScanResponse, responses=HEAVY_RESPONSES)
+@heavy_endpoint(semaphore=HEAVY)
+def scan_pairs(provider: DataProvider = Depends(get_provider)):
+    """Scan the default pairs (research-only pairs excluded); BH-corrected across all pairs scanned."""
+    return reply(M.PairsScanResponse, pairs.scan(provider))

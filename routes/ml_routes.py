@@ -1,68 +1,28 @@
 """ML pattern detection endpoints."""
 
-import numpy as np
-from fastapi import APIRouter
-from pydantic import BaseModel
-from data_fetcher import fetch_ohlcv
-from ml_patterns import MLPatternDetector
-from routes.helpers import json_response
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field, field_validator
+
+from api.concurrency import HEAVY, HEAVY_RESPONSES, heavy_endpoint
+from api.errors import ERROR_RESPONSES, reply
+from routes.helpers import PERIOD_MAX, PERIOD_MIN, check_symbol
+from services import models as M
+from services import ml
+from services.providers import DataProvider, get_provider
 
 router = APIRouter()
 
 
 class MLRequest(BaseModel):
     symbol: str
-    period_days: int = 730
+    period_days: int = Field(730, ge=PERIOD_MIN, le=PERIOD_MAX)
+    include_holdout: bool = True      # False: only bars before config.HOLDOUT_START
+
+    _sym = field_validator("symbol")(check_symbol)
 
 
-@router.post("/predict")
-def ml_predict(req: MLRequest):
-    """Train ML ensemble and generate predictions."""
-    df = fetch_ohlcv(req.symbol, period_days=req.period_days)
-    if df.empty:
-        return {"error": f"No data for {req.symbol}"}
-
-    detector = MLPatternDetector()
-    predictions = detector.walk_forward_predict(df)
-
-    # Feature importance (it's a pd.Series)
-    importance = []
-    if detector.feature_importances is not None:
-        sorted_imp = detector.feature_importances.sort_values(ascending=False).head(20)
-        for feat, imp in sorted_imp.items():
-            importance.append({"feature": str(feat), "importance": round(float(imp), 4)})
-
-    # Extract signals
-    signals = []
-    pred_signals = predictions[predictions["signal"] != 0]
-    for idx, row in pred_signals.iterrows():
-        entry = {
-            "date": idx.isoformat(),
-            "signal": "BUY" if row["signal"] == 1 else "SELL",
-            "price": round(float(row["Close"]), 4),
-        }
-        if "ml_confidence" in row:
-            entry["confidence"] = round(float(row["ml_confidence"]), 4)
-        signals.append(entry)
-
-    # Backtest
-    from backtester import classic_backtest
-    bt = classic_backtest(predictions, req.symbol, "ml_ensemble")
-
-    equity_data = []
-    if bt.equity_curve is not None and not bt.equity_curve.empty:
-        for idx, val in bt.equity_curve.items():
-            v = float(val)
-            if not np.isnan(v):
-                equity_data.append({"date": idx.isoformat(), "value": round(v, 2)})
-
-    return json_response({
-        "symbol": req.symbol,
-        "model_type": "ensemble_rf_xgb_lgbm",
-        "feature_importance": importance,
-        "signals": signals,
-        "total_signals": len(signals),
-        "metrics": bt.summary(),
-        "equity_curve": equity_data,
-        "is_valid": bt.is_valid,
-    })
+@router.post("/predict", response_model=M.MLPredictResponse, responses=HEAVY_RESPONSES)
+@heavy_endpoint(semaphore=HEAVY)
+def ml_predict(req: MLRequest, provider: DataProvider = Depends(get_provider)):
+    """Walk-forward ML predictions; the backtest and signals cover ONLY out-of-sample bars."""
+    return reply(M.MLPredictResponse, ml.predict(provider, req.symbol, req.period_days, req.include_holdout))

@@ -1,15 +1,18 @@
 """Configuration endpoints."""
 
 from fastapi import APIRouter
+
 import config
+from api.errors import ERROR_RESPONSES, reply
+from services import models as M
 
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("/", response_model=M.ConfigResponse, responses=ERROR_RESPONSES)
 def get_config():
     """Get current configuration."""
-    return {
+    return reply(M.ConfigResponse, {
         "watchlist": config.WATCHLIST,
         "pairs": [{"a": a, "b": b} for a, b in config.PAIRS],
         "backtest": {
@@ -39,4 +42,4 @@ def get_config():
             "lookback_bars": config.ML_LOOKBACK_BARS,
             "min_confidence": config.ML_MIN_CONFIDENCE,
         },
-    }
+    })

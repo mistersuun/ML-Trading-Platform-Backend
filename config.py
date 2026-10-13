@@ -56,11 +56,18 @@ PAIRS = [
 # ══════════════════════════════════════════════════════════════
 
 DATA_SOURCE_PRIORITY = ["alpaca", "alphavantage", "yfinance"]
+if os.getenv("DATA_SOURCE_PRIORITY", "").strip():       # e.g. DATA_SOURCE_PRIORITY=external
+    DATA_SOURCE_PRIORITY = [s.strip() for s in os.getenv("DATA_SOURCE_PRIORITY", "").split(",") if s.strip()]
+
+# Forward paper test (docs/forward-test/RUNBOOK.md): bars come from files the orchestrator writes (raw IBKR
+# get_price_history JSON, one file per symbol) and orders go to a simulated paper broker. No network is needed.
+FORWARD_TEST = os.getenv("FORWARD_TEST", "").strip().lower() in ("1", "true", "yes", "on")
 
 ALPACA_API_KEY = os.getenv("ALPACA_API_KEY", "")
 ALPACA_SECRET_KEY = os.getenv("ALPACA_SECRET_KEY", "")
 ALPACA_BASE_URL = os.getenv("ALPACA_BASE_URL", "https://paper-api.alpaca.markets")
 ALPACA_DATA_URL = "https://data.alpaca.markets"
+ALPACA_FEED = os.getenv("ALPACA_FEED", "iex")  # stock data feed: iex (free) | sip | delayed_sip
 
 ALPHA_VANTAGE_KEY = os.getenv("ALPHA_VANTAGE_KEY", "")
 
@@ -157,7 +164,18 @@ ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "")
 # ══════════════════════════════════════════════════════════════
 
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_MODEL = "claude-sonnet-4-20250514"
+# CLAUDE_MODEL wins; ANTHROPIC_MODEL is accepted as an alias.
+CLAUDE_MODEL = os.getenv("CLAUDE_MODEL") or os.getenv("ANTHROPIC_MODEL") or "claude-opus-5-5"
+LLM_EFFORT = os.getenv("LLM_EFFORT", "medium")
+LLM_TIMEOUT_S = 120
+LLM_MAX_TOKENS = 16000
+LLM_REFUSAL_FALLBACK = os.getenv("LLM_REFUSAL_FALLBACK", "default").strip().lower()  # default | off
+# Nightly briefing (D17): advisory only, capped spend. A call is skipped when today's / this month's spend plus a
+# worst-case estimate (LLM_BRIEFING_MAX_TOKENS of output) would exceed a budget.
+LLM_BRIEFING_ENABLED = os.getenv("LLM_BRIEFING_ENABLED", "true").strip().lower() not in ("0", "false", "no", "off")
+LLM_BRIEFING_MAX_TOKENS = 6000
+LLM_DAILY_BUDGET_USD = float(os.getenv("LLM_DAILY_BUDGET_USD", "0.50"))
+LLM_MONTHLY_BUDGET_USD = float(os.getenv("LLM_MONTHLY_BUDGET_USD", "5.00"))
 
 # ══════════════════════════════════════════════════════════════
 #  PAPER TRADING
@@ -165,3 +183,201 @@ CLAUDE_MODEL = "claude-sonnet-4-20250514"
 
 PAPER_TRADE_ENABLED = os.getenv("PAPER_TRADE_ENABLED", "false").lower() == "true"
 PAPER_TRADE_MAX_ORDER_VALUE = 1000  # Max $ per paper trade order
+# Emergency interlock (WS0.4): orders only when TRADING_MODE=paper AND PAPER_TRADE_ENABLED=true
+TRADING_MODE = os.getenv("TRADING_MODE", "off").strip().lower()
+if TRADING_MODE not in ("off", "paper"):
+    TRADING_MODE = "off"
+# Which paper broker execution talks to: "alpaca" (the Alpaca PAPER account, default) or "sim" (brokers/sim.py,
+# a persisted offline simulation). There is no live broker.
+PAPER_BROKER = os.getenv("PAPER_BROKER", "alpaca").strip().lower()
+if PAPER_BROKER not in ("alpaca", "sim"):
+    PAPER_BROKER = "alpaca"
+SIM_SLIPPAGE_BPS = float(os.getenv("SIM_SLIPPAGE_BPS", "5") or 5)
+SIM_START_CASH = float(os.getenv("SIM_START_CASH", "100000") or 100000)   # fictional dollars
+
+# ══════════════════════════════════════════════════════════════
+#  PHASE 1 — EXECUTION, RISK STATE, SIGNAL SLEEVE (docs/decisions.md D5)
+#  These replace the placeholders above for anything that reaches the broker.
+#  The core/trend allocation is NOT traded through here (D1: proposals only).
+# ══════════════════════════════════════════════════════════════
+
+def _f(name: str, default: float) -> float:
+    try:
+        return float(os.getenv(name, default))
+    except (TypeError, ValueError):
+        return default
+
+def _repo_path(env_key: str, default: str) -> str:
+    """Relative overrides resolve against the repo, not the cwd: cron/scheduler may run elsewhere,
+    and a kill-switch file the process never looks at fails open."""
+    p = Path(os.getenv(env_key, "") or default)
+    return str(p if p.is_absolute() or str(p) == ":memory:" else Path(__file__).parent / p)
+
+
+# The forward test keeps its own state DB so it can never touch the real one (unless STATE_DB_PATH is set).
+STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/forward/trading.db" if FORWARD_TEST else "state/trading.db")
+EXTERNAL_BARS_DIR = _repo_path("EXTERNAL_BARS_DIR", "state/external_bars")
+SIM_BROKER_PATH = _repo_path("SIM_BROKER_PATH", "state/sim_broker.json")
+FORWARD_JOURNAL_DIR = _repo_path("FORWARD_JOURNAL_DIR", "docs/forward-test/2026-10")
+KILL_SWITCH_FILE = _repo_path("KILL_SWITCH_FILE", "state/KILL")
+
+# Signal-sleeve equity is a configured dollar amount, never derived from broker equity.
+SIGNAL_SLEEVE_EQUITY = _f("SIGNAL_SLEEVE_EQUITY", 10_000.0)
+RISK_PER_TRADE_PCT = 0.005          # 0.5% of sleeve risked to the stop (allowed 0.25-1.0%)
+ATR_PERIOD = 20
+TAKE_PROFIT_ATR_MULT = 3.0           # bracket take-profit = this x ATR above the entry (execution and the pooled null share it)
+ATR_STOP_MULT = 2.0                 # initial stop = 2 x ATR(20) from the fill
+MAX_SYMBOL_PCT = 0.10               # max notional per symbol, fraction of sleeve
+MAX_GROSS_EXPOSURE_PCT = 1.00       # no leverage
+MAX_PORTFOLIO_HEAT_PCT = 0.04       # total open risk-to-stop
+MAX_OPEN_POSITIONS = 8
+MAX_POSITIONS_PER_CLUSTER = 2
+MAX_ORDERS_PER_DAY = 5
+EQUITY_JUMP_HALT_PCT = _f("EQUITY_JUMP_HALT_PCT", 0.10)   # sleeve equity move between readings, no orders in between -> halt (D10)
+EXIT_CANCEL_WAIT_SECONDS = _f("EXIT_CANCEL_WAIT_SECONDS", 10.0)  # max wait for cancelled bracket legs to go terminal
+MAX_ORDER_NOTIONAL = _f("MAX_ORDER_NOTIONAL", 1000.0)   # absolute $ cap; order cap = min(this, MAX_SYMBOL_PCT*sleeve)
+DAILY_LOSS_STOP_PCT = 0.015         # no new entries for the day
+WEEKLY_LOSS_STOP_PCT = 0.03         # no new entries for the week
+DRAWDOWN_LADDER = ((0.05, 0.5), (0.08, 0.25))   # (drawdown from sleeve peak, risk multiplier)
+DRAWDOWN_HALT_PCT = 0.10            # persisted hard halt; manual `risk resume --confirm`
+CANCEL_ON_HALT = os.getenv("CANCEL_ON_HALT", "true").lower() == "true"
+
+# Correlation clusters for MAX_POSITIONS_PER_CLUSTER (symbols not listed are their own cluster)
+CLUSTERS = {
+    "us_index": ["SPY", "QQQ", "IWM", "DIA"],
+    "mega_tech": ["AAPL", "MSFT", "NVDA", "AMZN", "META", "GOOG", "AMD", "TSLA"],
+    "banks": ["JPM", "GS", "BAC"],
+    "energy": ["XOM", "CVX"],
+}
+
+# Signal eligibility for orders (D6, WS4.2). oos_validated alone is NOT order-eligible: the candidate must also
+# clear the Deflated Sharpe gate (N = the run's registry trial count).
+ORDER_ELIGIBLE_STATUSES = ("deflated_validated",)
+DSR_P_MAX = 0.05                    # deflated_validated needs DSR one-sided p = 1 - DSR < this
+PBO_S = 16                          # CSCV blocks for the ADVISORY probability of backtest overfitting (not gated)
+
+# Pairs excluded from the default scan (D3)
+RESEARCH_ONLY_PAIRS = [("GC=F", "SI=F"), ("CL=F", "NG=F")]
+
+# ══════════════════════════════════════════════════════════════
+#  PHASE 2 — CORRECT RESULTS (roadmap WS2.1-WS2.7 + reviewer amendments)
+# ══════════════════════════════════════════════════════════════
+
+# Engine convention (D11): signal at bar t executes at the open of t+1; Sharpe uses rf=0 on daily
+# mark-to-market returns of the actual position size. "close" execution is an explicit opt-in only.
+EXECUTION_MODE = "next_open"
+MIN_TRADES_OOS = 30
+
+# Data
+RESEARCH_LOOKBACK_DAYS = 365 * 8      # validation needs long history; display endpoints may use less
+DATA_COVERAGE_MIN = 0.95              # share of expected sessions that must be present
+DATA_MAX_ABS_DAILY_RETURN = 0.5       # flag (not drop) bars beyond this 1-day move
+
+# Validation (D6). The hold-out starts at a FIXED calendar date and is never used for selection;
+# results on it are read once per strategy version. Revisit (move forward) only with a new
+# strategy version, and record the change in docs/decisions.md.
+HOLDOUT_START = "2025-07-01"
+WF_TRAIN_BARS = 504                   # ~2y
+WF_TEST_BARS = 126                    # ~6m
+WF_STEP_BARS = 126
+OOS_PSR_MIN = 0.95
+NULL_DRAWS = 1000
+NULL_P_MAX = 0.05
+COST_STRESS_MULT = 2.0
+FDR_ALPHA = 0.05                      # Benjamini-Hochberg across ALL candidates tested in a run
+SEED = 20261005
+
+# ── Pooled validation (decision D18; shadow only, never order-eligible) ──
+# "off" disables it; "shadow" computes pooled results nightly and stores / serves them but NEVER makes anything
+# order-eligible. Any other value is treated as "off" (fail safe). The per-symbol path above does not read these.
+POOLED_VALIDATION = os.getenv("POOLED_VALIDATION", "shadow").strip().lower()
+if POOLED_VALIDATION not in ("off", "shadow"):
+    POOLED_VALIDATION = "off"
+# The forward paper test (FORWARD_TEST) keeps running the per-symbol gates only: its journal, timings and trial
+# counts must not change during the October 2026 forward week. Owners set this to false after that week.
+POOLED_SKIP_IN_FORWARD_TEST = os.getenv("POOLED_SKIP_IN_FORWARD_TEST", "true").strip().lower() not in ("0", "false", "no", "off")
+POOLED_WARMUP_BARS = 252              # D18(c): a fixed (non-fitted) pattern needs indicator warm-up, not a 504-bar train window
+POOLED_MIN_TRADES = 60                # pooled OOS trades ...
+POOLED_MIN_CLUSTERS = 30              # ... and distinct entry-week clusters
+POOLED_BREADTH_MIN = 8                # symbols with >= POOLED_BREADTH_MIN_TRADES OOS trades: >= max(this, ceil(K / 2))
+POOLED_BREADTH_MIN_TRADES = 3
+POOLED_MAX_MISSING = 0.10             # share of the universe that may be missing before the run is pooled_universe_incomplete
+POOLED_MAX_SYMBOL_SHARE = 0.25        # max share of the pooled absolute R-P&L any one symbol may contribute
+POOLED_HAC_LAGS = 10                  # floor of the Bartlett bandwidth used for the effective sample size
+POOLED_HOLDOUT_MIN_TRADES = 20        # a flat pooled hold-out must not pass
+POOLED_NULL_MAX_UNFIT = 0.05          # share of cluster members that may fail to fit a shared null offset
+POOLED_EXCLUDE_T = -2.0               # a symbol whose own OOS mean R has a one-sided t below this does not trade
+POOLED_BOOTSTRAP_DRAWS = 2000         # stationary / cluster bootstrap draws (reported, never gated)
+POOLED_BOOTSTRAP_BLOCK = 10           # mean block length of the stationary bootstrap, in days
+POOLED_XS_SPLITS = 2000               # seeded random symbol splits for the cross-sectional CSCV (advisory)
+POOLED_COMPONENTS_KEEP = 14           # retention: newest N pooled-*.components.parquet files in data/trials (about 0.8 MB each)
+POOLED_FAILURE_ALERT_NIGHTS = 2       # consecutive pooled_error / incomplete nights before a (non-halt) alert
+POOLED_FALLBACK_MAX_AGE_HOURS = 120   # an incomplete-universe run may show the last stored verdict for display up to this age
+# A universe other than the registered rule universe (the executable WATCHLIST["stocks"]) needs its own decision entry
+# recording why it was chosen; {universe_hash: "D18-..."}. Empty by default: nothing else may run pooled.
+POOLED_APPROVED_UNIVERSES: dict = {}
+# D18(d): retired from the POOLED pattern set only (identical signals to macd_crossover; chosen by rule, blind to
+# pooled results). The retired pattern stays in N. The per-symbol path still evaluates it.
+POOLED_RETIRED_PATTERNS = {"macd_hist_reversal": "macd_crossover"}
+
+# ML
+ML_HORIZON_BARS = 1
+ML_EMBARGO_BARS = 5
+ML_CV_TEST_BARS = 126
+
+# Pairs
+PAIRS_MIN_ALIGNED_BARS = 252
+PAIRS_ROLLING_WINDOW = 60
+PAIRS_TIME_STOP_HALF_LIVES = 3
+
+# ══════════════════════════════════════════════════════════════
+#  OWNER PORTFOLIO VIEW (decisions D1/D4: read-only, proposals only)
+# ══════════════════════════════════════════════════════════════
+
+# The owner's real holdings (`symbol,quantity` rows, a CASH row holds dollars). Never written by the platform.
+HOLDINGS_CSV = _repo_path("HOLDINGS_CSV", "state/holdings.csv")
+# Benchmark for the overview: monthly-rebalanced total-return mix.
+BENCHMARK_WEIGHTS = {"SPY": 0.6, "IEF": 0.4}
+
+# ══════════════════════════════════════════════════════════════
+#  IBKR READ-ONLY ACCOUNT SYNC (docs/decisions.md D14)
+#  Talks to a locally running IB Gateway with the API set to READ-ONLY (that Gateway setting is what actually blocks
+#  orders). In the code, brokers/ibkr_readonly.py is guarded by AST tests that ban order APIs and by an allow-list
+#  wrapper (best effort); connect(readonly=True) only skips order sync. The sync only reads the account into state
+#  DB snapshots.
+# ══════════════════════════════════════════════════════════════
+
+IBKR_HOST = os.getenv("IBKR_HOST", "127.0.0.1")
+IBKR_PORT = int(_f("IBKR_PORT", 4001))          # 4001 IB Gateway live, 4002 IB Gateway paper (7496/7497 for TWS)
+IBKR_CLIENT_ID = int(_f("IBKR_CLIENT_ID", 17))
+IBKR_ACCOUNT = os.getenv("IBKR_ACCOUNT", "").strip() or None   # optional: default is the first managed account
+IBKR_TIMEOUT_S = _f("IBKR_TIMEOUT_S", 10.0)
+# The nightly run only calls the sync when this is true (a machine without IB Gateway would alert every night).
+IBKR_SYNC_ENABLED = os.getenv("IBKR_SYNC_ENABLED", "false").strip().lower() == "true"
+BASE_CURRENCY = (os.getenv("BASE_CURRENCY", "CAD").strip().upper() or "CAD")
+# 'cad' = the CAD-listed mapping (default; approved by the owner 2026-10-05, D14); 'us' = the D4 core in US tickers.
+ALLOCATION_PROFILE = os.getenv("ALLOCATION_PROFILE", "cad").strip().lower()
+if ALLOCATION_PROFILE not in ("us", "cad"):
+    ALLOCATION_PROFILE = "cad"
+MAX_LEVERAGE_WARN = _f("MAX_LEVERAGE_WARN", 1.0)   # gross positions / net liquidation above this -> warning
+
+
+def enable_forward_test() -> None:
+    """Switch this process to the forward-test setup (idempotent): external bars only, simulated paper broker and a
+    separate state DB. Paper trading stays OFF here on purpose: only `services.forward.step` turns it on, locally and
+    for the duration of the step, so no other command (run-nightly, scan --paper) can place sim orders on a stale
+    sim clock. Used by `main.py forward ...` and FORWARD_TEST=1."""
+    global FORWARD_TEST, PAPER_BROKER, TRADING_MODE, PAPER_TRADE_ENABLED, STATE_DB_PATH, IBKR_SYNC_ENABLED, ALERT_METHOD
+    FORWARD_TEST = True
+    PAPER_BROKER = "sim"
+    TRADING_MODE = "off"
+    PAPER_TRADE_ENABLED = False
+    DATA_SOURCE_PRIORITY[:] = ["external"]
+    IBKR_SYNC_ENABLED = False        # no account sync, no network
+    ALERT_METHOD = "console"
+    if not os.getenv("STATE_DB_PATH"):
+        STATE_DB_PATH = _repo_path("STATE_DB_PATH", "state/forward/trading.db")
+
+
+if FORWARD_TEST:
+    enable_forward_test()

@@ -1,27 +1,11 @@
-"""Shared route helpers."""
+"""Shared route helpers: request-model validators (from the services) and the strict-JSON response."""
+from __future__ import annotations
 
-import json
-import numpy as np
-from fastapi.responses import JSONResponse
-
-
-class NumpyEncoder(json.JSONEncoder):
-    """JSON encoder that handles numpy types."""
-    def default(self, obj):
-        if isinstance(obj, np.bool_):
-            return bool(obj)
-        if isinstance(obj, np.integer):
-            return int(obj)
-        if isinstance(obj, np.floating):
-            if np.isnan(obj) or np.isinf(obj):
-                return None
-            return float(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return super().default(obj)
+from api.serialize import SafeJSONResponse, to_native
+from services.common import (PERIOD_MAX, PERIOD_MIN, SYMBOL_RE, check_pattern, check_symbol, cut_holdout, finite,  # noqa: F401
+                             holdout_info, require_data)
 
 
-def json_response(data: dict) -> JSONResponse:
-    """Return a JSONResponse that handles numpy types."""
-    content = json.loads(json.dumps(data, cls=NumpyEncoder))
-    return JSONResponse(content=content)
+def json_response(data) -> SafeJSONResponse:
+    """Back-compat name: strict JSON (NaN/inf -> null) for any payload."""
+    return SafeJSONResponse(content=to_native(data))

@@ -1,12 +1,16 @@
 """Stress testing endpoints."""
 
-from fastapi import APIRouter
-from pydantic import BaseModel
-from data_fetcher import fetch_ohlcv
-from patterns import PATTERN_REGISTRY
-from stress_test import full_stress_test, detect_regimes, monte_carlo_analysis, parameter_sensitivity
-from backtester import classic_backtest
-from routes.helpers import json_response
+from fastapi import APIRouter, Depends
+from pydantic import BaseModel, Field, field_validator
+
+import config
+from api.concurrency import HEAVY, HEAVY_RESPONSES, heavy_endpoint
+from api.errors import ERROR_RESPONSES, reply
+from api.serialize import ok
+from routes.helpers import PERIOD_MAX, PERIOD_MIN, check_pattern, check_symbol
+from services import models as M
+from services import stress
+from services.providers import DataProvider, get_provider
 
 router = APIRouter()
 
@@ -14,52 +18,34 @@ router = APIRouter()
 class StressRequest(BaseModel):
     symbol: str
     pattern_name: str
-    period_days: int = 730
+    period_days: int = Field(config.RESEARCH_LOOKBACK_DAYS, ge=PERIOD_MIN, le=PERIOD_MAX)
+
+    _sym = field_validator("symbol")(check_symbol)
+    _pat = field_validator("pattern_name")(check_pattern)
 
 
-@router.post("/full")
-def run_stress_test(req: StressRequest):
+class RegimeRequest(BaseModel):
+    symbol: str
+    period_days: int = Field(730, ge=PERIOD_MIN, le=PERIOD_MAX)
+
+    _sym = field_validator("symbol")(check_symbol)
+
+
+@router.post("/full", response_model=M.StressReport, responses=HEAVY_RESPONSES)
+@heavy_endpoint(semaphore=HEAVY)
+def run_stress_test(req: StressRequest, provider: DataProvider = Depends(get_provider)):
     """Run the complete stress test suite."""
-    if req.pattern_name not in PATTERN_REGISTRY:
-        return {"error": f"Unknown pattern: {req.pattern_name}"}
-
-    df = fetch_ohlcv(req.symbol, period_days=req.period_days)
-    if df.empty:
-        return {"error": f"No data for {req.symbol}"}
-
-    func = PATTERN_REGISTRY[req.pattern_name]
-    report = full_stress_test(df, req.symbol, func, req.pattern_name)
-    return json_response(report)
+    return reply(M.StressReport, stress.full(provider, req.symbol, req.pattern_name, req.period_days))
 
 
 @router.post("/regimes")
-def get_regimes(req: StressRequest):
+def get_regimes(req: RegimeRequest, provider: DataProvider = Depends(get_provider)):
     """Detect market regimes for a symbol."""
-    df = fetch_ohlcv(req.symbol, period_days=req.period_days)
-    if df.empty:
-        return {"error": f"No data for {req.symbol}"}
-
-    regimes = detect_regimes(df)
-    summary = {}
-    for col in regimes.columns:
-        counts = regimes[col].value_counts().to_dict()
-        summary[col] = {str(k): int(v) for k, v in counts.items()}
-
-    return json_response({"symbol": req.symbol, "regimes": summary})
+    return ok(stress.regimes(provider, req.symbol, req.period_days).dump())
 
 
-@router.post("/sensitivity")
-def get_sensitivity(req: StressRequest):
-    """Run parameter sensitivity analysis."""
-    if req.pattern_name not in PATTERN_REGISTRY:
-        return {"error": f"Unknown pattern: {req.pattern_name}"}
-
-    df = fetch_ohlcv(req.symbol, period_days=req.period_days)
-    if df.empty:
-        return {"error": f"No data for {req.symbol}"}
-
-    result = parameter_sensitivity(df, req.symbol, req.pattern_name)
-    if result.empty:
-        return {"error": "No sensitivity data"}
-
-    return json_response({"data": result.to_dict("records")})
+@router.post("/sensitivity", responses=HEAVY_RESPONSES)
+@heavy_endpoint(semaphore=HEAVY)
+def get_sensitivity(req: StressRequest, provider: DataProvider = Depends(get_provider)):
+    """Run parameter sensitivity analysis (bars before HOLDOUT_START only)."""
+    return ok(stress.sensitivity(provider, req.symbol, req.pattern_name, req.period_days).dump())
