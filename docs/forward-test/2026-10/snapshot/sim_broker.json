@@ -36,6 +36,12 @@
    "date": "2026-10-12",
    "equity": 100001.9421,
    "positions": 1
+  },
+  {
+   "cash": 99223.8421,
+   "date": "2026-10-13",
+   "equity": 100001.8521,
+   "positions": 1
   }
  ],
  "fills": [
@@ -52,7 +58,7 @@
    "type": "market"
   }
  ],
- "last_date": "2026-10-12",
+ "last_date": "2026-10-13",
  "orders": [
   {
    "client_order_id": "SPY-buy-2026-10-06-37ced6de8077",
@@ -86,7 +92,7 @@
    "parent_id": "sim-000001",
    "qty": 1.0,
    "side": "sell",
-   "status": "new",
+   "status": "canceled",
    "stop_price": null,
    "submitted_date": "2026-10-06",
    "symbol": "SPY",
@@ -104,22 +110,40 @@
    "parent_id": "sim-000001",
    "qty": 1.0,
    "side": "sell",
-   "status": "new",
+   "status": "canceled",
    "stop_price": 755.72,
    "submitted_date": "2026-10-06",
    "symbol": "SPY",
    "time_in_force": "gtc",
    "type": "stop"
+  },
+  {
+   "client_order_id": "SPY-sell-2026-10-13-57df03062f96",
+   "filled_avg_price": null,
+   "filled_date": null,
+   "id": "sim-000004",
+   "leg_ids": [],
+   "limit_price": null,
+   "order_class": "simple",
+   "parent_id": null,
+   "qty": 1.0,
+   "side": "sell",
+   "status": "accepted",
+   "stop_price": null,
+   "submitted_date": "2026-10-13",
+   "symbol": "SPY",
+   "time_in_force": "day",
+   "type": "market"
   }
  ],
  "positions": {
   "SPY": {
    "avg_entry": 776.1579,
-   "last_price": 778.1,
+   "last_price": 778.01,
    "qty": 1.0
   }
  },
- "seq": 3,
+ "seq": 4,
  "start_cash": 100000.0,
  "version": 1
 }
