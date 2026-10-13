@@ -385,5 +385,14 @@
   "not_resolved": [
     "KRUZ"
   ],
-  "per_portfolio_fields": "Optional per portfolio: inception_from (first SPY close on or after that date, pending until it exists), benchmarks (list, price return over the same window), definition_only (rule only, no holdings)."
+  "per_portfolio_fields": "Optional per portfolio: inception_from (first SPY close on or after that date, pending until it exists), benchmarks (list, price return over the same window), definition_only (rule only, no holdings).",
+  "splits": {
+    "SEQUX": [
+      {
+        "ex_date": "2026-10-12",
+        "ratio": 4.0,
+        "note": "3-for-1 stock distribution (3 additional shares per share held), record date 2026-10-09 per the fund's 2026-09-28 497 supplement; NAV 204.01 on 2026-10-09 -> 51.58 on 2026-10-12. The fund converts into the Sequoia ETF (SEQ, NYSE Arca) after the close on about 2026-10-16; SEQ trading expected from 2026-10-19."
+      }
+    ]
+  }
 }
