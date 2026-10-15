@@ -284,7 +284,7 @@ Paper only; IBKR read-only. Every nightly session (forward record starts with th
 
 ## 8. Five US$1,000 quant accounts (owner request 2026-10-15; rules frozen in `docs/quant-accounts/PREREG.md`)
 
-Paper only; IBKR is read-only. The live window runs from the 2026-10-15 close decision to the 2026-11-16 close.
+Paper only; IBKR is read-only. The live window runs from the 2026-10-14 close decision (first fills at the 2026-10-15 open) to the 2026-11-16 close.
 
 1. Nightly, besides the section 2 top-ups, top up daily bars for the extra symbols and save them as
    `state/external_bars/<SYM>.<YYYYMMDD>.json`.

@@ -8,9 +8,9 @@ backed by analysis". **Paper only**: daily IBKR bars (read-only), fills simulate
 | Rule | Value |
 |---|---|
 | Accounts | 5 × US$1,000, fractional shares, long only, no leverage |
-| Live window | First decision at the close of 2026-10-15, first fills at the 2026-10-16 open. The test ends at the close of 2026-11-16 |
+| Live window | First decision at the close of 2026-10-14, first fills at the 2026-10-15 open. The test ends at the close of 2026-11-16 (see the amendment) |
 | Timing | Decide on a session's close, fill at the next session's open |
-| Rebalancing | Monthly strategies decide on the first day and on each month's last session (so they trade on 10-16 and 11-02) |
+| Rebalancing | Monthly strategies decide on the first day and on each month's last session (so they trade on 10-15 and 11-02) |
 | Rebalance band | A trade smaller than 2% of equity is skipped, unless it opens or closes a position |
 | Costs | 5 bp slippage per side. Commission US$0.0035 per share, minimum US$0.35, capped at 1% of the trade value (IBKR Pro tiered style). On US$1,000 accounts the minimum matters, which is part of the lesson |
 | Benchmark | SPY from the same first open |
@@ -45,4 +45,8 @@ should be judged against.
 
 ## Amendments
 
-None.
+- **2026-10-15, about 08:55 New York time, before any fill.** On the owner's request ("today at open"), the start
+  moves one session earlier.
+  - The first decision is now on the 2026-10-14 close, with first fills at the 2026-10-15 open.
+  - The rules and the end date are unchanged.
+  - This used no result: no simulated fill existed yet, and the 2026-10-15 session had not opened.

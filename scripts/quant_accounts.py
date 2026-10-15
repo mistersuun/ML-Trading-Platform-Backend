@@ -6,7 +6,7 @@
 Paper only, offline: reads daily bars from state/external_bars (IBKR, read-only top-ups). One simulator serves
 both modes: decisions on a session's close, fills at the next session's open with slippage and IBKR-style
 commissions, fractional shares. `forward` re-simulates deterministically from the frozen start decision
-(close of 2026-10-15) through the latest bar on file, capped at the end date, so a rerun reproduces the record.
+(close of 2026-10-14) through the latest bar on file, capped at the end date, so a rerun reproduces the record.
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ START_CASH = 1_000.0
 SLIP = 0.0005                       # 5 bp per side
 COMM_PER_SHARE, COMM_MIN, COMM_MAX_FRAC = 0.0035, 0.35, 0.01
 BAND = 0.02                         # skip a rebalance trade smaller than 2% of equity (new/closed positions always trade)
-FORWARD_DECISION, FORWARD_END = date(2026, 10, 15), date(2026, 11, 16)
+FORWARD_DECISION, FORWARD_END = date(2026, 10, 14), date(2026, 11, 16)
 
 STOCKS = ["AAPL", "ABBV", "ADBE", "AMD", "AMZN", "AVGO", "BAC", "BRK_B", "COST", "CRM", "CSCO", "CVX", "GOOG", "GS",
           "HD", "JNJ", "JPM", "KO", "LLY", "META", "MRK", "MSFT", "NFLX", "NVDA", "ORCL", "PEP", "PG", "TSLA", "UNH",
