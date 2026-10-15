@@ -37,7 +37,7 @@ DEFS_PATH = OUT_DIR / "investor-portfolios.json"
 JSONL_PATH = OUT_DIR / "investor-tracking.jsonl"
 MD_PATH = OUT_DIR / "investor-tracking.md"
 BENCH = "SPY"
-ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL"}
+ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL", "VTV", "RSP"}
 
 
 # --------------------------------------------------------------------------------------------- loading
@@ -313,7 +313,7 @@ def render_md(rows: list[dict], defs: dict) -> str:
                 "| Portfolio | Inception | Since inception | Benchmarks |", "|---|---|---:|---|"]
         for k, r in bench_rows:
             bs = ", ".join(f"{b} {_pct(v)}" for b, v in r["benchmarks"].items())
-            out.append(f"| {r['name']} | {r['inception_date']} | {_pct(r['ret_since_inception'])} | {bs} |")
+            out.append(f"| {r['name']} | {r.get('inception_date', cur['inception_date'])} | {_pct(r['ret_since_inception'])} | {bs} |")
     out += ["", "## Notes", ""]
     for key, p in defs["portfolios"].items():
         if p.get("definition_only"):

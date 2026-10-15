@@ -236,3 +236,16 @@ Run (offline, safe to repeat; one row per date is replaced, not duplicated):
 Writes `docs/forward-test/2026-10/investor-tracking.jsonl` (one row per date) and rewrites
 `investor-tracking.md` (value of $10,000, since-inception return, vs SPY, 1d/1M/1Y). Commit those two files with the
 journal (`git add docs/forward-test/`).
+
+## 5. Continuation after the forward week (from the 2026-10-15 session, owner approved 2026-10-15)
+
+The week ended with `docs/forward-test/2026-10/FINAL-REPORT.md`. Nightly runs continue so the D18 pooled shadow can accumulate its
+confirmation window (at least 20 forward shadow sessions over at least 28 days). Differences from the week:
+
+- Run `POOLED_SKIP_IN_FORWARD_TEST=false .venv/bin/python main.py forward step` so the pooled shadow evaluation runs inside the
+  forward step (it is shadow-only and can never place an order; its trials and hold-out reads go to the forward state).
+- No plumbing flags: the plumbing test is finished (closed 2026-10-14).
+- Investor tracker: also top up VTV (27638093) and RSP (319359375), the style benchmarks added 2026-10-15. SEQUX converts into the
+  Sequoia ETF (SEQ, NYSE Arca) after about 2026-10-16; once SEQUX stops printing, resolve SEQ with `search_contracts`, record the
+  conversion ratio, and switch the `sequoia_nav` portfolio to SEQ in `investor-portfolios.json`.
+- Planned end: the 2026-11-13 session, then a short pooled-shadow summary; the routine is then disabled.

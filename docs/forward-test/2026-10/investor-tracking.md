@@ -38,10 +38,19 @@ Inception 2026-10-06: close of 2026-10-06. Start value $10,000 each, buy-and-hol
 
 | Portfolio | Inception | Since inception | Benchmarks |
 |---|---|---:|---|
+| Berkshire 13F clone (top 5) | 2026-10-06 | +1.46% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| TCI (Hohn) 13F clone | 2026-10-06 | +1.73% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| Himalaya (Li Lu) 13F clone | 2026-10-06 | +1.29% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| Pershing Square 13F clone | 2026-10-06 | -1.07% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| Appaloosa (Tepper) 13F clone | 2026-10-06 | -5.49% | QQQ -4.04%, SMH -10.71%, SPY -1.22% |
+| Consensus best ideas | 2026-10-06 | +1.76% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| Listed vehicles (USD) | 2026-10-06 | +2.74% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| Fairfax Financial (FFH.TO, CAD) | 2026-10-06 | +3.52% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
+| ETF basket (NANC, GURU, GVIP) | 2026-10-06 | -2.69% | QQQ -4.04%, RSP -0.11%, SPY -1.22% |
 | Altimeter (Gerstner) top-5 clone | 2026-10-12 | -4.20% | QQQ -2.29%, SMH -4.44%, SPY -1.09% |
-| Punch Card clone | 2026-10-12 | +1.03% | SPY -1.09% |
-| Sequoia Fund (SEQUX daily NAV) | 2026-10-12 | +0.47% | SPY -1.09% |
-| Fundsmith top-10 (quality control, partial) | 2026-10-12 | -0.23% | QUAL -0.79%, SPY -1.09% |
+| Punch Card clone | 2026-10-12 | +1.03% | RSP -0.52%, SPY -1.09%, VTV -0.13% |
+| Sequoia Fund (SEQUX daily NAV) | 2026-10-12 | +0.47% | RSP -0.52%, SPY -1.09%, VTV -0.13% |
+| Fundsmith top-10 (quality control, partial) | 2026-10-12 | -0.23% | QUAL -0.79%, RSP -0.52%, SPY -1.09% |
 
 ## Notes
 

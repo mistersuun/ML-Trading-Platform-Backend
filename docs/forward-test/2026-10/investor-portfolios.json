@@ -17,7 +17,12 @@
         "GOOGL": 9.4,
         "BAC": 9.2
       },
-      "skipped": "CVX, OXY, MCO named as holdings but no weight in the note"
+      "skipped": "CVX, OXY, MCO named as holdings but no weight in the note",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "tci_13f": {
       "name": "TCI (Hohn) 13F clone",
@@ -29,7 +34,12 @@
         "SPGI": 10.9,
         "GOOGL": 9.0
       },
-      "skipped": "MLM and FER (no weight stated); non-US holdings are not on the 13F"
+      "skipped": "MLM and FER (no weight stated); non-US holdings are not on the 13F",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "himalaya_13f": {
       "name": "Himalaya (Li Lu) 13F clone",
@@ -41,7 +51,12 @@
         "BRK.B": 15.0,
         "EWBC": 9.7
       },
-      "skipped": "3 smaller positions (about 5% of the book, not named)"
+      "skipped": "3 smaller positions (about 5% of the book, not named)",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "pershing_13f": {
       "name": "Pershing Square 13F clone",
@@ -55,7 +70,12 @@
         "QSR": 9.6,
         "META": 9.3
       },
-      "skipped": "V, MA, SPGI, NFLX are new positions with no weight in the note; UMG is not US-listed. BN is the NYSE line (Brookfield Corp)"
+      "skipped": "V, MA, SPGI, NFLX are new positions with no weight in the note; UMG is not US-listed. BN is the NYSE line (Brookfield Corp)",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "appaloosa_13f": {
       "name": "Appaloosa (Tepper) 13F clone",
@@ -67,7 +87,12 @@
         "GOOGL": 8.8,
         "UBER": 7.4
       },
-      "skipped": "AAPL, BA, AAL, CRWV, META, EWY (no weight)"
+      "skipped": "AAPL, BA, AAL, CRWV, META, EWY (no weight)",
+      "benchmarks": [
+        "QQQ",
+        "SMH",
+        "SPY"
+      ]
     },
     "consensus": {
       "name": "Consensus best ideas",
@@ -78,7 +103,12 @@
         "V": 1,
         "MCO": 1
       },
-      "skipped": "none"
+      "skipped": "none",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "vehicles": {
       "name": "Listed vehicles (USD)",
@@ -89,7 +119,12 @@
         "MKL": 1,
         "L": 1
       },
-      "skipped": "FFH (CAD, own portfolio). PSHD trades on the LSE, so its bar can be one session ahead of the US names"
+      "skipped": "FFH (CAD, own portfolio). PSHD trades on the LSE, so its bar can be one session ahead of the US names",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "fairfax": {
       "name": "Fairfax Financial (FFH.TO, CAD)",
@@ -97,7 +132,12 @@
       "positions": {
         "FFH": 1
       },
-      "skipped": "none"
+      "skipped": "none",
+      "benchmarks": [
+        "VTV",
+        "RSP",
+        "SPY"
+      ]
     },
     "etfs": {
       "name": "ETF basket (NANC, GURU, GVIP)",
@@ -107,7 +147,12 @@
         "GURU": 1,
         "GVIP": 1
       },
-      "skipped": "KRUZ not found by search_contracts"
+      "skipped": "KRUZ not found by search_contracts",
+      "benchmarks": [
+        "SPY",
+        "QQQ",
+        "RSP"
+      ]
     },
     "spy": {
       "name": "SPY (control)",
@@ -129,8 +174,8 @@
       "name": "Altimeter (Gerstner) top-5 clone",
       "inception_from": "2026-10-10",
       "benchmarks": [
-        "SMH",
         "QQQ",
+        "SMH",
         "SPY"
       ],
       "basis": "Q2 2026 13F top 5, CIK 1541617, weights NVDA 19, CBRS 16, META 8, TSM 7, CRWV 6 renormalised to 100% (top 5 is about 56% of the book); unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). Behaves like levered SOXX/QQQ; the test is whether it adds anything over SMH",
@@ -147,6 +192,8 @@
       "name": "Punch Card clone",
       "inception_from": "2026-10-10",
       "benchmarks": [
+        "VTV",
+        "RSP",
         "SPY"
       ],
       "basis": "CIK 1631664, 5 names: BRK.B 42, CROX 27, PDD 12, PYPL 11, plus SGOV with no stated weight (not tracked); unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). SGOV has no stated weight, so it is skipped (the 8% residual, 100 minus 92, would be an inference); the four stated weights are renormalised to 100 by the tracker. SOURCE CONFLICT: one tracker says PYPL was exited; PYPL is kept at 11 as the review lists it, so treat the PYPL leg as doubtful. Near-zero turnover",
@@ -162,6 +209,8 @@
       "name": "Sequoia Fund (SEQUX daily NAV)",
       "inception_from": "2026-10-10",
       "benchmarks": [
+        "VTV",
+        "RSP",
         "SPY"
       ],
       "basis": "Mutual-fund NAV via IBKR FUND contract SEQUX (conid 141447600, FUNDSERV), fetched with security_type FUND and exchange FUNDSERV. NAV is a daily mark (the 10-09 NAV equals 10-08 in the fetched bars, so it can lag a day). Price return of NAV, no distributions. Tests a daily-NAV fund against a 45-day-late 13F clone",
@@ -174,8 +223,9 @@
       "name": "Fundsmith top-10 (quality control, partial)",
       "inception_from": "2026-10-10",
       "benchmarks": [
-        "SPY",
-        "QUAL"
+        "QUAL",
+        "RSP",
+        "SPY"
       ],
       "basis": "Fundsmith LLP 13F, CIK 1569205. Only the names the review gives are used: MAR, SYK, WAT, V, UBER, equal weight, since no weights are stated; the review lists these followed by an ellipsis, so this is NOT the full top 10; unverified (secondary sources/aggregators per docs/research/model-review-2026-10.md section 5, not read from EDGAR). A quality-factor control, not an alpha test",
       "positions": {
@@ -380,7 +430,9 @@
       "exchange": "FUNDSERV",
       "security_type": "FUND",
       "note": "mutual-fund NAV; fetch with security_type FUND and exchange FUNDSERV (without the exchange the call errored)"
-    }
+    },
+    "VTV": 27638093,
+    "RSP": 319359375
   },
   "not_resolved": [
     "KRUZ"
@@ -394,5 +446,6 @@
         "note": "3-for-1 stock distribution (3 additional shares per share held), record date 2026-10-09 per the fund's 2026-09-28 497 supplement; NAV 204.01 on 2026-10-09 -> 51.58 on 2026-10-12. The fund converts into the Sequoia ETF (SEQ, NYSE Arca) after the close on about 2026-10-16; SEQ trading expected from 2026-10-19."
       }
     ]
-  }
+  },
+  "style_benchmark_note": "Added 2026-10-15 (owner approved): style-matched benchmarks so a copy's lead over SPY can be split into style tilt vs selection. Value-tilted copies vs VTV (value) and RSP (equal weight); tech-heavy copies vs QQQ and SMH. Benchmark returns are measured from each portfolio's own inception."
 }
