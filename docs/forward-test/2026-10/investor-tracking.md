@@ -1,24 +1,24 @@
-# Investor shadow portfolios vs SPY (as of 2026-10-14)
+# Investor shadow portfolios vs SPY (as of 2026-10-15)
 
 Inception 2026-10-06: close of 2026-10-06. Start value $10,000 each, buy-and-hold, price return only. Paper tracking, not advice. Weights are secondary-source 13F data, unverified against SEC.
 
 | Portfolio | Value | Since inception | vs SPY | 1d | 1M | 1Y | Missing |
 |---|---:|---:|---:|---:|---:|---:|---|
-| Berkshire 13F clone (top 5) | $10,145.67 | +1.46% | +2.67% | -0.63% | -2.09% | +27.86% (46% cov.) | - |
-| TCI (Hohn) 13F clone | $10,172.74 | +1.73% | +2.95% | -0.63% | -1.12% | n/a | - |
-| Himalaya (Li Lu) 13F clone | $10,128.78 | +1.29% | +2.51% | -0.87% | +0.27% | +26.52% (40% cov.) | - |
-| Pershing Square 13F clone | $9,893.12 | -1.07% | +0.15% | -2.27% | +1.30% | +8.44% (41% cov.) | - |
-| Appaloosa (Tepper) 13F clone | $9,450.76 | -5.49% | -4.27% | -2.76% | -0.36% | +17.42% (27% cov.) | - |
-| Consensus best ideas | $10,176.14 | +1.76% | +2.98% | -1.23% | +0.21% | +17.42% (25% cov.) | - |
-| Listed vehicles (USD) | $10,274.50 | +2.74% | +3.96% | +0.37% | +0.15% | +1.44% (75% cov.) | - |
-| Fairfax Financial (FFH.TO, CAD) | $10,351.88 | +3.52% | +4.74% | +0.09% | +0.99% | n/a | - |
-| ETF basket (NANC, GURU, GVIP) | $9,730.80 | -2.69% | -1.47% | -1.41% | -0.24% | +14.47% (33% cov.) | - |
-| SPY (control) | $9,878.19 | -1.22% | +0.00% | -1.08% | +1.15% | +16.21% | - |
-| QQQ (control) | $9,595.74 | -4.04% | -2.82% | -1.97% | +2.79% | +21.90% | - |
-| Altimeter (Gerstner) top-5 clone | $9,580.49 | -4.20% | -2.98% | -5.03% | -4.92% | +17.34% (48% cov.) | - |
-| Punch Card clone | $10,102.85 | +1.03% | +2.25% | +0.41% | +3.40% | +6.13% (46% cov.) | - |
-| Sequoia Fund (SEQUX daily NAV) | $10,046.53 | +0.47% | +1.68% | +0.00% | -0.56% | n/a | - |
-| Fundsmith top-10 (quality control, partial) | $9,976.87 | -0.23% | +0.99% | -0.51% | +3.06% | n/a | - |
+| Berkshire 13F clone (top 5) | $10,211.05 | +2.11% | +3.05% | +0.64% | -0.78% | +28.80% (61% cov.) | - |
+| TCI (Hohn) 13F clone | $10,411.29 | +4.11% | +5.05% | +2.34% | +3.14% | +15.64% (23% cov.) | - |
+| Himalaya (Li Lu) 13F clone | $10,189.77 | +1.90% | +2.83% | +0.60% | +1.95% | +24.87% (40% cov.) | - |
+| Pershing Square 13F clone | $10,057.08 | +0.57% | +1.51% | +1.66% | +4.02% | +8.71% (41% cov.) | - |
+| Appaloosa (Tepper) 13F clone | $9,515.04 | -4.85% | -3.91% | +0.68% | +1.33% | +18.18% (27% cov.) | - |
+| Consensus best ideas | $10,365.88 | +3.66% | +4.60% | +1.86% | +3.44% | +16.91% (50% cov.) | - |
+| Listed vehicles (USD) | $10,298.35 | +2.98% | +3.92% | +0.24% | +0.54% | +3.19% (75% cov.) | - |
+| Fairfax Financial (FFH.TO, CAD) | $10,871.51 | +8.72% | +9.65% | +5.04% | +6.66% | n/a | - |
+| ETF basket (NANC, GURU, GVIP) | $9,756.72 | -2.43% | -1.50% | +0.27% | +0.96% | +13.12% (33% cov.) | - |
+| SPY (control) | $9,906.30 | -0.94% | +0.00% | +0.28% | +1.90% | +16.03% | - |
+| QQQ (control) | $9,583.23 | -4.17% | -3.23% | -0.13% | +3.33% | +20.89% | - |
+| Altimeter (Gerstner) top-5 clone | $9,561.74 | -4.38% | -3.45% | -0.20% | -5.50% | +15.43% (48% cov.) | - |
+| Punch Card clone | $10,316.70 | +3.17% | +4.10% | +2.12% | +5.76% | +5.90% (46% cov.) | - |
+| Sequoia Fund (SEQUX daily NAV) | $10,011.63 | +0.12% | +1.05% | +0.00% | -0.33% | n/a | - |
+| Fundsmith top-10 (quality control, partial) | $10,267.29 | +2.67% | +3.61% | +2.91% | +6.25% | +15.64% (20% cov.) | - |
 
 1M and 1Y are trailing static-weight returns to the as-of date for context; where a ticker has no history that far back it is left out, the rest renormalised, and the weight coverage is shown.
 
@@ -32,25 +32,26 @@ Inception 2026-10-06: close of 2026-10-06. Start value $10,000 each, buy-and-hol
 | 2026-10-09 | 10,114.62 | 10,164.78 | 10,159.83 | 10,086.68 | 9,975.16 | 10,254.23 | 10,091.49 | 10,175.22 | 9,949.11 | 9,993.33 | 9,889.56 | - | - | - | - |
 | 2026-10-12 | 10,226.45 | 10,231.37 | 10,169.27 | 10,104.66 | 9,814.63 | 10,293.99 | 10,172.43 | 10,175.22 | 9,901.26 | 9,987.29 | 9,820.71 | 10,000.00 | 10,000.00 | 10,000.00 | 10,000.00 |
 | 2026-10-13 | 10,210.21 | 10,236.83 | 10,217.39 | 10,122.71 | 9,719.11 | 10,302.93 | 10,237.00 | 10,342.79 | 9,870.28 | 9,986.14 | 9,788.19 | 10,088.14 | 10,061.51 | 10,046.53 | 10,027.85 |
-| 2026-10-14 | 10,145.67 | 10,172.74 | 10,128.78 | 9,893.12 | 9,450.76 | 10,176.14 | 10,274.50 | 10,351.88 | 9,730.80 | 9,878.19 | 9,595.74 | 9,580.49 | 10,102.85 | 10,046.53 | 9,976.87 |
+| 2026-10-14 | 10,145.67 | 10,172.74 | 10,128.78 | 9,893.12 | 9,450.76 | 10,176.14 | 10,273.49 | 10,350.12 | 9,730.80 | 9,878.19 | 9,595.74 | 9,580.49 | 10,102.85 | 10,011.63 | 9,976.87 |
+| 2026-10-15 | 10,211.05 | 10,411.29 | 10,189.77 | 10,057.08 | 9,515.04 | 10,365.88 | 10,298.35 | 10,871.51 | 9,756.72 | 9,906.30 | 9,583.23 | 9,561.74 | 10,316.70 | 10,011.63 | 10,267.29 |
 
 ## Portfolios with their own inception and benchmarks (price return since own inception)
 
 | Portfolio | Inception | Since inception | Benchmarks |
 |---|---|---:|---|
-| Berkshire 13F clone (top 5) | 2026-10-06 | +1.46% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| TCI (Hohn) 13F clone | 2026-10-06 | +1.73% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| Himalaya (Li Lu) 13F clone | 2026-10-06 | +1.29% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| Pershing Square 13F clone | 2026-10-06 | -1.07% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| Appaloosa (Tepper) 13F clone | 2026-10-06 | -5.49% | QQQ -4.04%, SMH -10.71%, SPY -1.22% |
-| Consensus best ideas | 2026-10-06 | +1.76% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| Listed vehicles (USD) | 2026-10-06 | +2.74% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| Fairfax Financial (FFH.TO, CAD) | 2026-10-06 | +3.52% | RSP -0.11%, SPY -1.22%, VTV +0.97% |
-| ETF basket (NANC, GURU, GVIP) | 2026-10-06 | -2.69% | QQQ -4.04%, RSP -0.11%, SPY -1.22% |
-| Altimeter (Gerstner) top-5 clone | 2026-10-12 | -4.20% | QQQ -2.29%, SMH -4.44%, SPY -1.09% |
-| Punch Card clone | 2026-10-12 | +1.03% | RSP -0.52%, SPY -1.09%, VTV -0.13% |
-| Sequoia Fund (SEQUX daily NAV) | 2026-10-12 | +0.47% | RSP -0.52%, SPY -1.09%, VTV -0.13% |
-| Fundsmith top-10 (quality control, partial) | 2026-10-12 | -0.23% | QUAL -0.79%, RSP -0.52%, SPY -1.09% |
+| Berkshire 13F clone (top 5) | 2026-10-06 | +2.11% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| TCI (Hohn) 13F clone | 2026-10-06 | +4.11% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| Himalaya (Li Lu) 13F clone | 2026-10-06 | +1.90% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| Pershing Square 13F clone | 2026-10-06 | +0.57% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| Appaloosa (Tepper) 13F clone | 2026-10-06 | -4.85% | QQQ -4.17%, SMH -11.65%, SPY -0.94% |
+| Consensus best ideas | 2026-10-06 | +3.66% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| Listed vehicles (USD) | 2026-10-06 | +2.98% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| Fairfax Financial (FFH.TO, CAD) | 2026-10-06 | +8.72% | RSP +1.26%, SPY -0.94%, VTV +1.81% |
+| ETF basket (NANC, GURU, GVIP) | 2026-10-06 | -2.43% | QQQ -4.17%, RSP +1.26%, SPY -0.94% |
+| Altimeter (Gerstner) top-5 clone | 2026-10-12 | -4.38% | QQQ -2.42%, SMH -5.44%, SPY -0.81% |
+| Punch Card clone | 2026-10-12 | +3.17% | RSP +0.85%, SPY -0.81%, VTV +0.70% |
+| Sequoia Fund (SEQUX daily NAV) | 2026-10-12 | +0.12% | RSP +0.85%, SPY -0.81%, VTV +0.70% |
+| Fundsmith top-10 (quality control, partial) | 2026-10-12 | +2.67% | QUAL -0.44%, RSP +0.85%, SPY -0.81% |
 
 ## Notes
 

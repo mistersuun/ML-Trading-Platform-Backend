@@ -1,0 +1,4 @@
+{"asof": "2026-10-15", "source": "IBKR get_price_snapshot (read-only), frozen/delayed closing quotes fetched 2026-10-15 ~21:50Z",
+ "quotes": [
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 4.37, "ask": 4.40, "delta": -0.1888}
+ ]}
