@@ -281,3 +281,24 @@ Paper only; IBKR read-only. Every nightly session (forward record starts with th
 2. Run `.venv/bin/python scripts/daytrade_paper.py step`. This defaults to the latest complete session present for both
    symbols. Missed sessions are stepped in date order with `--asof`.
 3. Commit `docs/daytrade-paper/`.
+
+## 8. Five US$1,000 quant accounts (owner request 2026-10-15; rules frozen in `docs/quant-accounts/PREREG.md`)
+
+Paper only; IBKR is read-only. The live window runs from the 2026-10-15 close decision to the 2026-11-16 close.
+
+1. Nightly, besides the section 2 top-ups, top up daily bars for the extra symbols and save them as
+   `state/external_bars/<SYM>.<YYYYMMDD>.json`.
+   - ETFs: EFA 13002510, IEF 15547844, GLD 51529211, DBC 319355208, SGOV 424099317.
+   - Stocks: UNH 13272, JNJ 8719, PG 11054, HD 7930, LLY 9160, AVGO 313130367, COST 272997, WMT 13824, PEP 11017,
+     MRK 70101545, ABBV 118089500, CSCO 268084, ORCL 272800, ADBE 265768, CRM 29624264, NFLX 15124833, KO 8894,
+     V 49462172.
+   - In a fresh container, first fetch each one with `step_count=1000` (daily) into `state/external_bars/<SYM>.json`.
+     These base files are not committed.
+2. Run `.venv/bin/python scripts/quant_accounts.py forward`. It deterministically re-simulates all five accounts from
+   the frozen start, through the latest bar, and rewrites `docs/quant-accounts/report.md` and `journal.jsonl`.
+3. After the 2026-11-16 session, write `docs/quant-accounts/FINAL.md`.
+   - Results against SPY and against the `backtest.md` one-month ranges.
+   - Costs paid.
+   - What each strategy did and why.
+   - Honest caveats.
+4. Commit `docs/quant-accounts/`.
