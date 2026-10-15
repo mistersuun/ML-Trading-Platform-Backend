@@ -1,0 +1,8 @@
+{"asof": "2026-10-14", "source": "IBKR get_price_snapshot (read-only), frozen/delayed closing quotes fetched 2026-10-15 ~12:00Z",
+ "quotes": [
+  {"contract_id": 882140267, "underlying": "SPY", "right": "P", "strike": 725, "expiry": "2026-11-20", "bid": 3.56, "ask": 3.61, "delta": -0.1445},
+  {"contract_id": 882140303, "underlying": "SPY", "right": "P", "strike": 730, "expiry": "2026-11-20", "bid": 4.02, "ask": 4.06, "delta": -0.1640},
+  {"contract_id": 882140339, "underlying": "SPY", "right": "P", "strike": 735, "expiry": "2026-11-20", "bid": 4.55, "ask": 4.60, "delta": -0.1858},
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 5.18, "ask": 5.23, "delta": -0.2124},
+  {"contract_id": 882140408, "underlying": "SPY", "right": "P", "strike": 745, "expiry": "2026-11-20", "bid": 5.91, "ask": 5.97, "delta": -0.2418}
+ ]}

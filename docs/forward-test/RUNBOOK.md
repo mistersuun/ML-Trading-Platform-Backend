@@ -249,3 +249,22 @@ confirmation window (at least 20 forward shadow sessions over at least 28 days).
   Sequoia ETF (SEQ, NYSE Arca) after about 2026-10-16; once SEQUX stops printing, resolve SEQ with `search_contracts`, record the
   conversion ratio, and switch the `sequoia_nav` portfolio to SEQ in `investor-portfolios.json`.
 - Planned end: the 2026-11-13 session, then a short pooled-shadow summary; the routine is then disabled.
+
+## 6. Options paper test (owner request 2026-10-15; rules frozen in `docs/options-paper/PREREG.md`)
+
+Paper only. IBKR read-only: `get_option_parameters`, `get_option_data`, `get_price_snapshot`. Never `create_order_instruction`
+or any other write tool. Every nightly session, after the SPY/QQQ top-up is ingested:
+
+1. `.venv/bin/python scripts/options_paper.py plan` lists the open contracts and the wanted entries (book, underlying,
+   right, DTE window, strike range).
+2. Fetch quotes with `market_data_names=["bid_ask","option_greeks"]`:
+   - **Open contracts:** one snapshot each.
+   - **Each wanted entry:**
+     - Expirations come from `get_option_parameters`, using SPY 756733 and QQQ 320227571. Pick the expiry in the DTE
+       window closest to `target_dte`, preferring the trading class equal to the symbol.
+     - Get strikes with `get_option_data` (bounded by the strike range).
+     - Snapshot about 5 to 8 strikes spread over the range. For Book P, centre them on |delta| ≈ 0.20, roughly 4% below
+       spot. For Book L calls and puts, step outward from spot until the ask × 100 exceeds 30% of Book L equity.
+3. Save the quotes as `docs/options-paper/quotes/<session>.json` (format in the script docstring), then run
+   `.venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/<session>.json`.
+4. Commit `docs/options-paper/` with the forward-test files.
