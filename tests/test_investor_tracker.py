@@ -125,3 +125,14 @@ def test_asof_before_inception_from_is_pending():
     d = defs({"spy": P({"SPY": 1}), "p": {**P({"SPY": 1}), "inception_from": "2026-09-04"}})
     row = tip.evaluate(d, closes, pd.Timestamp("2026-09-03"))
     assert row["portfolios"]["p"].get("pending")
+
+
+def test_split_adjustment_makes_a_stock_distribution_continuous():
+    import pandas as pd
+    import track_investor_portfolios as t
+    idx = pd.to_datetime(["2026-10-08", "2026-10-09", "2026-10-12"])
+    s = pd.Series([204.0, 204.0, 51.51], index=idx)
+    adj = t.adjust_splits(s, [{"ex_date": "2026-10-12", "ratio": 4.0}])
+    assert adj.iloc[0] == 51.0 and adj.iloc[1] == 51.0 and adj.iloc[2] == 51.51
+    assert abs(adj.iloc[2] / adj.iloc[1] - 1 - 0.01) < 1e-9          # +1%, not -75%
+    assert s.iloc[0] == 204.0                                         # input not mutated

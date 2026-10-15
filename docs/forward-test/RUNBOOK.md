@@ -236,3 +236,69 @@ Run (offline, safe to repeat; one row per date is replaced, not duplicated):
 Writes `docs/forward-test/2026-10/investor-tracking.jsonl` (one row per date) and rewrites
 `investor-tracking.md` (value of $10,000, since-inception return, vs SPY, 1d/1M/1Y). Commit those two files with the
 journal (`git add docs/forward-test/`).
+
+## 5. Continuation after the forward week (from the 2026-10-15 session, owner approved 2026-10-15)
+
+The week ended with `docs/forward-test/2026-10/FINAL-REPORT.md`. Nightly runs continue so the D18 pooled shadow can accumulate its
+confirmation window (at least 20 forward shadow sessions over at least 28 days). Differences from the week:
+
+- Run `POOLED_SKIP_IN_FORWARD_TEST=false .venv/bin/python main.py forward step` so the pooled shadow evaluation runs inside the
+  forward step (it is shadow-only and can never place an order; its trials and hold-out reads go to the forward state).
+- No plumbing flags: the plumbing test is finished (closed 2026-10-14).
+- Investor tracker: also top up VTV (27638093) and RSP (319359375), the style benchmarks added 2026-10-15. SEQUX converts into the
+  Sequoia ETF (SEQ, NYSE Arca) after about 2026-10-16; once SEQUX stops printing, resolve SEQ with `search_contracts`, record the
+  conversion ratio, and switch the `sequoia_nav` portfolio to SEQ in `investor-portfolios.json`.
+- Planned end: the 2026-11-13 session, then a short pooled-shadow summary; the routine is then disabled.
+
+## 6. Options paper test (owner request 2026-10-15; rules frozen in `docs/options-paper/PREREG.md`)
+
+Paper only. IBKR read-only: `get_option_parameters`, `get_option_data`, `get_price_snapshot`. Never `create_order_instruction`
+or any other write tool. Every nightly session, after the SPY/QQQ top-up is ingested:
+
+1. `.venv/bin/python scripts/options_paper.py plan` lists the open contracts and the wanted entries (book, underlying,
+   right, DTE window, strike range).
+2. Fetch quotes with `market_data_names=["bid_ask","option_greeks"]`:
+   - **Open contracts:** one snapshot each.
+   - **Each wanted entry:**
+     - Expirations come from `get_option_parameters`, using SPY 756733 and QQQ 320227571. Pick the expiry in the DTE
+       window closest to `target_dte`, preferring the trading class equal to the symbol.
+     - Get strikes with `get_option_data` (bounded by the strike range).
+     - Snapshot about 5 to 8 strikes spread over the range. For Book P, centre them on |delta| ≈ 0.20, roughly 4% below
+       spot. For Book L calls and puts, step outward from spot until the ask × 100 exceeds 30% of Book L equity.
+3. Save the quotes as `docs/options-paper/quotes/<session>.json` (format in the script docstring), then run
+   `.venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/<session>.json`.
+4. Commit `docs/options-paper/` with the forward-test files.
+
+## 7. Day-trading paper test (owner request 2026-10-15; rules frozen in `docs/daytrade-paper/PREREG.md`)
+
+Paper only; IBKR read-only. Every nightly session (forward record starts with the 2026-10-15 session):
+
+1. Fetch the session's 5-minute regular-hours bars for QQQ (320227571) and SPY (756733):
+   `get_price_history(contract_id, security_type="STK", step="FIVE_MINS", outside_rth=false, period="ONE_DAY")`.
+   - About 6 KB each.
+   - Save the raw JSON as `docs/daytrade-paper/bars/<SYM>.<YYYYMMDD>.json`.
+   - If a night was missed, use `step_count` (at most 1000 bars, about 12 sessions) to back-fill.
+2. Run `.venv/bin/python scripts/daytrade_paper.py step`. This defaults to the latest complete session present for both
+   symbols. Missed sessions are stepped in date order with `--asof`.
+3. Commit `docs/daytrade-paper/`.
+
+## 8. Five US$1,000 quant accounts (owner request 2026-10-15; rules frozen in `docs/quant-accounts/PREREG.md`)
+
+Paper only; IBKR is read-only. The live window runs from the 2026-10-14 close decision (first fills at the 2026-10-15 open) to the 2026-11-16 close.
+
+1. Nightly, besides the section 2 top-ups, top up daily bars for the extra symbols and save them as
+   `state/external_bars/<SYM>.<YYYYMMDD>.json`.
+   - ETFs: EFA 13002510, IEF 15547844, GLD 51529211, DBC 319355208, SGOV 424099317.
+   - Stocks: UNH 13272, JNJ 8719, PG 11054, HD 7930, LLY 9160, AVGO 313130367, COST 272997, WMT 13824, PEP 11017,
+     MRK 70101545, ABBV 118089500, CSCO 268084, ORCL 272800, ADBE 265768, CRM 29624264, NFLX 15124833, KO 8894,
+     V 49462172.
+   - In a fresh container, first fetch each one with `step_count=1000` (daily) into `state/external_bars/<SYM>.json`.
+     These base files are not committed.
+2. Run `.venv/bin/python scripts/quant_accounts.py forward`. It deterministically re-simulates all five accounts from
+   the frozen start, through the latest bar, and rewrites `docs/quant-accounts/report.md` and `journal.jsonl`.
+3. After the 2026-11-16 session, write `docs/quant-accounts/FINAL.md`.
+   - Results against SPY and against the `backtest.md` one-month ranges.
+   - Costs paid.
+   - What each strategy did and why.
+   - Honest caveats.
+4. Commit `docs/quant-accounts/`.

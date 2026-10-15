@@ -1,0 +1,35 @@
+{
+  "inception": "2026-10-14",
+  "last_asof": "2026-10-14",
+  "bench_start": {
+    "L": 728.95,
+    "P": 769.6
+  },
+  "books": {
+    "L": {
+      "start": 500.0,
+      "cash": 500.0,
+      "positions": [],
+      "closed": []
+    },
+    "P": {
+      "start": 100000.0,
+      "cash": 100517.35,
+      "positions": [
+        {
+          "contract_id": 882140368,
+          "underlying": "SPY",
+          "right": "P",
+          "strike": 740.0,
+          "expiry": "2026-11-20",
+          "qty": 1,
+          "side": "short",
+          "entry_price": 5.18,
+          "entry_date": "2026-10-14",
+          "last_mid": 5.205
+        }
+      ],
+      "closed": []
+    }
+  }
+}

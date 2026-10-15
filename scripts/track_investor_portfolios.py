@@ -37,7 +37,7 @@ DEFS_PATH = OUT_DIR / "investor-portfolios.json"
 JSONL_PATH = OUT_DIR / "investor-tracking.jsonl"
 MD_PATH = OUT_DIR / "investor-tracking.md"
 BENCH = "SPY"
-ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL"}
+ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL", "VTV", "RSP"}
 
 
 # --------------------------------------------------------------------------------------------- loading
@@ -76,10 +76,23 @@ def all_tickers(defs: dict) -> list[str]:
     return seen
 
 
-def load_all(tickers: list[str], root: Optional[Path] = None) -> dict[str, pd.Series]:
+def adjust_splits(close: pd.Series, splits: list[dict]) -> pd.Series:
+    """Back-adjust closes for share splits / stock distributions so the series is continuous: every close before
+    a split's ex-date is divided by its ratio (new shares per old share, e.g. 4.0 for a 3-for-1 stock distribution)."""
+    out = close.astype(float).copy()
+    for sp in splits:
+        ex = pd.Timestamp(sp["ex_date"])
+        out.loc[out.index < ex] = out.loc[out.index < ex] / float(sp["ratio"])
+    return out
+
+
+def load_all(tickers: list[str], root: Optional[Path] = None,
+             splits: Optional[dict[str, list[dict]]] = None) -> dict[str, pd.Series]:
     closes: dict[str, pd.Series] = {}
     for t in tickers:
         s = load_close(t, root)
+        if not s.empty and splits and t in splits:
+            s = adjust_splits(s, splits[t])
         if s.empty:
             logger.warning("%s: no bars on file", t)
         else:
@@ -300,7 +313,7 @@ def render_md(rows: list[dict], defs: dict) -> str:
                 "| Portfolio | Inception | Since inception | Benchmarks |", "|---|---|---:|---|"]
         for k, r in bench_rows:
             bs = ", ".join(f"{b} {_pct(v)}" for b, v in r["benchmarks"].items())
-            out.append(f"| {r['name']} | {r['inception_date']} | {_pct(r['ret_since_inception'])} | {bs} |")
+            out.append(f"| {r['name']} | {r.get('inception_date', cur['inception_date'])} | {_pct(r['ret_since_inception'])} | {bs} |")
     out += ["", "## Notes", ""]
     for key, p in defs["portfolios"].items():
         if p.get("definition_only"):
@@ -321,7 +334,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     defs = load_definitions(Path(a.defs))
     root = Path(a.bars_dir) if a.bars_dir else None
-    closes = load_all(all_tickers(defs), root)
+    closes = load_all(all_tickers(defs), root, defs.get("splits"))
     row = evaluate(defs, closes, pd.Timestamp(a.asof))
     if a.no_write:
         print(render_md([row], defs))
