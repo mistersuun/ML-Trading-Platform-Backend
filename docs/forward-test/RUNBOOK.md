@@ -268,3 +268,16 @@ or any other write tool. Every nightly session, after the SPY/QQQ top-up is inge
 3. Save the quotes as `docs/options-paper/quotes/<session>.json` (format in the script docstring), then run
    `.venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/<session>.json`.
 4. Commit `docs/options-paper/` with the forward-test files.
+
+## 7. Day-trading paper test (owner request 2026-10-15; rules frozen in `docs/daytrade-paper/PREREG.md`)
+
+Paper only; IBKR read-only. Every nightly session (forward record starts with the 2026-10-15 session):
+
+1. Fetch the session's 5-minute regular-hours bars for QQQ (320227571) and SPY (756733):
+   `get_price_history(contract_id, security_type="STK", step="FIVE_MINS", outside_rth=false, period="ONE_DAY")`.
+   - About 6 KB each.
+   - Save the raw JSON as `docs/daytrade-paper/bars/<SYM>.<YYYYMMDD>.json`.
+   - If a night was missed, use `step_count` (at most 1000 bars, about 12 sessions) to back-fill.
+2. Run `.venv/bin/python scripts/daytrade_paper.py step`. This defaults to the latest complete session present for both
+   symbols. Missed sessions are stepped in date order with `--asof`.
+3. Commit `docs/daytrade-paper/`.
