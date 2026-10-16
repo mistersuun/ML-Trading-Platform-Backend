@@ -350,7 +350,7 @@ def plan(state: dict, asof, closes: dict[str, pd.Series], ranking: Optional[list
         for sym in L_UNDERLYINGS:
             sig = signal(cut[sym])
             if sig and sym not in held:
-                lo, hi = (1.0, 1.10) if sig == "C" else (0.90, 1.0)
+                lo, hi = (1.0, 1.20) if sig == "C" else (0.80, 1.0)   # fetch window only; the rule is in choose_lottery
                 out["entries"].append({"book": "L", "underlying": sym, "right": sig, "dte": list(L_DTE),
                                        "target_dte": L_TARGET_DTE,
                                        "strikes": [round(spots[sym] * lo), round(spots[sym] * hi)]})

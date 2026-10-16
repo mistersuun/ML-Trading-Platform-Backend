@@ -1,9 +1,10 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-10-15",
+  "last_asof": "2026-10-16",
   "bench_start": {
     "L": 728.95,
-    "P": 769.6
+    "P": 769.6,
+    "M": 709.8
   },
   "books": {
     "L": {
@@ -26,10 +27,30 @@
           "side": "short",
           "entry_price": 5.18,
           "entry_date": "2026-10-14",
-          "last_mid": 4.385
+          "last_mid": 6.995
+        }
+      ],
+      "closed": []
+    },
+    "M": {
+      "start": 1000.0,
+      "cash": 549.35,
+      "positions": [
+        {
+          "contract_id": 728934469,
+          "underlying": "MRK",
+          "right": "C",
+          "strike": 160.0,
+          "expiry": "2027-01-15",
+          "qty": 1,
+          "side": "long",
+          "entry_price": 4.5,
+          "entry_date": "2026-10-16",
+          "last_mid": 4.3
         }
       ],
       "closed": []
     }
-  }
+  },
+  "m_inception": "2026-10-16"
 }
