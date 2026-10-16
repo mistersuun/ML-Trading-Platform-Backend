@@ -322,3 +322,18 @@ Paper only. Review on 2027-04-15.
    - Add the quotes to the same `quotes/<session>.json`, with `underlying` set to the stock symbol.
    - Open Book M positions get a snapshot each night, like any open contract.
 4. Commit `docs/aggressive-accounts/` (and `docs/options-paper/`).
+
+## 10. Gap-and-go day-trading account, US$5,000 (owner request 2026-10-16; rules in `docs/gapgo-paper/PREREG.md`)
+
+Paper only. The forward record starts with the 2026-10-16 session.
+
+1. Nightly, top up daily bars (`step_count=10`) for the 72 added names in `docs/gapgo-paper/universe_added.json`
+   (conids there) as `state/external_bars/<SYM>.<YYYYMMDD>.json` with `ingest_ibkr_bars.py --topup`.
+   - The other universe names are already topped up in sections 2 and 8.
+   - In a fresh container, first fetch `step_count=60` for each added name into `<SYM>.gapgo.json`.
+   - Save each payload verbatim: never rebuild or infer the `time` array.
+2. Run `.venv/bin/python scripts/gapgo_paper.py scan`. It lists the session's gap-ups of +4% or more.
+3. For each candidate, fetch 5-minute bars:
+   `get_price_history(conid, STK, FIVE_MINS, outside_rth=false, period=ONE_DAY)`, saved verbatim as
+   `docs/gapgo-paper/bars/<SYM>.<YYYYMMDD>.json`.
+4. Run `.venv/bin/python scripts/gapgo_paper.py step`, then commit `docs/gapgo-paper/`.

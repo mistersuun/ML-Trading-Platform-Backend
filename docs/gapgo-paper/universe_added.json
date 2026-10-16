@@ -1,0 +1,290 @@
+{
+  "PLTR": {
+    "conid": 444857009,
+    "exchange": "NASDAQ"
+  },
+  "COIN": {
+    "conid": 481691285,
+    "exchange": "NASDAQ"
+  },
+  "MSTR": {
+    "conid": 272110,
+    "exchange": "NASDAQ"
+  },
+  "HOOD": {
+    "conid": 504546674,
+    "exchange": "NASDAQ"
+  },
+  "SMCI": {
+    "conid": 731466419,
+    "exchange": "NASDAQ"
+  },
+  "ARM": {
+    "conid": 653400472,
+    "exchange": "NASDAQ"
+  },
+  "SHOP": {
+    "conid": 195014116,
+    "exchange": "NASDAQ"
+  },
+  "SNOW": {
+    "conid": 444884769,
+    "exchange": "NYSE"
+  },
+  "CRWD": {
+    "conid": 370757467,
+    "exchange": "NASDAQ"
+  },
+  "PANW": {
+    "conid": 110619459,
+    "exchange": "NASDAQ"
+  },
+  "NET": {
+    "conid": 382633646,
+    "exchange": "NYSE"
+  },
+  "DDOG": {
+    "conid": 383858515,
+    "exchange": "NASDAQ"
+  },
+  "MDB": {
+    "conid": 292833239,
+    "exchange": "NASDAQ"
+  },
+  "ZS": {
+    "conid": 310621426,
+    "exchange": "NASDAQ"
+  },
+  "ROKU": {
+    "conid": 290651477,
+    "exchange": "NASDAQ"
+  },
+  "XYZ": {
+    "conid": 212671971,
+    "exchange": "NYSE"
+  },
+  "AFRM": {
+    "conid": 465119069,
+    "exchange": "NASDAQ"
+  },
+  "UPST": {
+    "conid": 460492620,
+    "exchange": "NASDAQ"
+  },
+  "SOFI": {
+    "conid": 494162724,
+    "exchange": "NASDAQ"
+  },
+  "RIVN": {
+    "conid": 525768800,
+    "exchange": "NASDAQ"
+  },
+  "LCID": {
+    "conid": 810758322,
+    "exchange": "NASDAQ"
+  },
+  "NIO": {
+    "conid": 332794741,
+    "exchange": "NYSE"
+  },
+  "BABA": {
+    "conid": 166090175,
+    "exchange": "NYSE"
+  },
+  "JD": {
+    "conid": 152486141,
+    "exchange": "NASDAQ"
+  },
+  "BIDU": {
+    "conid": 35359385,
+    "exchange": "NASDAQ"
+  },
+  "MRNA": {
+    "conid": 344809106,
+    "exchange": "NASDAQ"
+  },
+  "ENPH": {
+    "conid": 105368327,
+    "exchange": "NASDAQ"
+  },
+  "FSLR": {
+    "conid": 41622169,
+    "exchange": "NASDAQ"
+  },
+  "DKNG": {
+    "conid": 560105364,
+    "exchange": "NASDAQ"
+  },
+  "ABNB": {
+    "conid": 459530964,
+    "exchange": "NASDAQ"
+  },
+  "DASH": {
+    "conid": 459309417,
+    "exchange": "NASDAQ"
+  },
+  "LYFT": {
+    "conid": 359130923,
+    "exchange": "NASDAQ"
+  },
+  "SNAP": {
+    "conid": 268060148,
+    "exchange": "NYSE"
+  },
+  "PINS": {
+    "conid": 360975915,
+    "exchange": "NYSE"
+  },
+  "RBLX": {
+    "conid": 476026060,
+    "exchange": "NYSE"
+  },
+  "TTD": {
+    "conid": 248755440,
+    "exchange": "NASDAQ"
+  },
+  "ON": {
+    "conid": 8677881,
+    "exchange": "NASDAQ"
+  },
+  "MRVL": {
+    "conid": 483492393,
+    "exchange": "NASDAQ"
+  },
+  "QCOM": {
+    "conid": 273544,
+    "exchange": "NASDAQ"
+  },
+  "INTC": {
+    "conid": 270639,
+    "exchange": "NASDAQ"
+  },
+  "LRCX": {
+    "conid": 732440574,
+    "exchange": "NASDAQ"
+  },
+  "AMAT": {
+    "conid": 266093,
+    "exchange": "NASDAQ"
+  },
+  "KLAC": {
+    "conid": 270957,
+    "exchange": "NASDAQ"
+  },
+  "WDC": {
+    "conid": 13681,
+    "exchange": "NASDAQ"
+  },
+  "STX": {
+    "conid": 491932113,
+    "exchange": "NASDAQ"
+  },
+  "DELL": {
+    "conid": 346218218,
+    "exchange": "NYSE"
+  },
+  "ANET": {
+    "conid": 740948854,
+    "exchange": "NYSE"
+  },
+  "CELH": {
+    "conid": 71364351,
+    "exchange": "NASDAQ"
+  },
+  "ELF": {
+    "conid": 248682005,
+    "exchange": "NYSE"
+  },
+  "CVNA": {
+    "conid": 274144952,
+    "exchange": "NYSE"
+  },
+  "CHWY": {
+    "conid": 370766146,
+    "exchange": "NYSE"
+  },
+  "GME": {
+    "conid": 36285627,
+    "exchange": "NYSE"
+  },
+  "MARA": {
+    "conid": 474219659,
+    "exchange": "NASDAQ"
+  },
+  "RIOT": {
+    "conid": 292830677,
+    "exchange": "NASDAQ"
+  },
+  "IONQ": {
+    "conid": 517593749,
+    "exchange": "NYSE"
+  },
+  "RKLB": {
+    "conid": 787273575,
+    "exchange": "NASDAQ"
+  },
+  "ASTS": {
+    "conid": 480745767,
+    "exchange": "NASDAQ"
+  },
+  "OKLO": {
+    "conid": 500073396,
+    "exchange": "NYSE"
+  },
+  "SMR": {
+    "conid": 559289446,
+    "exchange": "NYSE"
+  },
+  "APP": {
+    "conid": 481863646,
+    "exchange": "NASDAQ"
+  },
+  "HIMS": {
+    "conid": 466188387,
+    "exchange": "NYSE"
+  },
+  "TGT": {
+    "conid": 6437,
+    "exchange": "NYSE"
+  },
+  "NKE": {
+    "conid": 10291,
+    "exchange": "NYSE"
+  },
+  "SBUX": {
+    "conid": 274105,
+    "exchange": "NASDAQ"
+  },
+  "BA": {
+    "conid": 4762,
+    "exchange": "NYSE"
+  },
+  "DIS": {
+    "conid": 6459,
+    "exchange": "NYSE"
+  },
+  "PFE": {
+    "conid": 11031,
+    "exchange": "NYSE"
+  },
+  "F": {
+    "conid": 9599491,
+    "exchange": "NYSE"
+  },
+  "GM": {
+    "conid": 80986742,
+    "exchange": "NYSE"
+  },
+  "CCL": {
+    "conid": 878372298,
+    "exchange": "NYSE"
+  },
+  "UAL": {
+    "conid": 79498203,
+    "exchange": "NASDAQ"
+  },
+  "DAL": {
+    "conid": 44001820,
+    "exchange": "NYSE"
+  }
+}
