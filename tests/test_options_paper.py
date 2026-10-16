@@ -111,3 +111,25 @@ def test_plan_lists_open_contracts_and_wanted_entries():
     out = op.plan(state, ASOF, {"QQQ": _closes(105), "SPY": _closes(95)})
     assert [c["contract_id"] for c in out["open_contracts"]] == [2, 9]
     assert [(e["book"], e["underlying"], e["right"]) for e in out["entries"]] == [("L", "SPY", "P")]
+
+
+def test_momentum_call_walks_the_ranking_until_one_is_affordable():
+    qs = [_q(11, "AMD", "C", 260, "2027-01-15", 15.0, 15.5, 0.35),        # $1,550: too dear for a $500 budget
+          _q(12, "MRK", "C", 110, "2027-01-15", 3.0, 3.1, 0.30),
+          _q(13, "MRK", "C", 115, "2027-01-15", 1.6, 1.7, 0.20),
+          _q(14, "MRK", "C", 100, "2027-01-15", 8.0, 8.2, 0.60)]           # ITM: excluded
+    q, qty = op.choose_momentum_call(qs, ["AMD", "MRK"], {"AMD": 240.0, "MRK": 105.0}, ASOF, 500.0, set())
+    assert q["contract_id"] == 12 and qty == 1
+    assert op.choose_momentum_call(qs, ["AMD", "MRK"], {"AMD": 240.0, "MRK": 105.0}, ASOF, 500.0, {"MRK"}) is None
+
+
+def test_book_m_enters_and_takes_profit_at_3x():
+    closes = {"QQQ": _closes(100.0), "SPY": _closes(100.0), "MRK": _closes(105.0)}
+    qs = [_q(12, "MRK", "C", 110, "2027-01-15", 3.0, 3.1, 0.30)]
+    state, row = op.step(op.new_state(), ASOF, qs, closes, ["MRK"])
+    M = state["books"]["M"]
+    assert M["positions"][0]["contract_id"] == 12 and M["cash"] == pytest.approx(1000 - 310 - 0.65)
+    nxt = "2026-10-16"
+    closes = {k: _closes(v.iloc[-1], end=nxt) for k, v in closes.items()}
+    state, _ = op.step(state, nxt, [_q(12, "MRK", "C", 110, "2027-01-15", 9.4, 9.6, 0.7)], closes, ["MRK"])
+    assert state["books"]["M"]["closed"][0]["reason"] == "take profit (3x)"

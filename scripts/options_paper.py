@@ -44,12 +44,33 @@ L_TP, L_STOP, L_TIME_EXIT = 2.0, 0.4, 5
 P_UNDERLYING = "SPY"
 P_DTE, P_TARGET_DTE, P_DELTA = (30, 45), 37, 0.20
 P_TP, P_TIME_EXIT = 0.5, 7
-BENCH = {"L": "QQQ", "P": "SPY"}
+BENCH = {"L": "QQQ", "P": "SPY", "M": "QQQ"}
+# Book M (added 2026-10-16, docs/aggressive-accounts/PREREG.md): calls on the strongest momentum stocks.
+M_START, M_SLOTS, M_BUDGET_FRAC = 1_000.0, 2, 0.50
+M_DTE, M_TARGET_DTE, M_DELTA = (60, 120), 90, 0.35
+M_TP, M_STOP, M_TIME_EXIT, M_TOPN = 3.0, 0.4, 30, 5
 
 
 # ------------------------------------------------------------------------------------------------- data
 def load_closes(symbol: str, root: Optional[Path] = None) -> pd.Series:
     return external_bars.load_bars(symbol, "etf", root)["Close"].astype(float)
+
+
+def load_closes_any(symbol: str, root: Optional[Path] = None) -> pd.Series:
+    return external_bars.load_bars(symbol, "equity", root)["Close"].astype(float)
+
+
+def momentum_ranking(asof, root: Optional[Path] = None) -> list[str]:
+    """Top M_TOPN stocks of the quant-accounts universe by 12-1 month return, as of `asof`'s close."""
+    sys.path.insert(0, str(ROOT / "scripts"))
+    import quant_accounts as qa
+    _, c = qa.load_panel(["SPY", *qa.STOCKS], root)
+    c = c.loc[:pd.Timestamp(asof)]
+    u = [s for s in qa.STOCKS if s in c]
+    if len(c) < 253:
+        return []
+    score = (c[u].iloc[-22] / c[u].iloc[-253] - 1).dropna()
+    return list(score.nlargest(M_TOPN).index)
 
 
 def signal(closes: pd.Series) -> Optional[str]:
@@ -108,6 +129,30 @@ def choose_lottery(quotes: list[dict], underlying: str, right: str, spot: float,
     return (best[0], best[1]) if best else None
 
 
+def choose_momentum_call(quotes: list[dict], ranking: list[str], spots: dict, asof, budget: float, held: set):
+    """(quote, qty) for Book M, or None. Walks the momentum ranking; for the first stock (not already held) with an
+    affordable OTM call in the 60-120 DTE window (closest to 90), takes the one with delta closest to 0.35."""
+    for sym in ranking:
+        if sym in held or sym not in spots:
+            continue
+        qs = [q for q in quotes if q["underlying"] == sym and q["right"] == "C" and q.get("delta") is not None]
+        exp = pick_expiry([q["expiry"] for q in qs], asof, M_DTE, M_TARGET_DTE)
+        ok = []
+        for q in qs:
+            bid, ask, k = float(q["bid"] or 0), float(q["ask"] or 0), float(q["strike"])
+            if q["expiry"] != exp or bid <= 0 or ask < bid or k <= spots[sym]:
+                continue
+            if ask - bid > max(0.10, 0.25 * mid(q)):
+                continue
+            qty = math.floor(budget / (ask * MULT + COMMISSION))
+            if qty >= 1:
+                ok.append((abs(float(q["delta"]) - M_DELTA), k, q, qty))
+        if ok:
+            _, _, q, qty = min(ok, key=lambda t: (t[0], t[1]))
+            return q, qty
+    return None
+
+
 def choose_put(quotes: list[dict], asof, cash: float):
     """(quote, qty) for Book P, or None: SPY put, |delta| closest to 0.20, cash-secured."""
     qs = [q for q in quotes if q["underlying"] == P_UNDERLYING and q["right"] == "P"
@@ -125,11 +170,14 @@ def choose_put(quotes: list[dict], asof, cash: float):
 def new_state() -> dict:
     return {"inception": None, "last_asof": None, "bench_start": {},
             "books": {"L": {"start": L_START, "cash": L_START, "positions": [], "closed": []},
-                      "P": {"start": P_START, "cash": P_START, "positions": [], "closed": []}}}
+                      "P": {"start": P_START, "cash": P_START, "positions": [], "closed": []},
+                      "M": {"start": M_START, "cash": M_START, "positions": [], "closed": []}}}
 
 
 def load_state(path: Path = STATE_PATH) -> dict:
-    return json.loads(Path(path).read_text()) if Path(path).exists() else new_state()
+    state = json.loads(Path(path).read_text()) if Path(path).exists() else new_state()
+    state["books"].setdefault("M", {"start": M_START, "cash": M_START, "positions": [], "closed": []})
+    return state
 
 
 def _pos(q: dict, qty: int, side: str, price: float, asof) -> dict:
@@ -186,6 +234,13 @@ def _manage(name: str, book: dict, qmap: dict, spots: dict, asof, events: list) 
                 _close(book, p, bid, asof, "stop (-60%)", events)
             elif left <= L_TIME_EXIT:
                 _close(book, p, bid, asof, f"time exit ({left}d left)", events)
+        elif name == "M":
+            if bid >= M_TP * p["entry_price"]:
+                _close(book, p, bid, asof, "take profit (3x)", events)
+            elif bid <= M_STOP * p["entry_price"]:
+                _close(book, p, bid, asof, "stop (-60%)", events)
+            elif left <= M_TIME_EXIT:
+                _close(book, p, bid, asof, f"time exit ({left}d left)", events)
         else:
             if ask <= P_TP * p["entry_price"]:
                 _close(book, p, ask, asof, "take profit (50% of credit)", events)
@@ -193,7 +248,8 @@ def _manage(name: str, book: dict, qmap: dict, spots: dict, asof, events: list) 
                 _close(book, p, ask, asof, f"time exit ({left}d left)", events)
 
 
-def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series]) -> tuple[dict, dict]:
+def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series],
+         ranking: Optional[list[str]] = None) -> tuple[dict, dict]:
     """Apply one session. `closes` holds each underlying's closes (they are cut at `asof` here)."""
     asof = _d(asof)
     if state["last_asof"] and asof <= _d(state["last_asof"]):
@@ -204,10 +260,13 @@ def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series]) ->
             raise ValueError(f"no {s} close for {asof}")
     spots = {s: float(c.iloc[-1]) for s, c in cut.items()}
     qmap = {int(q["contract_id"]): q for q in quotes}
-    events: dict[str, list[str]] = {"L": [], "P": []}
+    events: dict[str, list[str]] = {"L": [], "P": [], "M": []}
     if state["inception"] is None:
         state["inception"] = str(asof)
         state["bench_start"] = {b: spots[s] for b, s in BENCH.items()}
+    if "M" not in state["bench_start"]:
+        state["bench_start"]["M"] = spots[BENCH["M"]]
+        state["m_inception"] = str(asof)
 
     L, P = state["books"]["L"], state["books"]["P"]
     _manage("L", L, qmap, spots, asof, events["L"])
@@ -250,8 +309,23 @@ def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series]) ->
             P["positions"].append(p)
             events["P"].append(f"sell {_label(p)} x{qty} at {price:.2f} (delta {q.get('delta')})")
 
+    # Book M: momentum calls, at most M_SLOTS open (one per stock), one entry per session.
+    M = state["books"]["M"]
+    _manage("M", M, qmap, spots, asof, events["M"])
+    if ranking and len(M["positions"]) < M_SLOTS:
+        budget = min(M_BUDGET_FRAC * book_equity(M), M["cash"])
+        pick = choose_momentum_call(quotes, ranking, spots, asof, budget, {p["underlying"] for p in M["positions"]})
+        if pick is None:
+            events["M"].append(f"no affordable call on {', '.join(ranking)} within US${budget:.2f}")
+        else:
+            q, qty = pick
+            price = float(q["ask"])
+            M["cash"] -= price * MULT * qty + COMMISSION * qty
+            p = _pos(q, qty, "long", price, asof)
+            M["positions"].append(p)
+            events["M"].append(f"buy {_label(p)} x{qty} at {price:.2f} (delta {q.get('delta')})")
     state["last_asof"] = str(asof)
-    row = {"asof": str(asof), "spots": spots, "signals": signals, "events": events, "books": {}}
+    row = {"asof": str(asof), "spots": spots, "signals": signals, "ranking": ranking, "events": events, "books": {}}
     for name, book in state["books"].items():
         b = BENCH[name]
         bench_val = book["start"] * spots[b] / state["bench_start"][name]
@@ -261,7 +335,7 @@ def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series]) ->
     return state, row
 
 
-def plan(state: dict, asof, closes: dict[str, pd.Series]) -> dict:
+def plan(state: dict, asof, closes: dict[str, pd.Series], ranking: Optional[list[str]] = None) -> dict:
     """What quotes the session needs (the fetcher uses this; it changes no state)."""
     asof = _d(asof)
     cut = {s: c.loc[:pd.Timestamp(asof)] for s, c in closes.items()}
@@ -284,6 +358,14 @@ def plan(state: dict, asof, closes: dict[str, pd.Series]) -> dict:
         s = spots[P_UNDERLYING]
         out["entries"].append({"book": "P", "underlying": P_UNDERLYING, "right": "P", "dte": list(P_DTE),
                                "target_dte": P_TARGET_DTE, "strikes": [round(s * 0.88), round(s * 0.98)]})
+    M = state["books"].get("M")
+    if M is not None and ranking and len(M["positions"]) < M_SLOTS:
+        held_m = {p["underlying"] for p in M["positions"]}
+        out["entries"].append({"book": "M", "underlyings_in_order": [x for x in ranking if x not in held_m],
+                               "right": "C", "dte": list(M_DTE), "target_dte": M_TARGET_DTE,
+                               "strikes": "spot to spot x 1.25 (OTM), about 5 strikes around delta 0.35; walk the "
+                                          "list until one has a call whose ask x 100 fits "
+                                          f"{M_BUDGET_FRAC:.0%} of Book M equity"})
     return out
 
 
@@ -300,7 +382,8 @@ def stats(closed: list[dict]) -> dict:
 
 def render(state: dict, rows: list[dict]) -> str:
     last = rows[-1]
-    names = {"L": "Book L: $500 lottery (buys calls/puts on QQQ/SPY)", "P": "Book P: SPY cash-secured put writer"}
+    names = {"L": "Book L: $500 lottery (buys calls/puts on QQQ/SPY)", "P": "Book P: SPY cash-secured put writer",
+             "M": "Book M: $1,000 momentum calls (aggressive group, from 2026-10-16)"}
     out = [f"# Options paper test (as of {last['asof']})", "",
            f"Paper only, rules in `PREREG.md` (frozen 2026-10-15). Inception {state['inception']}. "
            "Fills at ask/bid plus US$0.65 per contract; positions marked at mid. Not advice.", "",
@@ -329,7 +412,8 @@ def render(state: dict, rows: list[dict]) -> str:
     out += ["", "## Session log", ""]
     for r in rows[-15:][::-1]:
         ev = "; ".join(f"{k}: {e}" for k, es in r["events"].items() for e in es) or "no action"
-        out.append(f"- **{r['asof']}** L ${r['books']['L']['equity']:,.2f}, P ${r['books']['P']['equity']:,.2f}. {ev}")
+        eqs = ", ".join(f"{k} ${b['equity']:,.2f}" for k, b in r["books"].items())
+        out.append(f"- **{r['asof']}** {eqs}. {ev}")
     out += ["", "Caveats: closing quotes are used for both decision and fill; Book P's collateral earns nothing here "
             "(a real account would earn about the T-bill rate); no early assignment or dividends are modelled. "
             "Fewer than 30 closed trades per book is an illustration, not evidence.", ""]
@@ -346,16 +430,19 @@ def main(argv=None) -> int:
     root = Path(a.bars_dir) if a.bars_dir else None
     closes = {s: load_closes(s, root) for s in sorted(set(L_UNDERLYINGS) | {P_UNDERLYING})}
     asof = _d(a.asof) if a.asof else closes[P_UNDERLYING].index[-1].date()
+    ranking = momentum_ranking(asof, root)
+    for s in ranking:
+        closes[s] = load_closes_any(s, root)
     state = load_state()
     if a.cmd == "plan":
-        print(json.dumps(plan(state, asof, closes), indent=2))
+        print(json.dumps(plan(state, asof, closes, ranking), indent=2))
         return 0
     if not a.quotes:
         ap.error("step needs --quotes")
     payload = json.loads(Path(a.quotes).read_text())
     if payload.get("asof") and _d(payload["asof"]) != asof:
         ap.error(f"quotes are for {payload['asof']}, not {asof}")
-    state, row = step(state, asof, payload["quotes"], closes)
+    state, row = step(state, asof, payload["quotes"], closes, ranking)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(json.dumps(state, indent=2) + "\n")
     with JOURNAL_PATH.open("a") as fh:

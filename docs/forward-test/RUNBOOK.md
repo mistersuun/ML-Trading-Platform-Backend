@@ -302,3 +302,23 @@ Paper only; IBKR is read-only. The live window runs from the 2026-10-14 close de
    - What each strategy did and why.
    - Honest caveats.
 4. Commit `docs/quant-accounts/`.
+
+## 9. Aggressive US$1,000 accounts (owner request 2026-10-16; rules frozen in `docs/aggressive-accounts/PREREG.md`)
+
+Paper only. Review on 2027-04-15.
+
+1. Nightly, also top up TQQQ (72539702, etf) as `state/external_bars/TQQQ.<YYYYMMDD>.json`. In a fresh container,
+   first fetch `step_count=1000` into `TQQQ.json`. QQQ, SGOV and the stock universe are already in sections 2 and 8.
+2. Run `.venv/bin/python scripts/aggressive_accounts.py forward` for Accounts A and B. It re-simulates
+   deterministically from the frozen start and rewrites `docs/aggressive-accounts/report.md` and `journal.jsonl`.
+3. Account C is Book M of the options test (section 6). `options_paper.py plan` now also lists a Book M entry with the
+   momentum ranking (`underlyings_in_order`). For those stocks, fetch quotes in rank order and stop at the first one
+   with an affordable call:
+   - Resolve the stock's conid with `search_contracts`; `underlying_contract_id` is the one to use.
+   - Call `get_option_parameters`, and pick the expiry with 60 to 120 days left, closest to 90, preferring the
+     trading class equal to the symbol.
+   - Call `get_option_data` with strikes from spot to spot × 1.25.
+   - Take 4 to 6 `get_price_snapshot` quotes (`bid_ask`, `option_greeks`) around delta 0.35.
+   - Add the quotes to the same `quotes/<session>.json`, with `underlying` set to the stock symbol.
+   - Open Book M positions get a snapshot each night, like any open contract.
+4. Commit `docs/aggressive-accounts/` (and `docs/options-paper/`).
