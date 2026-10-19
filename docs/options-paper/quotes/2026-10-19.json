@@ -1,0 +1,10 @@
+{"asof": "2026-10-19", "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-19 ~22:00-22:40Z. Greeks not returned for MRK 160C tonight (delta null; it is an open position and only needs bid/ask).",
+ "quotes": [
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 5.26, "ask": 5.30, "delta": -0.2218},
+  {"contract_id": 728934469, "underlying": "MRK", "right": "C", "strike": 160, "expiry": "2027-01-15", "bid": 3.30, "ask": 3.70, "delta": null},
+  {"contract_id": 877401688, "underlying": "AMD", "right": "C", "strike": 670, "expiry": "2027-01-15", "bid": 15.65, "ask": 17.20, "delta": 0.2378},
+  {"contract_id": 828444546, "underlying": "CSCO", "right": "C", "strike": 110, "expiry": "2027-01-15", "bid": 6.35, "ask": 7.20, "delta": 0.4837},
+  {"contract_id": 831711557, "underlying": "CSCO", "right": "C", "strike": 115, "expiry": "2027-01-15", "bid": 4.60, "ask": 4.80, "delta": 0.3855},
+  {"contract_id": 852747638, "underlying": "CSCO", "right": "C", "strike": 120, "expiry": "2027-01-15", "bid": 3.00, "ask": 3.35, "delta": 0.2976},
+  {"contract_id": 853470588, "underlying": "CSCO", "right": "C", "strike": 125, "expiry": "2027-01-15", "bid": 2.12, "ask": 2.39, "delta": 0.2230}
+ ]}

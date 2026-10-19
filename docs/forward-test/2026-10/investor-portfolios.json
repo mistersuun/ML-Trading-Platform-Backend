@@ -206,7 +206,7 @@
       "skipped": "SGOV (no stated weight, cash-like residual); PYPL kept but conflicted"
     },
     "sequoia_nav": {
-      "name": "Sequoia Fund (SEQUX daily NAV)",
+      "name": "Sequoia Fund (SEQUX NAV, then the SEQ ETF from 2026-10-19)",
       "inception_from": "2026-10-10",
       "benchmarks": [
         "VTV",
@@ -447,5 +447,14 @@
       }
     ]
   },
-  "style_benchmark_note": "Added 2026-10-15 (owner approved): style-matched benchmarks so a copy's lead over SPY can be split into style tilt vs selection. Value-tilted copies vs VTV (value) and RSP (equal weight); tech-heavy copies vs QQQ and SMH. Benchmark returns are measured from each portfolio's own inception."
+  "style_benchmark_note": "Added 2026-10-15 (owner approved): style-matched benchmarks so a copy's lead over SPY can be split into style tilt vs selection. Value-tilted copies vs VTV (value) and RSP (equal weight); tech-heavy copies vs QQQ and SMH. Benchmark returns are measured from each portfolio's own inception.",
+  "chains": {
+    "SEQUX": {
+      "successor": "SEQ",
+      "successor_conid": 935551665,
+      "successor_exchange": "ARCA",
+      "switch_date": "2026-10-19",
+      "note": "Sequoia Fund converted into the Sequoia ETF (SEQ, NYSE Arca) after the 2026-10-16 close; SEQ's first session is 2026-10-19. The tracked series is SEQUX NAV through 2026-10-16, then SEQ closes scaled so SEQ's 2026-10-19 open equals the last SEQUX NAV (52.44; SEQ opened at 52.30, so the conversion was close to 1:1). From 2026-10-19 the tracker follows the ETF's market price, not NAV."
+    }
+  }
 }

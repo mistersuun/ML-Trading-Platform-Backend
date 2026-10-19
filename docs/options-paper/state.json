@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-10-16",
+  "last_asof": "2026-10-19",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -27,14 +27,14 @@
           "side": "short",
           "entry_price": 5.18,
           "entry_date": "2026-10-14",
-          "last_mid": 6.995
+          "last_mid": 5.28
         }
       ],
       "closed": []
     },
     "M": {
       "start": 1000.0,
-      "cash": 549.35,
+      "cash": 213.70000000000005,
       "positions": [
         {
           "contract_id": 728934469,
@@ -46,7 +46,19 @@
           "side": "long",
           "entry_price": 4.5,
           "entry_date": "2026-10-16",
-          "last_mid": 4.3
+          "last_mid": 3.5
+        },
+        {
+          "contract_id": 852747638,
+          "underlying": "CSCO",
+          "right": "C",
+          "strike": 120.0,
+          "expiry": "2027-01-15",
+          "qty": 1,
+          "side": "long",
+          "entry_price": 3.35,
+          "entry_date": "2026-10-19",
+          "last_mid": 3.175
         }
       ],
       "closed": []

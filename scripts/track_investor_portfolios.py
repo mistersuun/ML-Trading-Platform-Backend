@@ -37,7 +37,7 @@ DEFS_PATH = OUT_DIR / "investor-portfolios.json"
 JSONL_PATH = OUT_DIR / "investor-tracking.jsonl"
 MD_PATH = OUT_DIR / "investor-tracking.md"
 BENCH = "SPY"
-ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL", "VTV", "RSP"}
+ETFS = {"SPY", "QQQ", "NANC", "GURU", "GVIP", "SMH", "SGOV", "QUAL", "VTV", "RSP", "SEQ"}
 
 
 # --------------------------------------------------------------------------------------------- loading
@@ -86,13 +86,34 @@ def adjust_splits(close: pd.Series, splits: list[dict]) -> pd.Series:
     return out
 
 
+def chain_successor(pred: pd.Series, succ_open: float, succ_close: pd.Series, switch: pd.Timestamp) -> pd.Series:
+    """A fund that converted into a new listing: keep the predecessor's closes before `switch`, then the successor's
+    closes scaled so its open on `switch` equals the predecessor's last close (conversion at NAV, so no return is
+    invented across the switch; the move from that open to the close is the first successor day)."""
+    before = pred[pred.index < switch]
+    if before.empty:
+        return succ_close
+    after = succ_close[succ_close.index >= switch] * (float(before.iloc[-1]) / succ_open)
+    return pd.concat([before, after])
+
+
 def load_all(tickers: list[str], root: Optional[Path] = None,
-             splits: Optional[dict[str, list[dict]]] = None) -> dict[str, pd.Series]:
+             splits: Optional[dict[str, list[dict]]] = None,
+             chains: Optional[dict[str, dict]] = None) -> dict[str, pd.Series]:
     closes: dict[str, pd.Series] = {}
     for t in tickers:
         s = load_close(t, root)
         if not s.empty and splits and t in splits:
             s = adjust_splits(s, splits[t])
+        ch = (chains or {}).get(t)
+        if ch and not s.empty:
+            sw = pd.Timestamp(ch["switch_date"])
+            try:
+                sb = external_bars.load_bars(ch["successor"], "etf", root)
+            except external_bars.ExternalBarsError:
+                sb = pd.DataFrame()
+            if not sb.empty and sw in sb.index:
+                s = chain_successor(s, float(sb.loc[sw, "Open"]), sb["Close"].astype(float), sw)
         if s.empty:
             logger.warning("%s: no bars on file", t)
         else:
@@ -334,7 +355,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     defs = load_definitions(Path(a.defs))
     root = Path(a.bars_dir) if a.bars_dir else None
-    closes = load_all(all_tickers(defs), root, defs.get("splits"))
+    closes = load_all(all_tickers(defs), root, defs.get("splits"), defs.get("chains"))
     row = evaluate(defs, closes, pd.Timestamp(a.asof))
     if a.no_write:
         print(render_md([row], defs))

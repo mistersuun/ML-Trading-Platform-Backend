@@ -136,3 +136,14 @@ def test_split_adjustment_makes_a_stock_distribution_continuous():
     assert adj.iloc[0] == 51.0 and adj.iloc[1] == 51.0 and adj.iloc[2] == 51.51
     assert abs(adj.iloc[2] / adj.iloc[1] - 1 - 0.01) < 1e-9          # +1%, not -75%
     assert s.iloc[0] == 204.0                                         # input not mutated
+
+
+def test_chain_successor_continues_without_a_jump_at_the_switch():
+    idx = pd.to_datetime(["2026-10-15", "2026-10-16"])
+    pred = pd.Series([52.0, 52.44], index=idx)
+    sidx = pd.to_datetime(["2026-10-19", "2026-10-20"])
+    succ = pd.Series([52.24, 53.0], index=sidx)
+    out = tip.chain_successor(pred, 52.30, succ, pd.Timestamp("2026-10-19"))
+    assert list(out.index) == list(idx) + list(sidx)
+    assert out.iloc[2] == pytest.approx(52.44 * 52.24 / 52.30)
+    assert out.iloc[3] / out.iloc[2] == pytest.approx(53.0 / 52.24)
