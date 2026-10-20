@@ -1,0 +1,6 @@
+{"asof": "2026-10-20", "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-20 ~21:50Z. No greeks returned for the MRK and CSCO calls (open positions; bid/ask only needed).",
+ "quotes": [
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 4.24, "ask": 4.27, "delta": -0.1930},
+  {"contract_id": 728934469, "underlying": "MRK", "right": "C", "strike": 160, "expiry": "2027-01-15", "bid": 4.90, "ask": 5.10, "delta": null},
+  {"contract_id": 852747638, "underlying": "CSCO", "right": "C", "strike": 120, "expiry": "2027-01-15", "bid": 3.15, "ask": 3.45, "delta": null}
+ ]}
