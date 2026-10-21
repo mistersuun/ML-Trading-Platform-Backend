@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-10-20",
+  "last_asof": "2026-10-21",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -27,7 +27,7 @@
           "side": "short",
           "entry_price": 5.18,
           "entry_date": "2026-10-14",
-          "last_mid": 4.255
+          "last_mid": 3.55
         }
       ],
       "closed": []
@@ -46,7 +46,7 @@
           "side": "long",
           "entry_price": 4.5,
           "entry_date": "2026-10-16",
-          "last_mid": 5.0
+          "last_mid": 5.525
         },
         {
           "contract_id": 852747638,
@@ -58,7 +58,7 @@
           "side": "long",
           "entry_price": 3.35,
           "entry_date": "2026-10-19",
-          "last_mid": 3.3
+          "last_mid": 3.525
         }
       ],
       "closed": []

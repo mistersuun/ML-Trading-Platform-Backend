@@ -1,12 +1,12 @@
-# Options paper test (as of 2026-10-20)
+# Options paper test (as of 2026-10-21)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Inception 2026-10-14. Fills at ask/bid plus US$0.65 per contract; positions marked at mid. Not advice.
 
 | Book | Start | Equity | Return | Benchmark | Bench value | Open | Closed |
 |---|---:|---:|---:|---|---:|---:|---:|
-| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $500.00 | +0.00% | QQQ buy-and-hold | $492.24 | 0 | 0 |
-| Book P: SPY cash-secured put writer | $100,000 | $100,091.85 | +0.09% | SPY buy-and-hold | $99,928.53 | 1 | 0 |
-| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $1,043.70 | +4.37% | QQQ buy-and-hold | $1,011.03 | 2 | 0 |
+| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $500.00 | +0.00% | QQQ buy-and-hold | $497.43 | 0 | 0 |
+| Book P: SPY cash-secured put writer | $100,000 | $100,162.35 | +0.16% | SPY buy-and-hold | $100,453.48 | 1 | 0 |
+| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $1,118.70 | +11.87% | QQQ buy-and-hold | $1,021.70 | 2 | 0 |
 
 ## Book L: $500 lottery (buys calls/puts on QQQ/SPY)
 
@@ -18,7 +18,7 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 4.25 |
+| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 3.55 |
 
 ## Book M: $1,000 momentum calls (aggressive group, from 2026-10-16)
 
@@ -26,11 +26,12 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 5.00 |
-| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 3.30 |
+| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 5.53 |
+| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 3.52 |
 
 ## Session log
 
+- **2026-10-21** L $500.00, P $100,162.35, M $1,118.70. no action
 - **2026-10-20** L $500.00, P $100,091.85, M $1,043.70. no action
 - **2026-10-19** L $500.00, P $99,989.35, M $881.20. M: buy CSCO 2027-01-15 120C x1 at 3.35 (delta 0.2976)
 - **2026-10-16** L $500.00, P $99,817.85, M $979.35. L: QQQ put signal; no contract fits the US$150.00 budget; M: buy MRK 2027-01-15 160C x1 at 4.50 (delta 0.3188)
