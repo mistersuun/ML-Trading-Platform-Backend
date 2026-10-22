@@ -78,6 +78,12 @@
    "date": "2026-10-21",
    "equity": 99998.3846,
    "positions": 0
+  },
+  {
+   "cash": 99998.3846,
+   "date": "2026-10-22",
+   "equity": 99998.3846,
+   "positions": 0
   }
  ],
  "fills": [
@@ -106,7 +112,7 @@
    "type": "market"
   }
  ],
- "last_date": "2026-10-21",
+ "last_date": "2026-10-22",
  "orders": [
   {
    "client_order_id": "SPY-buy-2026-10-06-37ced6de8077",
