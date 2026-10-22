@@ -1,6 +1,86 @@
-{"asof": "2026-10-22", "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-22 ~21:50Z. No greeks for the MRK call (open position; bid/ask only needed).",
+{
+ "asof": "2026-10-22",
+ "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-22 ~21:50Z. No greeks for the MRK call (open position; bid/ask only needed). QQQ Nov-20 puts (Book L put signal) fetched ~22:20Z; a first step run without them was reverted before commit.",
  "quotes": [
-  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 5.74, "ask": 5.80, "delta": -0.2416},
-  {"contract_id": 728934469, "underlying": "MRK", "right": "C", "strike": 160, "expiry": "2027-01-15", "bid": 4.35, "ask": 5.15, "delta": null},
-  {"contract_id": 852747638, "underlying": "CSCO", "right": "C", "strike": 120, "expiry": "2027-01-15", "bid": 2.79, "ask": 3.15, "delta": 0.2717}
- ]}
+  {
+   "contract_id": 882140368,
+   "underlying": "SPY",
+   "right": "P",
+   "strike": 740,
+   "expiry": "2026-11-20",
+   "bid": 5.74,
+   "ask": 5.8,
+   "delta": -0.2416
+  },
+  {
+   "contract_id": 728934469,
+   "underlying": "MRK",
+   "right": "C",
+   "strike": 160,
+   "expiry": "2027-01-15",
+   "bid": 4.35,
+   "ask": 5.15,
+   "delta": null
+  },
+  {
+   "contract_id": 852747638,
+   "underlying": "CSCO",
+   "right": "C",
+   "strike": 120,
+   "expiry": "2027-01-15",
+   "bid": 2.79,
+   "ask": 3.15,
+   "delta": 0.2717
+  },
+  {
+   "contract_id": 900733218,
+   "underlying": "QQQ",
+   "right": "P",
+   "strike": 570,
+   "expiry": "2026-11-20",
+   "bid": 1.29,
+   "ask": 1.35,
+   "delta": null
+  },
+  {
+   "contract_id": 900733279,
+   "underlying": "QQQ",
+   "right": "P",
+   "strike": 585,
+   "expiry": "2026-11-20",
+   "bid": 1.66,
+   "ask": 1.73,
+   "delta": -0.0467
+  },
+  {
+   "contract_id": 900733325,
+   "underlying": "QQQ",
+   "right": "P",
+   "strike": 600,
+   "expiry": "2026-11-20",
+   "bid": 2.14,
+   "ask": 2.22,
+   "delta": -0.0622
+  },
+  {
+   "contract_id": 900733364,
+   "underlying": "QQQ",
+   "right": "P",
+   "strike": 615,
+   "expiry": "2026-11-20",
+   "bid": 2.84,
+   "ask": 2.95,
+   "delta": -0.083
+  },
+  {
+   "contract_id": 900733400,
+   "underlying": "QQQ",
+   "right": "P",
+   "strike": 625,
+   "expiry": "2026-11-20",
+   "bid": 3.49,
+   "ask": 3.58,
+   "delta": -0.1002
+  }
+ ]
+}
