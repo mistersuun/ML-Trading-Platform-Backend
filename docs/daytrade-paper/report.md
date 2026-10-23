@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-22)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-23)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $25,791.81 | +3.17% | $24,513.26 | 6 |
-| SPY ORB | $25,000 | $25,685.31 | +2.74% | $24,926.26 | 6 |
+| QQQ ORB | $25,000 | $25,616.02 | +2.46% | $24,507.34 | 7 |
+| SPY ORB | $25,000 | $25,626.34 | +2.51% | $24,793.47 | 7 |
 
 ## QQQ
 
-6 trades, win rate 17%, mean +0.57R (t = 0.39), total P&L +791.81, max drawdown -3.3%
+7 trades, win rate 14%, mean +0.39R (t = 0.32), total P&L +616.02, max drawdown -4.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-23 | long | 146 | 702.45 | 701.26 | 09:35 | stop | -0.68 | -175.79 |
 | 2026-10-22 | long | 145 | 714.22 | 712.38 | 09:45 | stop | -1.03 | -269.19 |
 | 2026-10-21 | long | 145 | 722.41 | 720.97 | 09:35 | stop | -0.81 | -211.43 |
 | 2026-10-20 | short | 144 | 713.69 | 715.59 | 09:55 | stop | -1.04 | -276.02 |
@@ -22,10 +23,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-6 trades, win rate 17%, mean +0.48R (t = 0.48), total P&L +685.31, max drawdown -2.0%
+7 trades, win rate 14%, mean +0.38R (t = 0.44), total P&L +626.34, max drawdown -2.2%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-23 | long | 135 | 760.07 | 759.64 | 09:35 | stop | -0.23 | -58.97 |
 | 2026-10-22 | long | 134 | 767.34 | 765.87 | 09:45 | stop | -0.77 | -198.09 |
 | 2026-10-21 | short | 135 | 770.14 | 771.31 | 09:45 | stop | -0.61 | -159.16 |
 | 2026-10-20 | short | 136 | 765.43 | 766.00 | 09:35 | stop | -0.30 | -78.59 |
