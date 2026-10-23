@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-10-22",
+  "last_asof": "2026-10-23",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -9,7 +9,7 @@
   "books": {
     "L": {
       "start": 500.0,
-      "cash": 364.35,
+      "cash": 227.70000000000002,
       "positions": [
         {
           "contract_id": 900733218,
@@ -21,7 +21,19 @@
           "side": "long",
           "entry_price": 1.35,
           "entry_date": "2026-10-22",
-          "last_mid": 1.32
+          "last_mid": 1.245
+        },
+        {
+          "contract_id": 882139722,
+          "underlying": "SPY",
+          "right": "P",
+          "strike": 665.0,
+          "expiry": "2026-11-20",
+          "qty": 1,
+          "side": "long",
+          "entry_price": 1.36,
+          "entry_date": "2026-10-23",
+          "last_mid": 1.345
         }
       ],
       "closed": []
@@ -40,7 +52,7 @@
           "side": "short",
           "entry_price": 5.18,
           "entry_date": "2026-10-14",
-          "last_mid": 5.77
+          "last_mid": 6.455
         }
       ],
       "closed": []
@@ -59,7 +71,7 @@
           "side": "long",
           "entry_price": 4.5,
           "entry_date": "2026-10-16",
-          "last_mid": 4.75
+          "last_mid": 3.725
         },
         {
           "contract_id": 852747638,
@@ -71,7 +83,7 @@
           "side": "long",
           "entry_price": 3.35,
           "entry_date": "2026-10-19",
-          "last_mid": 2.97
+          "last_mid": 3.5
         }
       ],
       "closed": []

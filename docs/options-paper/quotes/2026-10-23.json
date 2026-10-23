@@ -1,0 +1,12 @@
+{"asof": "2026-10-23", "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-23 ~22:15Z, after running plan (Book L SPY put signal). Greeks missing where delta is null.",
+ "quotes": [
+  {"contract_id": 900733218, "underlying": "QQQ", "right": "P", "strike": 570, "expiry": "2026-11-20", "bid": 1.22, "ask": 1.27, "delta": null},
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 6.43, "ask": 6.48, "delta": -0.2680},
+  {"contract_id": 728934469, "underlying": "MRK", "right": "C", "strike": 160, "expiry": "2027-01-15", "bid": 3.55, "ask": 3.90, "delta": null},
+  {"contract_id": 852747638, "underlying": "CSCO", "right": "C", "strike": 120, "expiry": "2027-01-15", "bid": 3.20, "ask": 3.80, "delta": 0.2988},
+  {"contract_id": 882139399, "underlying": "SPY", "right": "P", "strike": 620, "expiry": "2026-11-20", "bid": 0.76, "ask": 0.79, "delta": null},
+  {"contract_id": 882139480, "underlying": "SPY", "right": "P", "strike": 635, "expiry": "2026-11-20", "bid": 0.91, "ask": 0.93, "delta": null},
+  {"contract_id": 882139598, "underlying": "SPY", "right": "P", "strike": 650, "expiry": "2026-11-20", "bid": 1.09, "ask": 1.12, "delta": -0.0379},
+  {"contract_id": 882139722, "underlying": "SPY", "right": "P", "strike": 665, "expiry": "2026-11-20", "bid": 1.33, "ask": 1.36, "delta": -0.0481},
+  {"contract_id": 882139872, "underlying": "SPY", "right": "P", "strike": 680, "expiry": "2026-11-20", "bid": 1.67, "ask": 1.71, "delta": -0.0636}
+ ]}

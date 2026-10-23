@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-10-22)
+# Gap-and-go day-trading paper account (as of 2026-10-23)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,000.00** (+0.00%).
 
@@ -9,6 +9,7 @@ No trades yet.
 
 ## Session log (latest first)
 
+- **2026-10-23** P&L +0.00. no gap candidates
 - **2026-10-22** P&L +0.00. no gap candidates
 - **2026-10-21** P&L +0.00. SMCI +12.2% (no breakout above the first bar's high by 10:30), DELL +7.7% (no breakout above the first bar's high by 10:30), STX +4.9% (first 5-minute bar not green), MARA +4.5% (first 5-minute bar not green), WDC +4.4% (first 5-minute bar not green), RIOT +4.2% (first 5-minute bar not green)
 - **2026-10-20** P&L +0.00. no gap candidates
