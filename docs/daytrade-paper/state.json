@@ -1,9 +1,9 @@
 {
   "inception": "2026-10-15",
-  "last_asof": "2026-10-23",
+  "last_asof": "2026-10-26",
   "books": {
     "QQQ": {
-      "equity": 25616.02,
+      "equity": 26207.19,
       "bench_start": 718.55,
       "trades": [
         {
@@ -110,11 +110,26 @@
           "r": -0.682,
           "pnl": -175.79,
           "fees": 2.0
+        },
+        {
+          "date": "2026-10-26",
+          "trade": true,
+          "side": "long",
+          "shares": 131,
+          "entry": 707.5207,
+          "stop": 705.58,
+          "target": 726.9282,
+          "exit": 712.0488,
+          "exit_time": "15:55",
+          "reason": "end of day",
+          "r": 2.308,
+          "pnl": 591.17,
+          "fees": 2.0
         }
       ]
     },
     "SPY": {
-      "equity": 25626.34,
+      "equity": 25952.27,
       "bench_start": 766.24,
       "trades": [
         {
@@ -220,6 +235,21 @@
           "reason": "stop",
           "r": -0.23,
           "pnl": -58.97,
+          "fees": 2.0
+        },
+        {
+          "date": "2026-10-26",
+          "trade": true,
+          "side": "long",
+          "shares": 134,
+          "entry": 762.7663,
+          "stop": 761.63,
+          "target": 774.129,
+          "exit": 765.2135,
+          "exit_time": "15:55",
+          "reason": "end of day",
+          "r": 1.272,
+          "pnl": 325.93,
           "fees": 2.0
         }
       ]
