@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-26)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-27)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $26,207.19 | +4.83% | $24,776.29 | 8 |
-| SPY ORB | $25,000 | $25,952.27 | +3.81% | $24,969.00 | 8 |
+| QQQ ORB | $25,000 | $25,935.19 | +3.74% | $25,093.59 | 9 |
+| SPY ORB | $25,000 | $25,871.50 | +3.49% | $25,111.58 | 9 |
 
 ## QQQ
 
-8 trades, win rate 25%, mean +0.63R (t = 0.58), total P&L +1,207.19, max drawdown -4.0%
+9 trades, win rate 22%, mean +0.45R (t = 0.45), total P&L +935.19, max drawdown -4.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-27 | long | 122 | 716.75 | 714.54 | 09:50 | stop | -1.04 | -272.00 |
 | 2026-10-26 | long | 131 | 707.52 | 712.05 | 15:55 | end of day | +2.31 | +591.17 |
 | 2026-10-23 | long | 146 | 702.45 | 701.26 | 09:35 | stop | -0.68 | -175.79 |
 | 2026-10-22 | long | 145 | 714.22 | 712.38 | 09:45 | stop | -1.03 | -269.19 |
@@ -24,10 +25,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-8 trades, win rate 25%, mean +0.49R (t = 0.65), total P&L +952.27, max drawdown -2.2%
+9 trades, win rate 22%, mean +0.40R (t = 0.60), total P&L +871.50, max drawdown -2.2%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-27 | long | 135 | 767.60 | 767.01 | 09:45 | stop | -0.31 | -80.77 |
 | 2026-10-26 | long | 134 | 762.77 | 765.21 | 15:55 | end of day | +1.27 | +325.93 |
 | 2026-10-23 | long | 135 | 760.07 | 759.64 | 09:35 | stop | -0.23 | -58.97 |
 | 2026-10-22 | long | 134 | 767.34 | 765.87 | 09:45 | stop | -0.77 | -198.09 |
