@@ -1,0 +1,8 @@
+{"asof": "2026-10-27", "source": "IBKR get_price_snapshot (read-only), delayed/closing quotes fetched 2026-10-27 ~22:30Z after plan (no entries wanted). No greeks for the CSCO call.",
+ "quotes": [
+  {"contract_id": 900733218, "underlying": "QQQ", "right": "P", "strike": 570, "expiry": "2026-11-20", "bid": 0.58, "ask": 0.62, "delta": -0.0183},
+  {"contract_id": 882139722, "underlying": "SPY", "right": "P", "strike": 665, "expiry": "2026-11-20", "bid": 0.72, "ask": 0.73, "delta": -0.0291},
+  {"contract_id": 882140368, "underlying": "SPY", "right": "P", "strike": 740, "expiry": "2026-11-20", "bid": 3.62, "ask": 3.66, "delta": -0.1802},
+  {"contract_id": 728934469, "underlying": "MRK", "right": "C", "strike": 160, "expiry": "2027-01-15", "bid": 2.51, "ask": 2.92, "delta": 0.2333},
+  {"contract_id": 852747638, "underlying": "CSCO", "right": "C", "strike": 120, "expiry": "2027-01-15", "bid": 4.60, "ask": 4.95, "delta": null}
+ ]}

@@ -1,12 +1,12 @@
-# Options paper test (as of 2026-10-26)
+# Options paper test (as of 2026-10-27)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Inception 2026-10-14. Fills at ask/bid plus US$0.65 per contract; positions marked at mid. Not advice.
 
 | Book | Start | Equity | Return | Benchmark | Bench value | Open | Closed |
 |---|---:|---:|---:|---|---:|---:|---:|
-| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $404.70 | -19.06% | QQQ buy-and-hold | $488.51 | 2 | 0 |
-| Book P: SPY cash-secured put writer | $100,000 | $100,041.35 | +0.04% | SPY buy-and-hold | $99,450.36 | 1 | 0 |
-| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $903.70 | -9.63% | QQQ buy-and-hold | $1,003.38 | 2 | 0 |
+| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $360.20 | -27.96% | QQQ buy-and-hold | $494.72 | 2 | 0 |
+| Book P: SPY cash-secured put writer | $100,000 | $100,153.35 | +0.15% | SPY buy-and-hold | $100,007.80 | 1 | 0 |
+| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $962.70 | -3.73% | QQQ buy-and-hold | $1,016.13 | 2 | 0 |
 
 ## Book L: $500 lottery (buys calls/puts on QQQ/SPY)
 
@@ -14,8 +14,8 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| QQQ 2026-11-20 570P | 1 | long | 1.35 | 2026-10-22 | 0.81 |
-| SPY 2026-11-20 665P | 1 | long | 1.36 | 2026-10-23 | 0.95 |
+| QQQ 2026-11-20 570P | 1 | long | 1.35 | 2026-10-22 | 0.60 |
+| SPY 2026-11-20 665P | 1 | long | 1.36 | 2026-10-23 | 0.72 |
 
 ## Book P: SPY cash-secured put writer
 
@@ -23,7 +23,7 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 4.76 |
+| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 3.64 |
 
 ## Book M: $1,000 momentum calls (aggressive group, from 2026-10-16)
 
@@ -31,11 +31,12 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 2.45 |
-| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 4.45 |
+| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 2.71 |
+| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 4.78 |
 
 ## Session log
 
+- **2026-10-27** L $360.20, P $100,153.35, M $962.70. no action
 - **2026-10-26** L $404.70, P $100,041.35, M $903.70. no action
 - **2026-10-23** L $486.70, P $99,871.85, M $936.20. L: buy SPY 2026-11-20 665P x1 at 1.36 (delta -0.0481)
 - **2026-10-22** L $496.35, P $99,940.35, M $985.70. L: buy QQQ 2026-11-20 570P x1 at 1.35 (delta None)
