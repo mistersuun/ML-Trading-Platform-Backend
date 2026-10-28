@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-10-27)
+# Gap-and-go day-trading paper account (as of 2026-10-28)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$4,962.17** (-0.76%).
 
@@ -10,6 +10,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-10-28** P&L +0.00. no gap candidates
 - **2026-10-27** P&L +0.00. SOFI +10.5% (first 5-minute bar not green), SPGI +4.3% (first 5-minute bar not green)
 - **2026-10-26** P&L -37.83. HHH +4.2% (trade)
 - **2026-10-23** P&L +0.00. no gap candidates

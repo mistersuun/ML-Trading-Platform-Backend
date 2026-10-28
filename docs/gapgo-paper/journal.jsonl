@@ -6,3 +6,4 @@
 {"date": "2026-10-23", "candidates": [], "pnl": 0}
 {"date": "2026-10-26", "candidates": [{"symbol": "HHH", "gap": 0.0423, "prev_close": 70.19, "adv_shares": 421906.7, "adv_dollar": 30353031, "result": {"trade": true, "shares": 23, "entry": 74.7847, "entry_time": "09:35", "stop": 72.68, "target": 78.9941, "exits": [{"shares": 23, "price": 73.2267, "why": "close", "time": "15:55"}], "r": -0.757, "pnl": -37.83, "fees": 2.0}}], "pnl": -37.83}
 {"date": "2026-10-27", "candidates": [{"symbol": "SOFI", "gap": 0.1051, "prev_close": 14.46, "adv_shares": 35350846.0, "adv_dollar": 534068657, "result": {"trade": false, "reason": "first 5-minute bar not green"}}, {"symbol": "SPGI", "gap": 0.043, "prev_close": 450.65, "adv_shares": 1031577.85, "adv_dollar": 429183785, "result": {"trade": false, "reason": "first 5-minute bar not green"}}], "pnl": 0}
+{"date": "2026-10-28", "candidates": [], "pnl": 0}

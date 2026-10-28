@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-10-27",
+  "last_asof": "2026-10-28",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -9,20 +9,8 @@
   "books": {
     "L": {
       "start": 500.0,
-      "cash": 227.70000000000002,
+      "cash": 270.05,
       "positions": [
-        {
-          "contract_id": 900733218,
-          "underlying": "QQQ",
-          "right": "P",
-          "strike": 570.0,
-          "expiry": "2026-11-20",
-          "qty": 1,
-          "side": "long",
-          "entry_price": 1.35,
-          "entry_date": "2026-10-22",
-          "last_mid": 0.6
-        },
         {
           "contract_id": 882139722,
           "underlying": "SPY",
@@ -33,10 +21,27 @@
           "side": "long",
           "entry_price": 1.36,
           "entry_date": "2026-10-23",
-          "last_mid": 0.725
+          "last_mid": 0.595
         }
       ],
-      "closed": []
+      "closed": [
+        {
+          "contract_id": 900733218,
+          "underlying": "QQQ",
+          "right": "P",
+          "strike": 570.0,
+          "expiry": "2026-11-20",
+          "qty": 1,
+          "side": "long",
+          "entry_price": 1.35,
+          "entry_date": "2026-10-22",
+          "last_mid": 0.465,
+          "exit_price": 0.43,
+          "exit_date": "2026-10-28",
+          "reason": "stop (-60%)",
+          "pnl": -93.3
+        }
+      ]
     },
     "P": {
       "start": 100000.0,
@@ -52,7 +57,7 @@
           "side": "short",
           "entry_price": 5.18,
           "entry_date": "2026-10-14",
-          "last_mid": 3.64
+          "last_mid": 3.115
         }
       ],
       "closed": []
@@ -71,7 +76,7 @@
           "side": "long",
           "entry_price": 4.5,
           "entry_date": "2026-10-16",
-          "last_mid": 2.715
+          "last_mid": 2.56
         },
         {
           "contract_id": 852747638,
@@ -83,7 +88,7 @@
           "side": "long",
           "entry_price": 3.35,
           "entry_date": "2026-10-19",
-          "last_mid": 4.775
+          "last_mid": 4.45
         }
       ],
       "closed": []

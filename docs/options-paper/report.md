@@ -1,12 +1,12 @@
-# Options paper test (as of 2026-10-27)
+# Options paper test (as of 2026-10-28)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Inception 2026-10-14. Fills at ask/bid plus US$0.65 per contract; positions marked at mid. Not advice.
 
 | Book | Start | Equity | Return | Benchmark | Bench value | Open | Closed |
 |---|---:|---:|---:|---|---:|---:|---:|
-| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $360.20 | -27.96% | QQQ buy-and-hold | $494.72 | 2 | 0 |
-| Book P: SPY cash-secured put writer | $100,000 | $100,153.35 | +0.15% | SPY buy-and-hold | $100,007.80 | 1 | 0 |
-| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $962.70 | -3.73% | QQQ buy-and-hold | $1,016.13 | 2 | 0 |
+| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $329.55 | -34.09% | QQQ buy-and-hold | $497.71 | 1 | 1 |
+| Book P: SPY cash-secured put writer | $100,000 | $100,205.85 | +0.21% | SPY buy-and-hold | $100,352.13 | 1 | 0 |
+| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $914.70 | -8.53% | QQQ buy-and-hold | $1,022.27 | 2 | 0 |
 
 ## Book L: $500 lottery (buys calls/puts on QQQ/SPY)
 
@@ -14,8 +14,13 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| QQQ 2026-11-20 570P | 1 | long | 1.35 | 2026-10-22 | 0.60 |
-| SPY 2026-11-20 665P | 1 | long | 1.36 | 2026-10-23 | 0.72 |
+| SPY 2026-11-20 665P | 1 | long | 1.36 | 2026-10-23 | 0.59 |
+
+Closed trades: 1, win rate 0%, total P&L -93.30, average loss -93.30
+
+| Contract | Qty | Entry | Exit | Dates | Reason | P&L |
+|---|---:|---:|---:|---|---|---:|
+| QQQ 2026-11-20 570P | 1 | 1.35 | 0.43 | 2026-10-22 to 2026-10-28 | stop (-60%) | -93.30 |
 
 ## Book P: SPY cash-secured put writer
 
@@ -23,7 +28,7 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 3.64 |
+| SPY 2026-11-20 740P | 1 | short | 5.18 | 2026-10-14 | 3.12 |
 
 ## Book M: $1,000 momentum calls (aggressive group, from 2026-10-16)
 
@@ -31,11 +36,12 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 2.71 |
-| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 4.78 |
+| MRK 2027-01-15 160C | 1 | long | 4.50 | 2026-10-16 | 2.56 |
+| CSCO 2027-01-15 120C | 1 | long | 3.35 | 2026-10-19 | 4.45 |
 
 ## Session log
 
+- **2026-10-28** L $329.55, P $100,205.85, M $914.70. L: close QQQ 2026-11-20 570P x1 at 0.43 (stop (-60%)), P&L -93.30
 - **2026-10-27** L $360.20, P $100,153.35, M $962.70. no action
 - **2026-10-26** L $404.70, P $100,041.35, M $903.70. no action
 - **2026-10-23** L $486.70, P $99,871.85, M $936.20. L: buy SPY 2026-11-20 665P x1 at 1.36 (delta -0.0481)
