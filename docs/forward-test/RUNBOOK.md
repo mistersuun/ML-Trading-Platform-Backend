@@ -337,3 +337,21 @@ Paper only. The forward record starts with the 2026-10-16 session.
    `get_price_history(conid, STK, FIVE_MINS, outside_rth=false, period=ONE_DAY)`, saved verbatim as
    `docs/gapgo-paper/bars/<SYM>.<YYYYMMDD>.json`.
 4. Run `.venv/bin/python scripts/gapgo_paper.py step`, then commit `docs/gapgo-paper/`.
+
+## 11. Portfolio Pilot: weekly report on the owner's real account (Fridays; D25, `docs/pilot/`)
+
+Advisory only. IBKR is read-only: `get_account_summary`, `get_account_positions` and `get_price_history`. Never any
+order tool. Nothing from this section is committed: the account file and the report live in `state/pilot/`, which is
+git-ignored.
+
+1. Save the verbatim tool outputs as
+   `state/pilot/account-YYYYMMDD.json = {"asof": "YYYY-MM-DD", "summary": <summary>, "positions": <positions>}`.
+2. Top up the daily bars of the 14 TSX tickers into `state/pilot_bars/<SYM>.D.<YYYYMMDD>.json`, using
+   `step_count=10` and verbatim output.
+   - Tickers (TSE): VFV 116763367, XUU 183908251, HXQ 700079680, XEF 125765017, ZEB 288989354, ZLB 96847744,
+     ZUT 73281854, HBB 700079731, XGD 74580664, CGL 105224182, CCO 13464841, HURA 700079737, COPP 700079802,
+     CHPS 765560340.
+   - In a fresh container, first fetch `step_count=1000` into `<SYM>.D.json`.
+3. Run `.venv/bin/python scripts/pilot_report.py state/pilot/account-YYYYMMDD.json`. The default policy is static, 1.45x.
+4. Put a short summary in the Friday message to the owner: leverage, cushion, stress loss, alerts, and whether a
+   rebalance is needed with its main trades.

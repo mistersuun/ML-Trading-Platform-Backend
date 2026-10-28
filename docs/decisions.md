@@ -251,3 +251,24 @@ Trimmed per the reviewer: ONE significance gate (Deflated Sharpe) on top of the 
 - **Look schedule.** One look per calendar month (first trading day), no interim looks. Thresholds: a Bayes factor of at least 10 sustained for 3 consecutive looks; demotion when P(real) falls below its prior or E[Sharpe] < 0 for 3 consecutive looks.
 - **Capital gate (unchanged order of authority).** Paper order eligibility = DSR gate (D18) plus an owner decision; the posterior does not gate it. Real capital (at most 5% of the account, D4) additionally needs PSR(SR > 0) ≥ 0.95 on paper (D6), the sustained Bayes factor, and E[Sharpe] ≥ 0.3 net; sizing at most quarter-Kelly of E[Sharpe], capped at one risk unit.
 - **Changing any prior after a D22 or forward number has been seen** requires a new decision entry and reports both the old and new posteriors.
+
+## D25 — Portfolio Pilot for the owner's real account: pre-registered test, result, and the policy tool (2026-10-28)
+
+- **Context.** Owner, 2026-10-28: "Think very very hard about what would work, analyze etc, then implement; it needs to be useful."
+  - The short-term signal stack has produced no order in 9 forward sessions, and the ML direction model has AUC about 0.5.
+  - The real account (IBKR, CAD) is levered at the owner's choice (2026-10-22: keep the 3.58% loan, long-term growth) and concentrated in resource ETFs. Figures stay in git-ignored `state/pilot/`.
+- **Pre-registration.** Before any number, the rules and the test plan were frozen in [`docs/pilot/PREREG.md`](pilot/PREREG.md):
+  - core/satellite sleeves;
+  - a satellite trend gate;
+  - a 15% volatility target setting leverage between 0.5x and 1.5x;
+  - trading bands;
+  - one look at 19 years of weekly US proxies and about 4 years of daily data on the owner's TSX ETFs.
+- **Result** ([`docs/pilot/backtest.md`](pilot/backtest.md), [`docs/pilot/RESULTS.md`](pilot/RESULTS.md)): the volatility-targeted Pilot (S3) failed its success condition. It returned +4.4% a year against +8.8% for the static levered mix (S1), with a lower Sharpe ratio, so it is **not adopted**. The trend gate alone also hurt (−1.4 points a year).
+- **Adopted (advisory only, D1 unchanged).** `pilot.py` and `scripts/pilot_report.py` keep the account on a policy the owner chooses:
+  - default: the static strategic mix at 1.45x (S1);
+  - leverage hard cap 1.5x;
+  - drift and leverage bands of 3 points and 0.10;
+  - stress test and alerts.
+  - The owner places every trade by hand. Account snapshots and reports live in `state/pilot/` (git-ignored) and are never committed.
+- **Relation to D23 (1) and D4.** D4's unlevered core stays the platform's documented reference policy. D25 does not endorse leverage; it caps and monitors the leverage the owner has chosen in the owner's own account, and reports the measured cost of it (about +1 point a year of return for 15 points of extra drawdown).
+- **Not done.** No parameter was changed after the look. A future change to the Pilot is a new, pre-registered version.

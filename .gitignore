@@ -26,3 +26,5 @@ state/forward/
 state/data/
 state/*.sqlite-wal
 state/*.sqlite-shm
+state/pilot_bars/
+state/pilot/
