@@ -1,15 +1,18 @@
-# Gap-and-go day-trading paper account (as of 2026-10-28)
+# Gap-and-go day-trading paper account (as of 2026-10-29)
 
-Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$4,962.17** (-0.76%).
+Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,011.37** (+0.23%).
 
-1 trades, win rate 0%, mean -0.76R (t = nan), total P&L -37.83, max drawdown -0.8%
+3 trades, win rate 67%, mean +0.08R (t = 0.16), total P&L +11.37, max drawdown -0.8%
 
 | Date | Stock | Gap | Entry | Exits | R | P&L |
 |---|---|---:|---:|---|---:|---:|
+| 2026-10-29 | CVNA | +10.5% | 12 @ 67.79 09:40 | 12 @ 68.15 close 15:55 | +0.05 | +2.37 |
+| 2026-10-29 | CROX | +17.0% | 9 @ 144.67 09:35 | 9 @ 150.10 close 15:55 | +0.94 | +46.83 |
 | 2026-10-26 | HHH | +4.2% | 23 @ 74.78 09:35 | 23 @ 73.23 close 15:55 | -0.76 | -37.83 |
 
 ## Session log (latest first)
 
+- **2026-10-29** P&L +49.20. CROX +17.0% (trade), CVNA +10.5% (trade), DASH +5.3% (daily trade limit reached)
 - **2026-10-28** P&L +0.00. no gap candidates
 - **2026-10-27** P&L +0.00. SOFI +10.5% (first 5-minute bar not green), SPGI +4.3% (first 5-minute bar not green)
 - **2026-10-26** P&L -37.83. HHH +4.2% (trade)

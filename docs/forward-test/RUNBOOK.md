@@ -276,7 +276,9 @@ Paper only; IBKR read-only. Every nightly session (forward record starts with th
 1. Fetch the session's 5-minute regular-hours bars for QQQ (320227571) and SPY (756733):
    `get_price_history(contract_id, security_type="STK", step="FIVE_MINS", outside_rth=false, period="ONE_DAY")`.
    - About 6 KB each.
-   - Save the raw JSON as `docs/daytrade-paper/bars/<SYM>.<YYYYMMDD>.json`.
+   - Save the raw JSON as `docs/daytrade-paper/bars/<SYM>.<YYYYMMDD>.json`. Do not retype an inline payload: hand
+     copies had one-cent typos (2026-10-29). Fetch with `step_count=1000` instead (the client saves it to a file)
+     and cut the session out with `scripts/slice_session_bars.py <saved_file> <YYYY-MM-DD> <out.json>`.
    - If a night was missed, use `step_count` (at most 1000 bars, about 12 sessions) to back-fill.
 2. Run `.venv/bin/python scripts/daytrade_paper.py step`. This defaults to the latest complete session present for both
    symbols. Missed sessions are stepped in date order with `--asof`.
@@ -334,8 +336,8 @@ Paper only. The forward record starts with the 2026-10-16 session.
    - Save each payload verbatim: never rebuild or infer the `time` array.
 2. Run `.venv/bin/python scripts/gapgo_paper.py scan`. It lists the session's gap-ups of +4% or more.
 3. For each candidate, fetch 5-minute bars:
-   `get_price_history(conid, STK, FIVE_MINS, outside_rth=false, period=ONE_DAY)`, saved verbatim as
-   `docs/gapgo-paper/bars/<SYM>.<YYYYMMDD>.json`.
+   `get_price_history(conid, STK, FIVE_MINS, outside_rth=false, step_count=1000)` (saved to a file by the client),
+   then `scripts/slice_session_bars.py <saved_file> <YYYY-MM-DD> docs/gapgo-paper/bars/<SYM>.<YYYYMMDD>.json`.
 4. Run `.venv/bin/python scripts/gapgo_paper.py step`, then commit `docs/gapgo-paper/`.
 
 ## 11. Portfolio Pilot: weekly report on the owner's real account (Fridays; D25, `docs/pilot/`)
