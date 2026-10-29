@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-28)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-29)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $25,765.20 | +3.06% | $25,245.63 | 10 |
-| SPY ORB | $25,000 | $25,800.58 | +3.20% | $25,196.41 | 10 |
+| QQQ ORB | $25,000 | $25,502.22 | +2.01% | $24,887.97 | 11 |
+| SPY ORB | $25,000 | $25,585.03 | +2.34% | $25,105.06 | 11 |
 
 ## QQQ
 
-10 trades, win rate 20%, mean +0.34R (t = 0.38), total P&L +765.20, max drawdown -4.0%
+11 trades, win rate 18%, mean +0.21R (t = 0.26), total P&L +502.22, max drawdown -4.4%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-29 | short | 54 | 712.23 | 717.06 | 11:30 | stop | -1.02 | -262.98 |
 | 2026-10-28 | long | 143 | 724.27 | 723.10 | 09:35 | stop | -0.66 | -169.99 |
 | 2026-10-27 | long | 122 | 716.75 | 714.54 | 09:50 | stop | -1.04 | -272.00 |
 | 2026-10-26 | long | 131 | 707.52 | 712.05 | 15:55 | end of day | +2.31 | +591.17 |
@@ -26,10 +27,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-10 trades, win rate 20%, mean +0.33R (t = 0.56), total P&L +800.58, max drawdown -2.2%
+11 trades, win rate 18%, mean +0.23R (t = 0.41), total P&L +585.03, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-29 | short | 134 | 767.65 | 769.25 | 09:45 | stop | -0.83 | -215.55 |
 | 2026-10-28 | short | 134 | 771.26 | 771.78 | 12:50 | stop | -0.27 | -70.92 |
 | 2026-10-27 | long | 135 | 767.60 | 767.01 | 09:45 | stop | -0.31 | -80.77 |
 | 2026-10-26 | long | 134 | 762.77 | 765.21 | 15:55 | end of day | +1.27 | +325.93 |
