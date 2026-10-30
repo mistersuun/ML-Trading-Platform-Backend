@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-29)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-10-30)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $25,502.22 | +2.01% | $24,887.97 | 11 |
-| SPY ORB | $25,000 | $25,585.03 | +2.34% | $25,105.06 | 11 |
+| QQQ ORB | $25,000 | $25,240.69 | +0.96% | $24,025.12 | 12 |
+| SPY ORB | $25,000 | $26,134.90 | +4.54% | $24,656.77 | 12 |
 
 ## QQQ
 
-11 trades, win rate 18%, mean +0.21R (t = 0.26), total P&L +502.22, max drawdown -4.4%
+12 trades, win rate 17%, mean +0.11R (t = 0.15), total P&L +240.69, max drawdown -5.4%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-30 | short | 88 | 694.55 | 697.50 | 09:55 | stop | -1.03 | -261.53 |
 | 2026-10-29 | short | 54 | 712.23 | 717.06 | 11:30 | stop | -1.02 | -262.98 |
 | 2026-10-28 | long | 143 | 724.27 | 723.10 | 09:35 | stop | -0.66 | -169.99 |
 | 2026-10-27 | long | 122 | 716.75 | 714.54 | 09:50 | stop | -1.04 | -272.00 |
@@ -27,10 +28,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-11 trades, win rate 18%, mean +0.23R (t = 0.41), total P&L +585.03, max drawdown -2.3%
+12 trades, win rate 25%, mean +0.39R (t = 0.73), total P&L +1,134.90, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-10-30 | short | 134 | 759.91 | 755.80 | 15:55 | end of day | +2.15 | +549.87 |
 | 2026-10-29 | short | 134 | 767.65 | 769.25 | 09:45 | stop | -0.83 | -215.55 |
 | 2026-10-28 | short | 134 | 771.26 | 771.78 | 12:50 | stop | -0.27 | -70.92 |
 | 2026-10-27 | long | 135 | 767.60 | 767.01 | 09:45 | stop | -0.31 | -80.77 |
