@@ -8,3 +8,4 @@
 {"asof": "2026-10-27", "accounts": {"lev_trend": {"equity": 972.32, "holdings": {"TQQQ": 13.687}, "trades": 1, "costs": 0.85}, "top1_mom": {"equity": 1022.94, "holdings": {"AMD": 1.8258}, "trades": 1, "costs": 0.85}}, "spy_return": -0.00463}
 {"asof": "2026-10-28", "accounts": {"lev_trend": {"equity": 990.39, "holdings": {"TQQQ": 13.687}, "trades": 1, "costs": 0.85}, "top1_mom": {"equity": 1056.13, "holdings": {"AMD": 1.8258}, "trades": 1, "costs": 0.85}}, "spy_return": -0.001203}
 {"asof": "2026-10-29", "accounts": {"lev_trend": {"equity": 947.96, "holdings": {"TQQQ": 13.687}, "trades": 1, "costs": 0.85}, "top1_mom": {"equity": 1034.19, "holdings": {"AMD": 1.8258}, "trades": 1, "costs": 0.85}}, "spy_return": -0.005018}
+{"asof": "2026-10-30", "accounts": {"lev_trend": {"equity": 848.73, "holdings": {"TQQQ": 13.687}, "trades": 1, "costs": 0.85}, "top1_mom": {"equity": 921.68, "holdings": {"AMD": 1.8258}, "trades": 1, "costs": 0.85}}, "spy_return": -0.022658}
