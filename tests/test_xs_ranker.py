@@ -101,3 +101,9 @@ def test_verdict_requires_all_three_conditions():
     assert ok and len(lines) == 3
     ok2, _ = xs.verdict({"t": 1.5}, books)
     assert not ok2
+
+
+def test_too_little_history_returns_empty_instead_of_crashing():
+    close, volume, spy = _market()
+    assert xs.features_on(close, volume, spy, IDX[251]).empty      # 252 rows: one short of a 252-day return
+    assert not xs.features_on(close, volume, spy, IDX[252]).empty

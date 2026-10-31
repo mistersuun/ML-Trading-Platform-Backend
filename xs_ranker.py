@@ -36,10 +36,12 @@ def features_on(close: pd.DataFrame, volume: pd.DataFrame, spy: pd.Series, date:
     """Raw features of the eligible stocks on `date` (data up to and including it), ranked cross-sectionally."""
     c = close.loc[:date]
     v = volume.loc[:date]
+    if len(c) < MIN_BARS + 1:                       # a 252-day return needs 253 closes
+        return pd.DataFrame(columns=FEATURES)
     n_bars = c.notna().sum()
     last = c.iloc[-1]
     dv21 = (c * v).iloc[-21:].mean()
-    elig = n_bars.index[(n_bars >= MIN_BARS) & (last >= MIN_PRICE) & (dv21 >= MIN_DOLLAR_VOL)]
+    elig = n_bars.index[(n_bars >= MIN_BARS + 1) & (last >= MIN_PRICE) & (dv21 >= MIN_DOLLAR_VOL)]
     if len(elig) == 0:
         return pd.DataFrame(columns=FEATURES)
     c, v = c[elig], v[elig]

@@ -272,3 +272,18 @@ Trimmed per the reviewer: ONE significance gate (Deflated Sharpe) on top of the 
   - The owner places every trade by hand. Account snapshots and reports live in `state/pilot/` (git-ignored) and are never committed.
 - **Relation to D23 (1) and D4.** D4's unlevered core stays the platform's documented reference policy. D25 does not endorse leverage; it caps and monitors the leverage the owner has chosen in the owner's own account, and reports the measured cost of it (about +1 point a year of return for 15 points of extra drawdown).
 - **Not done.** No parameter was changed after the look. A future change to the Pilot is a new, pre-registered version.
+
+## D26 — Cross-sectional ML stock ranker: pre-registered test, not adopted (2026-10-31)
+
+- **Context.** Owner, 2026-10-31: asked for real work on the ML trader and for what would help most and make money.
+  The day-ahead direction model has AUC about 0.5, so the ML was pointed at the question with published evidence
+  (Gu, Kelly & Xiu 2020): ranking stocks against each other over the next month.
+- **Pre-registration.** [`docs/xs-ranker/PREREG.md`](xs-ranker/PREREG.md), committed with the code and tests before
+  any run: about 125 stocks, 13 ranked price features, LightGBM and ridge walk-forward with a one-month purge,
+  top-20% portfolios against 12-1 momentum and the equal-weight universe, 10 bp costs, three adoption conditions.
+  One rule was changed before any real run (minimum training months 24 → 12, for 34 scored months instead of 22).
+- **Result.** Failed all three conditions: IC t-statistic 0.92, Sharpe 0.75 vs 1.26 for momentum, −0.41% a month
+  versus the universe ([`RESULTS.md`](xs-ranker/RESULTS.md)). Not adopted; no paper account is opened.
+- **Consequence.** Third independent null result for price-only prediction. Further work on predictive signals needs
+  non-price information (earnings, insider, event data) under its own pre-registration. Code (`xs_ranker.py`,
+  `scripts/xs_ranker_backtest.py`, tests) stays for re-use.
