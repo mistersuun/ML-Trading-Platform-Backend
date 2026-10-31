@@ -28,3 +28,5 @@ state/*.sqlite-wal
 state/*.sqlite-shm
 state/pilot_bars/
 state/pilot/
+state/xs_bars/
+state/xs_scores.csv
