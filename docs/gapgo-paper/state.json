@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-10-30",
-  "equity": 5011.37,
+  "last_date": "2026-11-02",
+  "equity": 5002.71,
   "trades": [
     {
       "date": "2026-10-26",
@@ -67,6 +67,50 @@
       ],
       "r": 0.048,
       "pnl": 2.37,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-02",
+      "symbol": "RIVN",
+      "gap": 0.0493,
+      "trade": true,
+      "shares": 134,
+      "entry": 13.013,
+      "entry_time": "09:35",
+      "stop": 12.64,
+      "target": 13.759,
+      "exits": [
+        {
+          "shares": 134,
+          "price": 13.1768,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 0.398,
+      "pnl": 19.95,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-02",
+      "symbol": "UAL",
+      "gap": 0.0453,
+      "trade": true,
+      "shares": 22,
+      "entry": 110.3402,
+      "entry_time": "09:40",
+      "stop": 108.12,
+      "target": 114.7807,
+      "exits": [
+        {
+          "shares": 22,
+          "price": 109.1308,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": -0.571,
+      "pnl": -28.61,
       "fees": 2.0
     }
   ]
