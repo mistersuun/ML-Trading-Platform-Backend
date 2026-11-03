@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-11-02)
+# Gap-and-go day-trading paper account (as of 2026-11-03)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,002.71** (+0.05%).
 
@@ -14,6 +14,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-03** P&L +0.00. JD +4.2% (first 5-minute bar not green)
 - **2026-11-02** P&L -8.66. MAR +6.4% (first 5-minute bar not green), RIVN +4.9% (trade), UAL +4.5% (trade), BABA +4.0% (daily trade limit reached)
 - **2026-10-30** P&L +0.00. RIVN +5.7% (first 5-minute bar not green)
 - **2026-10-29** P&L +49.20. CROX +17.0% (trade), CVNA +10.5% (trade), DASH +5.3% (daily trade limit reached)
