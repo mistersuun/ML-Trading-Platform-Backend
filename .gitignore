@@ -30,3 +30,6 @@ state/pilot_bars/
 state/pilot/
 state/xs_bars/
 state/xs_scores.csv
+# the forward-test snapshot must survive fresh containers, including its sqlite state (paper/research data only)
+!docs/forward-test/2026-10/snapshot/*.db
+!docs/forward-test/2026-10/snapshot/*.sqlite

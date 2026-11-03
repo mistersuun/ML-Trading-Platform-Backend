@@ -696,3 +696,20 @@ def test_ingest_full_history_drops_old_topups_and_topup_must_agree_with_history(
     ing.ingest("ABC", json.dumps(ibkr_json([("2024-06-03", 5, 5.5, 4.5, 5.2, 1), ("2024-06-05", 5, 5.5, 4.5, 5.3, 1)])), root=tmp_path)
     assert not list(tmp_path.glob("ABC.2*.json"))                                  # the old top-up cannot override the new history
     assert external_bars.load_bars("ABC", root=tmp_path)["Close"].iloc[-1] == 5.3
+
+
+def test_snapshot_files_are_not_git_ignored():
+    """The snapshot is how state survives a fresh container; a git-ignored snapshot file is silently lost (2026-11-03:
+    the *.db / *.sqlite rules dropped trading.db, trials.sqlite and holdout_reads.sqlite)."""
+    import shutil as _sh
+    import subprocess
+
+    from services import forward as fwd_mod
+
+    root = Path(__file__).resolve().parent.parent
+    if _sh.which("git") is None or not (root / ".git").exists():
+        pytest.skip("needs a git checkout")
+    for name, _, _ in fwd_mod._state_files():
+        rel = f"docs/forward-test/2026-10/snapshot/{name}"
+        out = subprocess.run(["git", "check-ignore", "-q", rel], cwd=root)
+        assert out.returncode == 1, f"{rel} is git-ignored"
