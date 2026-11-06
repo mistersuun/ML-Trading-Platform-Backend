@@ -1,18 +1,21 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-03)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-06)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $25,084.75 | +0.34% | $23,844.55 | 14 |
-| SPY ORB | $25,000 | $26,172.37 | +4.69% | $24,613.70 | 14 |
+| QQQ ORB | $25,000 | $25,745.63 | +2.98% | $22,831.40 | 17 |
+| SPY ORB | $25,000 | $27,821.27 | +11.29% | $23,993.46 | 17 |
 
 ## QQQ
 
-14 trades, win rate 14%, mean +0.05R (t = 0.08), total P&L +84.75, max drawdown -6.0%
+17 trades, win rate 18%, mean +0.20R (t = 0.33), total P&L +745.63, max drawdown -7.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-06 | short | 101 | 656.38 | 659.03 | 09:35 | stop | -1.03 | -268.80 |
+| 2026-11-05 | short | 40 | 677.54 | 647.83 | 15:55 | end of day | +4.78 | +1,186.30 |
+| 2026-11-04 | short | 73 | 688.01 | 691.50 | 09:35 | stop | -1.02 | -256.62 |
 | 2026-11-03 | long | 107 | 685.61 | 685.27 | 15:55 | end of day | -0.15 | -38.07 |
 | 2026-11-02 | short | 145 | 694.99 | 695.79 | 09:40 | stop | -0.47 | -117.87 |
 | 2026-10-30 | short | 88 | 694.55 | 697.50 | 09:55 | stop | -1.03 | -261.53 |
@@ -30,10 +33,13 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-14 trades, win rate 29%, mean +0.34R (t = 0.76), total P&L +1,172.37, max drawdown -2.3%
+17 trades, win rate 29%, mean +0.66R (t = 1.16), total P&L +2,821.27, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-06 | long | 151 | 735.70 | 735.32 | 15:55 | end of day | -0.22 | -60.45 |
+| 2026-11-05 | short | 67 | 762.12 | 733.23 | 15:55 | end of day | +7.45 | +1,933.66 |
+| 2026-11-04 | short | 137 | 762.80 | 764.43 | 09:35 | stop | -0.86 | -224.31 |
 | 2026-11-03 | long | 138 | 753.59 | 754.32 | 15:55 | end of day | +0.38 | +100.01 |
 | 2026-11-02 | short | 137 | 759.33 | 759.78 | 09:35 | stop | -0.24 | -62.54 |
 | 2026-10-30 | short | 134 | 759.91 | 755.80 | 15:55 | end of day | +2.15 | +549.87 |
