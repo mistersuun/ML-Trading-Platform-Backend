@@ -1,11 +1,16 @@
-# Gap-and-go day-trading paper account (as of 2026-11-03)
+# Gap-and-go day-trading paper account (as of 2026-11-06)
 
-Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,002.71** (+0.05%).
+Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,163.64** (+3.27%).
 
-5 trades, win rate 60%, mean +0.01R (t = 0.04), total P&L +2.71, max drawdown -0.8%
+10 trades, win rate 60%, mean +0.33R (t = 0.94), total P&L +163.64, max drawdown -1.6%
 
 | Date | Stock | Gap | Entry | Exits | R | P&L |
 |---|---|---:|---:|---|---:|---:|
+| 2026-11-06 | IONQ | +6.0% | 43 @ 28.75 09:35 | 21 @ 31.00 half at 2R 12:25; 22 @ 32.56 close 15:55 | +2.58 | +127.97 |
+| 2026-11-06 | OKLO | +9.4% | 47 @ 21.91 09:35 | 23 @ 23.99 half at 2R 15:00; 24 @ 23.53 close 15:55 | +1.69 | +83.58 |
+| 2026-11-05 | APP | +28.6% | 2 @ 356.93 09:35 | 2 @ 356.00 close 15:55 | -0.08 | -3.85 |
+| 2026-11-04 | XYZ | +9.9% | 12 @ 87.20 09:45 | 12 @ 87.48 close 15:55 | +0.03 | +1.42 |
+| 2026-11-04 | FSLR | +10.8% | 6 @ 212.87 09:35 | 6 @ 205.17 stop 10:20 | -0.96 | -48.19 |
 | 2026-11-02 | UAL | +4.5% | 22 @ 110.34 09:40 | 22 @ 109.13 close 15:55 | -0.57 | -28.61 |
 | 2026-11-02 | RIVN | +4.9% | 134 @ 13.01 09:35 | 134 @ 13.18 close 15:55 | +0.40 | +19.95 |
 | 2026-10-29 | CVNA | +10.5% | 12 @ 67.79 09:40 | 12 @ 68.15 close 15:55 | +0.05 | +2.37 |
@@ -14,6 +19,9 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-06** P&L +211.55. NET +17.4% (first 5-minute bar not green), LRCX +12.7% (first 5-minute bar not green), ABNB +12.3% (first 5-minute bar not green), AMD +9.9% (first 5-minute bar not green), OKLO +9.4% (trade), DELL +9.2% (first 5-minute bar not green), MRVL +8.9% (first 5-minute bar not green), ANET +8.6% (first 5-minute bar not green), AMAT +8.4% (first 5-minute bar not green), STX +8.4% (first 5-minute bar not green), KLAC +8.3% (first 5-minute bar not green), MU +8.1% (first 5-minute bar not green), TSM +7.8% (first 5-minute bar not green), CRWV +7.3% (first 5-minute bar not green), RIOT +7.2% (first 5-minute bar not green), WDC +7.2% (first 5-minute bar not green), HIMS +7.1% (first 5-minute bar not green), AVGO +6.7% (first 5-minute bar not green), SMCI +6.5% (first 5-minute bar not green), ARM +6.3% (first 5-minute bar not green), CRWD +6.2% (first 5-minute bar not green), IONQ +6.0% (trade), ON +5.7% (daily trade limit reached), MARA +5.6% (daily trade limit reached), PANW +5.3% (5-minute bars missing), NVDA +5.3% (5-minute bars missing), INTC +5.2% (5-minute bars missing), RKLB +5.0% (5-minute bars missing), CBRS +4.4% (5-minute bars missing), MDB +4.2% (5-minute bars missing)
+- **2026-11-05** P&L -3.85. APP +28.6% (trade), CELH +6.4% (first 5-minute bar not green), BABA +5.7% (first 5-minute bar not green), JD +4.5% (first 5-minute bar not green), FSLR +4.3% (first 5-minute bar not green)
+- **2026-11-04** P&L -46.77. RIOT +11.3% (first 5-minute bar not green), FSLR +10.8% (trade), XYZ +9.9% (trade), ENPH +6.2% (daily trade limit reached), AMZN +5.7% (5-minute bars missing), SYK +5.6% (5-minute bars missing), ANET +5.3% (5-minute bars missing), UAL +4.6% (5-minute bars missing), BABA +4.6% (5-minute bars missing), MSFT +4.2% (5-minute bars missing), CHWY +4.1% (5-minute bars missing)
 - **2026-11-03** P&L +0.00. JD +4.2% (first 5-minute bar not green)
 - **2026-11-02** P&L -8.66. MAR +6.4% (first 5-minute bar not green), RIVN +4.9% (trade), UAL +4.5% (trade), BABA +4.0% (daily trade limit reached)
 - **2026-10-30** P&L +0.00. RIVN +5.7% (first 5-minute bar not green)
@@ -26,6 +34,5 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 - **2026-10-21** P&L +0.00. SMCI +12.2% (no breakout above the first bar's high by 10:30), DELL +7.7% (no breakout above the first bar's high by 10:30), STX +4.9% (first 5-minute bar not green), MARA +4.5% (first 5-minute bar not green), WDC +4.4% (first 5-minute bar not green), RIOT +4.2% (first 5-minute bar not green)
 - **2026-10-20** P&L +0.00. no gap candidates
 - **2026-10-19** P&L +0.00. CRWV +7.2% (first 5-minute bar not green), MRVL +5.3% (no breakout above the first bar's high by 10:30), INTC +5.2% (no breakout above the first bar's high by 10:30), MARA +5.1% (first 5-minute bar not green), AMD +4.5% (first 5-minute bar not green), DDOG +4.3% (no breakout above the first bar's high by 10:30), SMCI +4.3% (first 5-minute bar not green), LRCX +4.2% (first 5-minute bar not green), ARM +4.2% (first 5-minute bar not green), DELL +4.2% (no breakout above the first bar's high by 10:30), KLAC +4.1% (first 5-minute bar not green), ASTS +4.1% (first 5-minute bar not green), PANW +4.1% (first 5-minute bar not green), STX +4.1% (opening volume 93,996 below 5% of average daily volume), AMAT +4.0% (first 5-minute bar not green)
-- **2026-10-16** P&L +0.00. no gap candidates
 
 Costs: 10 bp slippage per side, US$0.005 per share (US$1 minimum). The scan uses a fixed universe of about 130 liquid US stocks, not a full-market scanner, so it misses small-cap gappers.

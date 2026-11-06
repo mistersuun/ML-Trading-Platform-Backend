@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-11-03",
-  "equity": 5002.71,
+  "last_date": "2026-11-06",
+  "equity": 5163.64,
   "trades": [
     {
       "date": "2026-10-26",
@@ -112,6 +112,128 @@
       "r": -0.571,
       "pnl": -28.61,
       "fees": 2.0
+    },
+    {
+      "date": "2026-11-04",
+      "symbol": "FSLR",
+      "gap": 0.1081,
+      "trade": true,
+      "shares": 6,
+      "entry": 212.8727,
+      "entry_time": "09:35",
+      "stop": 205.38,
+      "target": 227.858,
+      "exits": [
+        {
+          "shares": 6,
+          "price": 205.1746,
+          "why": "stop",
+          "time": "10:20"
+        }
+      ],
+      "r": -0.963,
+      "pnl": -48.19,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-04",
+      "symbol": "XYZ",
+      "gap": 0.0988,
+      "trade": true,
+      "shares": 12,
+      "entry": 87.1971,
+      "entry_time": "09:45",
+      "stop": 83.26,
+      "target": 95.0713,
+      "exits": [
+        {
+          "shares": 12,
+          "price": 87.4824,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 0.028,
+      "pnl": 1.42,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-05",
+      "symbol": "APP",
+      "gap": 0.2864,
+      "trade": true,
+      "shares": 2,
+      "entry": 356.9266,
+      "entry_time": "09:35",
+      "stop": 338.88,
+      "target": 393.0197,
+      "exits": [
+        {
+          "shares": 2,
+          "price": 356.0036,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": -0.078,
+      "pnl": -3.85,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-06",
+      "symbol": "OKLO",
+      "gap": 0.0943,
+      "trade": true,
+      "shares": 47,
+      "entry": 21.9119,
+      "entry_time": "09:35",
+      "stop": 20.86,
+      "target": 24.0157,
+      "exits": [
+        {
+          "shares": 23,
+          "price": 23.9917,
+          "why": "half at 2R",
+          "time": "15:00"
+        },
+        {
+          "shares": 24,
+          "price": 23.5265,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 1.688,
+      "pnl": 83.58,
+      "fees": 3.0
+    },
+    {
+      "date": "2026-11-06",
+      "symbol": "IONQ",
+      "gap": 0.0598,
+      "trade": true,
+      "shares": 43,
+      "entry": 28.7487,
+      "entry_time": "09:35",
+      "stop": 27.61,
+      "target": 31.0262,
+      "exits": [
+        {
+          "shares": 21,
+          "price": 30.9951,
+          "why": "half at 2R",
+          "time": "12:25"
+        },
+        {
+          "shares": 22,
+          "price": 32.5574,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 2.584,
+      "pnl": 127.97,
+      "fees": 3.0
     }
   ]
 }
