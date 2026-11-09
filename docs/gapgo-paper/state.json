@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-11-06",
-  "equity": 5163.64,
+  "last_date": "2026-11-09",
+  "equity": 5257.01,
   "trades": [
     {
       "date": "2026-10-26",
@@ -234,6 +234,56 @@
       "r": 2.584,
       "pnl": 127.97,
       "fees": 3.0
+    },
+    {
+      "date": "2026-11-09",
+      "symbol": "TTD",
+      "gap": 0.0704,
+      "trade": true,
+      "shares": 116,
+      "entry": 14.1942,
+      "entry_time": "09:35",
+      "stop": 13.75,
+      "target": 15.0825,
+      "exits": [
+        {
+          "shares": 58,
+          "price": 15.0675,
+          "why": "half at 2R",
+          "time": "12:40"
+        },
+        {
+          "shares": 58,
+          "price": 14.945,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 1.766,
+      "pnl": 91.2,
+      "fees": 3.0
+    },
+    {
+      "date": "2026-11-09",
+      "symbol": "UAL",
+      "gap": 0.0459,
+      "trade": true,
+      "shares": 19,
+      "entry": 120.09,
+      "entry_time": "09:35",
+      "stop": 117.5,
+      "target": 125.2699,
+      "exits": [
+        {
+          "shares": 19,
+          "price": 120.3096,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 0.042,
+      "pnl": 2.17,
+      "fees": 2.0
     }
   ]
 }

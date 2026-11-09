@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-11-06",
+  "last_asof": "2026-11-09",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -48,19 +48,19 @@
     },
     "P": {
       "start": 100000.0,
-      "cash": 100983.05000000002,
+      "cash": 101305.75000000003,
       "positions": [
         {
-          "contract_id": 940474365,
+          "contract_id": 675271087,
           "underlying": "SPY",
           "right": "P",
-          "strike": 690.0,
-          "expiry": "2026-12-11",
+          "strike": 715.0,
+          "expiry": "2026-12-18",
           "qty": 1,
           "side": "short",
-          "entry_price": 6.91,
-          "entry_date": "2026-11-06",
-          "last_mid": 6.965
+          "entry_price": 5.95,
+          "entry_date": "2026-11-09",
+          "last_mid": 5.975
         }
       ],
       "closed": [
@@ -79,6 +79,22 @@
           "exit_date": "2026-11-04",
           "reason": "take profit (50% of credit)",
           "pnl": 292.7
+        },
+        {
+          "contract_id": 940474365,
+          "underlying": "SPY",
+          "right": "P",
+          "strike": 690.0,
+          "expiry": "2026-12-11",
+          "qty": 1,
+          "side": "short",
+          "entry_price": 6.91,
+          "entry_date": "2026-11-06",
+          "last_mid": 2.69,
+          "exit_price": 2.71,
+          "exit_date": "2026-11-09",
+          "reason": "take profit (50% of credit)",
+          "pnl": 418.7
         }
       ]
     },
@@ -96,7 +112,7 @@
           "side": "long",
           "entry_price": 4.5,
           "entry_date": "2026-10-16",
-          "last_mid": 3.275
+          "last_mid": 3.425
         }
       ],
       "closed": [
