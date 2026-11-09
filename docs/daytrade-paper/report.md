@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-06)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-09)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $25,745.63 | +2.98% | $22,831.40 | 17 |
-| SPY ORB | $25,000 | $27,821.27 | +11.29% | $23,993.46 | 17 |
+| QQQ ORB | $25,000 | $26,687.23 | +6.75% | $23,615.61 | 18 |
+| SPY ORB | $25,000 | $28,856.72 | +15.43% | $24,555.95 | 18 |
 
 ## QQQ
 
-17 trades, win rate 18%, mean +0.20R (t = 0.33), total P&L +745.63, max drawdown -7.0%
+18 trades, win rate 22%, mean +0.39R (t = 0.66), total P&L +1,687.23, max drawdown -7.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-09 | long | 72 | 665.59 | 678.69 | 15:55 | end of day | +3.66 | +941.60 |
 | 2026-11-06 | short | 101 | 656.38 | 659.03 | 09:35 | stop | -1.03 | -268.80 |
 | 2026-11-05 | short | 40 | 677.54 | 647.83 | 15:55 | end of day | +4.78 | +1,186.30 |
 | 2026-11-04 | short | 73 | 688.01 | 691.50 | 09:35 | stop | -1.02 | -256.62 |
@@ -33,10 +34,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-17 trades, win rate 29%, mean +0.66R (t = 1.16), total P&L +2,821.27, max drawdown -2.3%
+18 trades, win rate 33%, mean +0.83R (t = 1.47), total P&L +3,856.72, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-09 | long | 114 | 743.45 | 752.55 | 15:55 | end of day | +3.72 | +1,035.45 |
 | 2026-11-06 | long | 151 | 735.70 | 735.32 | 15:55 | end of day | -0.22 | -60.45 |
 | 2026-11-05 | short | 67 | 762.12 | 733.23 | 15:55 | end of day | +7.45 | +1,933.66 |
 | 2026-11-04 | short | 137 | 762.80 | 764.43 | 09:35 | stop | -0.86 | -224.31 |
