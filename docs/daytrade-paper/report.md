@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-09)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-10)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $26,687.23 | +6.75% | $23,615.61 | 18 |
-| SPY ORB | $25,000 | $28,856.72 | +15.43% | $24,555.95 | 18 |
+| QQQ ORB | $25,000 | $26,415.55 | +5.66% | $23,478.19 | 19 |
+| SPY ORB | $25,000 | $28,557.27 | +14.23% | $24,469.16 | 19 |
 
 ## QQQ
 
-18 trades, win rate 22%, mean +0.39R (t = 0.66), total P&L +1,687.23, max drawdown -7.0%
+19 trades, win rate 21%, mean +0.32R (t = 0.56), total P&L +1,415.55, max drawdown -7.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-10 | long | 74 | 673.50 | 669.85 | 11:55 | stop | -1.02 | -271.68 |
 | 2026-11-09 | long | 72 | 665.59 | 678.69 | 15:55 | end of day | +3.66 | +941.60 |
 | 2026-11-06 | short | 101 | 656.38 | 659.03 | 09:35 | stop | -1.03 | -268.80 |
 | 2026-11-05 | short | 40 | 677.54 | 647.83 | 15:55 | end of day | +4.78 | +1,186.30 |
@@ -34,10 +35,11 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 
 ## SPY
 
-18 trades, win rate 33%, mean +0.83R (t = 1.47), total P&L +3,856.72, max drawdown -2.3%
+19 trades, win rate 32%, mean +0.73R (t = 1.35), total P&L +3,557.27, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-10 | long | 141 | 749.08 | 746.98 | 10:50 | stop | -1.04 | -299.45 |
 | 2026-11-09 | long | 114 | 743.45 | 752.55 | 15:55 | end of day | +3.72 | +1,035.45 |
 | 2026-11-06 | long | 151 | 735.70 | 735.32 | 15:55 | end of day | -0.22 | -60.45 |
 | 2026-11-05 | short | 67 | 762.12 | 733.23 | 15:55 | end of day | +7.45 | +1,933.66 |
