@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-11-10",
-  "equity": 5257.01,
+  "last_date": "2026-11-11",
+  "equity": 5238.35,
   "trades": [
     {
       "date": "2026-10-26",
@@ -283,6 +283,50 @@
       ],
       "r": 0.042,
       "pnl": 2.17,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-11",
+      "symbol": "DELL",
+      "gap": 0.0778,
+      "trade": true,
+      "shares": 5,
+      "entry": 368.7284,
+      "entry_time": "10:05",
+      "stop": 359.7,
+      "target": 386.7851,
+      "exits": [
+        {
+          "shares": 5,
+          "price": 373.3563,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 0.402,
+      "pnl": 21.14,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-11",
+      "symbol": "ORCL",
+      "gap": 0.0534,
+      "trade": true,
+      "shares": 20,
+      "entry": 125.9158,
+      "entry_time": "09:35",
+      "stop": 124.15,
+      "target": 129.4474,
+      "exits": [
+        {
+          "shares": 20,
+          "price": 124.0259,
+          "why": "stop",
+          "time": "09:50"
+        }
+      ],
+      "r": -0.757,
+      "pnl": -39.8,
       "fees": 2.0
     }
   ]
