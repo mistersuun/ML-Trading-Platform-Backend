@@ -361,3 +361,10 @@ git-ignored.
 3. Run `.venv/bin/python scripts/pilot_report.py state/pilot/account-YYYYMMDD.json`. The default policy is static, 1.45x.
 4. Put a short summary in the Friday message to the owner: leverage, cushion, stress loss, alerts, and whether a
    rebalance is needed with its main trades.
+
+## 12. Master scoreboard (nightly, after every other section; rules frozen in `docs/scoreboard/PREREG.md`)
+
+`.venv/bin/python scripts/scoreboard.py` rebuilds `docs/scoreboard/scoreboard.md` from the committed journals. It is
+informational except on the three look dates (2026-12-31, 2027-02-26, 2027-04-15), when the page states each arm's
+status under the pre-registered rule. Commit `docs/scoreboard/` with the other files. The graduation ladder for any
+move to real money is `docs/scoreboard/GRADUATION.md`; nothing graduates outside a look.
