@@ -255,19 +255,22 @@ confirmation window (at least 20 forward shadow sessions over at least 28 days).
 Paper only. IBKR read-only: `get_option_parameters`, `get_option_data`, `get_price_snapshot`. Never `create_order_instruction`
 or any other write tool. Every nightly session, after the SPY/QQQ top-up is ingested:
 
-1. `.venv/bin/python scripts/options_paper.py plan` lists the open contracts and the wanted entries (book, underlying,
-   right, DTE window, strike range).
-2. Fetch quotes with `market_data_names=["bid_ask","option_greeks"]`:
-   - **Open contracts:** one snapshot each.
-   - **Each wanted entry:**
-     - Expirations come from `get_option_parameters`, using SPY 756733 and QQQ 320227571. Pick the expiry in the DTE
-       window closest to `target_dte`, preferring the trading class equal to the symbol.
-     - Get strikes with `get_option_data` (bounded by the strike range).
-     - Snapshot about 5 to 8 strikes spread over the range. For Book P, centre them on |delta| ≈ 0.20, roughly 4% below
-       spot. For Book L calls and puts, step outward from spot until the ask × 100 exceeds 30% of Book L equity.
-3. Save the quotes as `docs/options-paper/quotes/<session>.json` (format in the script docstring), then run
-   `.venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/<session>.json`.
-4. Commit `docs/options-paper/` with the forward-test files.
+1. `.venv/bin/python scripts/options_paper.py plan` lists the open contracts and the entries wanted given the books'
+   current slots.
+2. Fetch one snapshot per open contract (`market_data_names=["bid_ask","option_greeks"]`) and save them as
+   `docs/options-paper/quotes/<session>.json` (format in the script docstring).
+3. `.venv/bin/python scripts/options_paper.py plan --quotes docs/options-paper/quotes/<session>.json` dry-runs
+   tonight's exits on a copy of the state (nothing is written) and lists the entries wanted after them. An entry that
+   exists only because a position exits tonight carries `"because": "exit tonight: <label> <reason>"`. This is what
+   lets a book that exits tonight re-enter tonight.
+4. Fetch quotes for each wanted entry in that second plan, and add them to the same file:
+   - Expirations come from `get_option_parameters`, using SPY 756733 and QQQ 320227571. Pick the expiry in the DTE
+     window closest to `target_dte`, preferring the trading class equal to the symbol.
+   - Get strikes with `get_option_data` (bounded by the strike range).
+   - Snapshot about 5 to 8 strikes spread over the range. For Book P, centre them on |delta| ≈ 0.20, roughly 4% below
+     spot. For Book L calls and puts, step outward from spot until the ask × 100 exceeds 30% of Book L equity.
+5. Run `.venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/<session>.json`.
+6. Commit `docs/options-paper/` with the forward-test files.
 
 ## 7. Day-trading paper test (owner request 2026-10-15; rules frozen in `docs/daytrade-paper/PREREG.md`)
 
@@ -314,8 +317,9 @@ Paper only. Review on 2027-04-15.
 2. Run `.venv/bin/python scripts/aggressive_accounts.py forward` for Accounts A and B. It re-simulates
    deterministically from the frozen start and rewrites `docs/aggressive-accounts/report.md` and `journal.jsonl`.
 3. Account C is Book M of the options test (section 6). `options_paper.py plan` now also lists a Book M entry with the
-   momentum ranking (`underlyings_in_order`). For those stocks, fetch quotes in rank order and stop at the first one
-   with an affordable call:
+   momentum ranking (`underlyings_in_order`, names still held excluded). Use the entry from the second plan
+   (`plan --quotes`, section 6 step 3), so a Book M exit tonight frees its slot and its name. For those stocks, fetch
+   quotes in rank order and stop at the first one with an affordable call:
    - Resolve the stock's conid with `search_contracts`; `underlying_contract_id` is the one to use.
    - Call `get_option_parameters`, and pick the expiry with 60 to 120 days left, closest to 90, preferring the
      trading class equal to the symbol.

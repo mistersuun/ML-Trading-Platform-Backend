@@ -33,3 +33,12 @@ def test_top1_momentum_holds_only_the_best_stock():
 def test_bootstrap_flat_returns_never_reach_10x():
     b = ag.bootstrap(pd.Series(np.zeros(500)), n=200)
     assert b["p10x"] == 0 and b["median"] == 1.0
+
+
+def test_forward_asof_caps_the_replay_and_record(monkeypatch):
+    cols = {s: np.linspace(100, 110, 300) for s in ag.qa.STOCKS + ["QQQ", "TQQQ", "SGOV", "SPY"]}
+    c = pd.DataFrame(cols, index=IDX)
+    monkeypatch.setattr(ag, "DECISION", IDX[250].date())
+    monkeypatch.setattr(ag, "END", IDX[290].date())
+    _, rec = ag.run_forward(c.copy(), c, asof=IDX[260].date())
+    assert rec["asof"] == str(IDX[260].date()) and set(rec["accounts"]) == {"lev_trend", "top1_mom"}

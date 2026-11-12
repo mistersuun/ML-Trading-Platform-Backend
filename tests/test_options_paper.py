@@ -144,3 +144,65 @@ def test_quote_without_bid_holds_the_position_instead_of_crashing():
     state, row = op.step(state, nxt, quotes, closes)
     assert len(state["books"]["L"]["positions"]) == 1 and len(state["books"]["P"]["positions"]) == 1
     assert any("no usable quote" in e for e in row["events"]["L"])
+
+
+def _next_day_fixture():
+    state, _ = _state_after_entry()
+    nxt = "2026-10-16"
+    closes = {"QQQ": _closes(105, end=nxt), "SPY": _closes(100.0, end=nxt)}
+    return state, nxt, closes
+
+
+def test_plan_with_quotes_lists_reentry_after_a_take_profit_tonight():
+    state, nxt, closes = _next_day_fixture()
+    quotes = [_q(2, "QQQ", "C", 108, "2026-11-13", 2.70, 2.80, 0.40),
+              _q(9, "SPY", "P", 720, "2026-11-20", 1.00, 1.10, -0.20)]
+    base = op.plan(state, nxt, closes)
+    assert base["entries"] == []
+    out = op.plan(state, nxt, closes, None, quotes)
+    assert [(e["book"], e["underlying"], e["right"]) for e in out["entries"]] == [("L", "QQQ", "C")]
+    assert out["entries"][0]["because"] == "exit tonight: QQQ 2026-11-13 108C take profit (2x)"
+    assert [c["contract_id"] for c in out["open_contracts"]] == [2, 9]
+
+
+def test_plan_with_quotes_and_no_exit_adds_nothing():
+    state, nxt, closes = _next_day_fixture()
+    quotes = [_q(2, "QQQ", "C", 108, "2026-11-13", 1.20, 1.30, 0.20),
+              _q(9, "SPY", "P", 720, "2026-11-20", 1.00, 1.10, -0.20)]
+    assert op.plan(state, nxt, closes, None, quotes)["entries"] == op.plan(state, nxt, closes)["entries"]
+
+
+def test_plan_with_quotes_marks_book_p_reentry_and_book_m_ranking():
+    state, nxt, closes = _next_day_fixture()
+    state["books"]["M"]["positions"] = [
+        {"contract_id": 12, "underlying": "MRK", "right": "C", "strike": 110.0, "expiry": "2027-01-15", "qty": 1,
+         "side": "long", "entry_price": 3.1, "entry_date": "2026-10-15", "last_mid": 3.1}]
+    closes["MRK"] = _closes(105.0, end=nxt)
+    closes["AMD"] = _closes(240.0, end=nxt)
+    ranking = ["MRK", "AMD"]
+    quotes = [_q(2, "QQQ", "C", 108, "2026-11-13", 1.20, 1.30, 0.20),
+              _q(9, "SPY", "P", 720, "2026-11-20", 0.40, 0.45, -0.10),
+              _q(12, "MRK", "C", 110, "2027-01-15", 9.4, 9.6, 0.7)]
+    before = op.plan(state, nxt, closes, ranking)
+    assert [e["underlyings_in_order"] for e in before["entries"] if e["book"] == "M"] == [["AMD"]]
+    out = op.plan(state, nxt, closes, ranking, quotes)
+    by_book = {e["book"]: e for e in out["entries"]}
+    assert by_book["P"]["because"].startswith("exit tonight: SPY 2026-11-20 720P take profit")
+    assert by_book["M"]["underlyings_in_order"] == ["MRK", "AMD"]
+    assert by_book["M"]["because"] == "exit tonight: MRK 2027-01-15 110C take profit (3x)"
+
+
+def test_plan_with_quotes_does_not_touch_the_state():
+    import copy
+    state, nxt, closes = _next_day_fixture()
+    snap = copy.deepcopy(state)
+    quotes = [_q(2, "QQQ", "C", 108, "2026-11-13", 2.70, 2.80, 0.40),
+              _q(9, "SPY", "P", 720, "2026-11-20", 0.40, 0.45, -0.10)]
+    op.plan(state, nxt, closes, None, quotes)
+    assert state == snap
+    # step on the same inputs still gives the same result as the plain path (plan has no side effects)
+    s1, r1 = op.step(copy.deepcopy(state), nxt, quotes, closes)
+    op.plan(state, nxt, closes, None, quotes)
+    s2, r2 = op.step(copy.deepcopy(state), nxt, quotes, closes)
+    assert s1 == s2 and r1 == r2
+    assert s1["books"]["L"]["closed"][0]["reason"] == "take profit (2x)"

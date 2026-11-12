@@ -1,7 +1,7 @@
 """Aggressive US$1,000 paper accounts aiming at 10x-50x (pre-registered: docs/aggressive-accounts/PREREG.md).
 
     .venv/bin/python scripts/aggressive_accounts.py odds       history + bootstrap odds -> docs/aggressive-accounts/odds.md
-    .venv/bin/python scripts/aggressive_accounts.py forward    live record -> docs/aggressive-accounts/report.md
+    .venv/bin/python scripts/aggressive_accounts.py forward    live record -> report.md (view) + journal.jsonl (append-only)
 
 Paper only, offline (state/external_bars). Reuses the quant-accounts simulator (next-open fills, 5 bp slippage,
 IBKR-style commissions, fractional shares). The options account of this group lives in scripts/options_paper.py
@@ -10,7 +10,6 @@ IBKR-style commissions, fractional shares). The options account of this group li
 from __future__ import annotations
 
 import argparse
-import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -55,10 +54,10 @@ STRATEGIES = {
 }
 
 
-def panel():
+def panel(closed: bool = False):
     syms = sorted(set(qa.STOCKS) | {LEV, LEV_SIGNAL, CASH, "SPY"})
     qa.ETFS.update({LEV})
-    return qa.load_panel(syms)
+    return qa.load_panel(syms, closed=closed)
 
 
 def with_synthetic_tqqq(opens: pd.DataFrame, closes: pd.DataFrame):
@@ -150,9 +149,10 @@ def run_odds() -> str:
     return "\n".join(out)
 
 
-def run_forward() -> tuple[str, dict]:
-    opens, closes = panel()
-    last = min(closes.index[-1].date(), END)
+def run_forward(opens=None, closes=None, asof: date = None) -> tuple[str, dict]:
+    if opens is None:
+        opens, closes = panel(closed=True)
+    last = min(closes.index[-1].date(), END, asof or END)
     spy = closes["SPY"]
     rec = {"asof": str(last), "accounts": {}}
     if last < DECISION:
@@ -182,6 +182,8 @@ def run_forward() -> tuple[str, dict]:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("cmd", choices=["odds", "forward"])
+    ap.add_argument("--accept-revision", action="store_true",
+                    help="forward: replace journal rows whose replay differs (the revision is still logged)")
     a = ap.parse_args(argv)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     if a.cmd == "odds":
@@ -189,12 +191,13 @@ def main(argv=None) -> int:
         (OUT_DIR / "odds.md").write_text(md)
         print(md)
         return 0
-    md, rec = run_forward()
+    opens, closes = panel(closed=True)
+    md, rec = run_forward(opens, closes)
     (OUT_DIR / "report.md").write_text(md)
-    path = OUT_DIR / "journal.jsonl"
-    rows = [json.loads(x) for x in path.read_text().splitlines()] if path.exists() else []
-    rows = [r for r in rows if r["asof"] != rec["asof"]] + [rec]
-    path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    if rec["accounts"]:
+        curves = qa.replay_curves(STRATEGIES, opens, closes, DECISION, date.fromisoformat(rec["asof"]))
+        qa.update_journal(OUT_DIR / "journal.jsonl", curves, lambda d: run_forward(opens, closes, date.fromisoformat(d))[1],
+                          DECISION, a.accept_revision)
     print(md)
     return 0
 

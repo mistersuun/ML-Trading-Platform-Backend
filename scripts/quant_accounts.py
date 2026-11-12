@@ -6,7 +6,8 @@
 Paper only, offline: reads daily bars from state/external_bars (IBKR, read-only top-ups). One simulator serves
 both modes: decisions on a session's close, fills at the next session's open with slippage and IBKR-style
 commissions, fractional shares. `forward` re-simulates deterministically from the frozen start decision
-(close of 2026-10-14) through the latest bar on file, capped at the end date, so a rerun reproduces the record.
+(close of 2026-10-14) through the latest closed bar, capped at the end date; report.md is that replay, while
+journal.jsonl is append-only (see update_journal).
 """
 from __future__ import annotations
 
@@ -44,12 +45,18 @@ ETFS = set(TREND_ASSETS) | {CASH_ETF} | set(RSI_ETFS)
 
 
 # ------------------------------------------------------------------------------------------------- data
-def load_panel(symbols, root: Optional[Path] = None) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Open and Close frames on SPY's session calendar (missing symbols are left out, with a note on stderr)."""
+def load_panel(symbols, root: Optional[Path] = None, closed: bool = False,
+               now=None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Open and Close frames on SPY's session calendar (missing symbols are left out, with a note on stderr).
+    `closed` keeps finished XNYS sessions only (external_bars.closed_bars, as services/forward.py does)."""
     opens, closes = {}, {}
     for s in symbols:
         try:
-            df = external_bars.load_bars(s, "etf" if s in ETFS else "equity", root)
+            if closed:
+                from data.calendars import get_calendar
+                df = external_bars.closed_bars(s, now, get_calendar("XNYS"), "etf" if s in ETFS else "equity", root)
+            else:
+                df = external_bars.load_bars(s, "etf" if s in ETFS else "equity", root)
         except external_bars.ExternalBarsError as exc:
             print(f"warning: {s}: {exc}", file=sys.stderr)
             continue
@@ -200,7 +207,8 @@ def simulate(fn: Callable, freq: str, opens: pd.DataFrame, closes: pd.DataFrame,
                                "fee": round(fee, 2)})
             pending = {}
         px = closes.iloc[i]
-        equity = cash + sum(q * (px.get(s) if pd.notna(px.get(s)) else 0.0) for s, q in shares.items())
+        last_px = closes.iloc[: i + 1].ffill().iloc[-1] if any(pd.isna(px.get(s)) for s in shares) else px
+        equity = cash + sum(q * (last_px.get(s) if pd.notna(last_px.get(s)) else 0.0) for s, q in shares.items())
         curve[day] = equity
         nxt = cal[i + 1] if i + 1 < len(cal) else None
         month_end = nxt is None or nxt.month != day.month
@@ -265,8 +273,8 @@ def run_backtest(opens, closes) -> str:
     return "\n".join(out)
 
 
-def run_forward(opens, closes) -> tuple[str, dict]:
-    last = min(closes.index[-1].date(), FORWARD_END)
+def run_forward(opens, closes, asof: Optional[date] = None) -> tuple[str, dict]:
+    last = min(closes.index[-1].date(), FORWARD_END, asof or FORWARD_END)
     if last < FORWARD_DECISION:
         return (f"# Five quant paper accounts\n\nNot started: the first decision needs the {FORWARD_DECISION} close "
                 f"(latest bar on file: {last}).\n"), {"asof": str(last), "accounts": {}}
@@ -298,12 +306,69 @@ def run_forward(opens, closes) -> tuple[str, dict]:
     return "\n".join(out), record
 
 
+def replay_curves(strategies: dict, opens, closes, decision, last) -> dict:
+    """The deterministic daily equity curve of every account, from `decision` through `last`."""
+    return {k: simulate(fn, freq, opens, closes, decision, last)["curve"] for k, (_, fn, freq) in strategies.items()}
+
+
+def update_journal(path: Path, curves: dict, make_record: Callable, decision: date, accept: bool = False,
+                   today: Optional[str] = None) -> tuple[list, list]:
+    """Journal rows are a permanent record: an existing row is never rewritten or reordered. For each session after
+    `decision` on the replayed curves: no row yet -> appended (or inserted as a backfill when later rows exist);
+    a row whose stored equity differs from the replay by more than US$0.01 -> REVISION warning plus a line in the
+    revisions log next to the journal, stored row kept (`accept` replaces it with the replay, still logged).
+    Returns (dates added, revisions)."""
+    today = today or date.today().isoformat()
+    lines = [x for x in path.read_text().splitlines() if x.strip()] if path.exists() else []
+    rows = [json.loads(x) for x in lines]
+    rev_path = path.with_name("revisions.jsonl")
+    logged = {(r["date"], r["account"], r["stored"], r["replayed"], r.get("accepted", False))
+              for r in (json.loads(x) for x in rev_path.read_text().splitlines() if x.strip())} \
+        if rev_path.exists() else set()
+    added, revisions = [], []
+    for ts in next(iter(curves.values())).index:
+        if ts.date() <= decision:
+            continue
+        day = str(ts.date())
+        i = next((n for n, r in enumerate(rows) if r["asof"] == day), None)
+        if i is None:
+            rec = make_record(day)
+            if rows and day < rows[-1]["asof"]:
+                rec = {**rec, "backfilled": True, "backfilled_on": today}
+                i = sum(1 for r in rows if r["asof"] < day)
+            else:
+                i = len(rows)
+            rows.insert(i, rec)
+            lines.insert(i, json.dumps(rec))
+            added.append(day)
+            continue
+        diffs = [(k, a["equity"], round(float(curves[k].loc[ts]), 2)) for k, a in rows[i]["accounts"].items()
+                 if k in curves and abs(a["equity"] - float(curves[k].loc[ts])) > 0.01]
+        for k, old, new in diffs:
+            print(f"REVISION {day} {k}: journal {old:.2f}, replay {new:.2f}" + (" (replaced)" if accept else
+                  " (journal row kept; --accept-revision to replace)"), file=sys.stderr)
+            revisions.append({"date": day, "account": k, "stored": old, "replayed": new})
+        if diffs and accept:
+            keep = {k: v for k, v in rows[i].items() if k in ("backfilled", "backfilled_on")}
+            rows[i] = {**make_record(day), **keep}
+            lines[i] = json.dumps(rows[i])
+    new_revs = [r for r in revisions if (r["date"], r["account"], r["stored"], r["replayed"], accept) not in logged]
+    if new_revs:
+        with rev_path.open("a") as f:
+            f.writelines(json.dumps({**r, "accepted": accept, "logged_on": today}) + "\n" for r in new_revs)
+    if added or (revisions and accept):
+        path.write_text("".join(x + "\n" for x in lines))
+    return added, revisions
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("cmd", choices=["backtest", "forward"])
+    ap.add_argument("--accept-revision", action="store_true",
+                    help="forward: replace journal rows whose replay differs (the revision is still logged)")
     a = ap.parse_args(argv)
     syms = sorted(set(STOCKS) | ETFS)
-    opens, closes = load_panel(syms)
+    opens, closes = load_panel(syms, closed=a.cmd == "forward")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     if a.cmd == "backtest":
         md = run_backtest(opens, closes)
@@ -312,10 +377,10 @@ def main(argv=None) -> int:
         return 0
     md, rec = run_forward(opens, closes)
     (OUT_DIR / "report.md").write_text(md)
-    path = OUT_DIR / "journal.jsonl"
-    rows = [json.loads(x) for x in path.read_text().splitlines()] if path.exists() else []
-    rows = [r for r in rows if r["asof"] != rec["asof"]] + [rec]
-    path.write_text("".join(json.dumps(r) + "\n" for r in rows))
+    if rec["accounts"]:
+        curves = replay_curves(STRATEGIES, opens, closes, FORWARD_DECISION, date.fromisoformat(rec["asof"]))
+        update_journal(OUT_DIR / "journal.jsonl", curves, lambda d: run_forward(opens, closes, date.fromisoformat(d))[1],
+                       FORWARD_DECISION, a.accept_revision)
     print(md)
     return 0
 

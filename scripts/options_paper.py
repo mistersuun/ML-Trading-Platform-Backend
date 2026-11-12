@@ -1,6 +1,7 @@
 """Options paper test (pre-registered in docs/options-paper/PREREG.md). Paper only: no orders anywhere.
 
     .venv/bin/python scripts/options_paper.py plan [--asof YYYY-MM-DD]
+    .venv/bin/python scripts/options_paper.py plan --quotes docs/options-paper/quotes/YYYY-MM-DD.json
     .venv/bin/python scripts/options_paper.py step --quotes docs/options-paper/quotes/YYYY-MM-DD.json [--asof ...]
 
 `plan` reads the underlying daily bars (state/external_bars, offline) and the book state, and prints which option
@@ -9,11 +10,14 @@ fetched read-only from IBKR (get_option_parameters / get_option_data / get_price
 {"asof": "YYYY-MM-DD", "quotes": [{"contract_id", "underlying", "right": "C"|"P", "strike", "expiry": "YYYY-MM-DD",
 "bid", "ask", "delta"}]}. `step` applies the frozen rules to those quotes: exits first, then entries, fills at
 the ask (buy) / bid (sell) plus commission. It updates docs/options-paper/state.json, appends journal.jsonl and
-rewrites report.md. A session date can be stepped once; dates must increase.
+rewrites report.md. `plan --quotes FILE` (FILE holds tonight's quotes for the open contracts) dry-runs tonight's
+exits on a copy of the state and lists the entries wanted after them, so a book that exits tonight can re-enter
+tonight; it writes nothing. A session date can be stepped once; dates must increase.
 """
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import math
 import sys
@@ -335,15 +339,8 @@ def step(state: dict, asof, quotes: list[dict], closes: dict[str, pd.Series],
     return state, row
 
 
-def plan(state: dict, asof, closes: dict[str, pd.Series], ranking: Optional[list[str]] = None) -> dict:
-    """What quotes the session needs (the fetcher uses this; it changes no state)."""
-    asof = _d(asof)
-    cut = {s: c.loc[:pd.Timestamp(asof)] for s, c in closes.items()}
-    spots = {s: float(c.iloc[-1]) for s, c in cut.items()}
-    out = {"asof": str(asof), "spots": spots, "open_contracts": [], "entries": []}
-    for name, book in state["books"].items():
-        for p in book["positions"]:
-            out["open_contracts"].append({"book": name, "contract_id": p["contract_id"], "label": _label(p)})
+def _entries(state: dict, cut: dict, spots: dict, ranking: Optional[list[str]]) -> list[dict]:
+    entries = []
     L = state["books"]["L"]
     held = {p["underlying"] for p in L["positions"]}
     if len(L["positions"]) < L_MAX_OPEN:
@@ -351,21 +348,54 @@ def plan(state: dict, asof, closes: dict[str, pd.Series], ranking: Optional[list
             sig = signal(cut[sym])
             if sig and sym not in held:
                 lo, hi = (1.0, 1.20) if sig == "C" else (0.80, 1.0)   # fetch window only; the rule is in choose_lottery
-                out["entries"].append({"book": "L", "underlying": sym, "right": sig, "dte": list(L_DTE),
-                                       "target_dte": L_TARGET_DTE,
-                                       "strikes": [round(spots[sym] * lo), round(spots[sym] * hi)]})
+                entries.append({"book": "L", "underlying": sym, "right": sig, "dte": list(L_DTE),
+                                "target_dte": L_TARGET_DTE,
+                                "strikes": [round(spots[sym] * lo), round(spots[sym] * hi)]})
     if not state["books"]["P"]["positions"]:
         s = spots[P_UNDERLYING]
-        out["entries"].append({"book": "P", "underlying": P_UNDERLYING, "right": "P", "dte": list(P_DTE),
-                               "target_dte": P_TARGET_DTE, "strikes": [round(s * 0.88), round(s * 0.98)]})
+        entries.append({"book": "P", "underlying": P_UNDERLYING, "right": "P", "dte": list(P_DTE),
+                        "target_dte": P_TARGET_DTE, "strikes": [round(s * 0.88), round(s * 0.98)]})
     M = state["books"].get("M")
     if M is not None and ranking and len(M["positions"]) < M_SLOTS:
         held_m = {p["underlying"] for p in M["positions"]}
-        out["entries"].append({"book": "M", "underlyings_in_order": [x for x in ranking if x not in held_m],
-                               "right": "C", "dte": list(M_DTE), "target_dte": M_TARGET_DTE,
-                               "strikes": "spot to spot x 1.25 (OTM), about 5 strikes around delta 0.35; walk the "
-                                          "list until one has a call whose ask x 100 fits "
-                                          f"{M_BUDGET_FRAC:.0%} of Book M equity"})
+        entries.append({"book": "M", "underlyings_in_order": [x for x in ranking if x not in held_m],
+                        "right": "C", "dte": list(M_DTE), "target_dte": M_TARGET_DTE,
+                        "strikes": "spot to spot x 1.25 (OTM), about 5 strikes around delta 0.35; walk the "
+                                   "list until one has a call whose ask x 100 fits "
+                                   f"{M_BUDGET_FRAC:.0%} of Book M equity"})
+    return entries
+
+
+def plan(state: dict, asof, closes: dict[str, pd.Series], ranking: Optional[list[str]] = None,
+         quotes: Optional[list[dict]] = None) -> dict:
+    """What quotes the session needs (the fetcher uses this; it changes no state).
+
+    With `quotes` (tonight's quotes for the open contracts) the exit logic is dry-run on a copy of the state, and the
+    entries are those wanted after tonight's exits; the ones that exist only because of an exit say so ("because")."""
+    asof = _d(asof)
+    cut = {s: c.loc[:pd.Timestamp(asof)] for s, c in closes.items()}
+    spots = {s: float(c.iloc[-1]) for s, c in cut.items()}
+    out = {"asof": str(asof), "spots": spots, "open_contracts": [], "entries": []}
+    for name, book in state["books"].items():
+        for p in book["positions"]:
+            out["open_contracts"].append({"book": name, "contract_id": p["contract_id"], "label": _label(p)})
+    out["entries"] = _entries(state, cut, spots, ranking)
+    if quotes is None:
+        return out
+    after = copy.deepcopy(state)
+    qmap = {int(q["contract_id"]): q for q in quotes}
+    exits: dict[str, list[str]] = {}
+    for name, book in after["books"].items():
+        n = len(book["closed"])
+        _manage(name, book, qmap, spots, asof, [])
+        exits[name] = [f"{_label(t)} {t['reason']}" for t in book["closed"][n:]]
+    before = {(e["book"], e.get("underlying")): e for e in out["entries"]}
+    out["entries"] = _entries(after, cut, spots, ranking)
+    for e in out["entries"]:
+        old = before.get((e["book"], e.get("underlying")))
+        if old is None or old != e:
+            if exits[e["book"]]:
+                e["because"] = "; ".join(f"exit tonight: {x}" for x in exits[e["book"]])
     return out
 
 
@@ -434,14 +464,14 @@ def main(argv=None) -> int:
     for s in ranking:
         closes[s] = load_closes_any(s, root)
     state = load_state()
-    if a.cmd == "plan":
-        print(json.dumps(plan(state, asof, closes, ranking), indent=2))
-        return 0
-    if not a.quotes:
+    if a.cmd == "step" and not a.quotes:
         ap.error("step needs --quotes")
-    payload = json.loads(Path(a.quotes).read_text())
-    if payload.get("asof") and _d(payload["asof"]) != asof:
+    payload = json.loads(Path(a.quotes).read_text()) if a.quotes else None
+    if payload and payload.get("asof") and _d(payload["asof"]) != asof:
         ap.error(f"quotes are for {payload['asof']}, not {asof}")
+    if a.cmd == "plan":
+        print(json.dumps(plan(state, asof, closes, ranking, payload["quotes"] if payload else None), indent=2))
+        return 0
     state, row = step(state, asof, payload["quotes"], closes, ranking)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     STATE_PATH.write_text(json.dumps(state, indent=2) + "\n")
