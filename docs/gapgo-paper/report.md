@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-11-11)
+# Gap-and-go day-trading paper account (as of 2026-11-12)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,238.35** (+4.77%).
 
@@ -23,6 +23,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-12** P&L +0.00. no gap candidates
 - **2026-11-11** P&L -18.66. CRWV +14.8% (first 5-minute bar not green), STX +8.9% (first 5-minute bar not green), MRVL +8.2% (first 5-minute bar not green), DELL +7.8% (trade), MU +7.2% (first 5-minute bar not green), WDC +6.9% (first 5-minute bar not green), SMCI +6.6% (first 5-minute bar not green), LRCX +6.4% (first 5-minute bar not green), INTC +6.3% (first 5-minute bar not green), ARM +5.8% (first 5-minute bar not green), SMR +5.8% (first 5-minute bar not green), AMAT +5.6% (first 5-minute bar not green), AMD +5.4% (first 5-minute bar not green), AVGO +5.4% (no breakout above the first bar's high by 10:30), ORCL +5.3% (trade), KLAC +5.3% (daily trade limit reached), ANET +5.3% (daily trade limit reached), OKLO +4.7% (5-minute bars missing), TSM +4.7% (5-minute bars missing), CBRS +4.7% (5-minute bars missing), MARA +4.5% (5-minute bars missing), ON +4.4% (5-minute bars missing), MDB +4.4% (5-minute bars missing), CRWD +4.2% (5-minute bars missing)
 - **2026-11-10** P&L +0.00. no gap candidates
 - **2026-11-09** P&L +93.37. TTD +7.0% (trade), AMD +5.3% (first 5-minute bar not green), UAL +4.6% (trade), AVGO +4.0% (daily trade limit reached)
@@ -37,6 +38,5 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 - **2026-10-27** P&L +0.00. SOFI +10.5% (first 5-minute bar not green), SPGI +4.3% (first 5-minute bar not green)
 - **2026-10-26** P&L -37.83. HHH +4.2% (trade)
 - **2026-10-23** P&L +0.00. no gap candidates
-- **2026-10-22** P&L +0.00. no gap candidates
 
 Costs: 10 bp slippage per side, US$0.005 per share (US$1 minimum). The scan uses a fixed universe of about 130 liquid US stocks, not a full-market scanner, so it misses small-cap gappers.
