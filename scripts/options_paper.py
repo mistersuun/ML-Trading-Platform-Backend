@@ -222,7 +222,7 @@ def _manage(name: str, book: dict, qmap: dict, spots: dict, asof, events: list) 
             p["last_mid"] = px
             _close(book, p, px, asof, "expired (intrinsic)", events)
             continue
-        if q is None or float(q["bid"] or 0) < 0 or float(q["ask"] or 0) <= 0:
+        if q is None or q.get("bid") is None or float(q["bid"]) < 0 or float(q.get("ask") or 0) <= 0:
             events.append(f"no usable quote for {_label(p)}; held at last mark {p['last_mid']:.2f}")
             continue
         p["last_mid"] = round(mid(q), 4)

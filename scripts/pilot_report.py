@@ -26,7 +26,9 @@ OUT_DIR = ROOT / "state" / "pilot"
 
 def load_daily(sym: str) -> pd.Series:
     parts = []
-    for p in sorted(BARS.glob(f"{sym}.D*.json")):
+    base = BARS / f"{sym}.D.json"
+    files = ([base] if base.exists() else []) + sorted(p for p in BARS.glob(f"{sym}.D.*.json"))   # base first, top-ups win
+    for p in files:
         d = json.loads(p.read_text())
         idx = pd.to_datetime(d["time"], utc=True).tz_convert("America/New_York").tz_localize(None).normalize()
         parts.append(pd.Series(d["close"], index=idx, dtype=float))

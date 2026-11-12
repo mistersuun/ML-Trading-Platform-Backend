@@ -133,3 +133,14 @@ def test_book_m_enters_and_takes_profit_at_3x():
     closes = {k: _closes(v.iloc[-1], end=nxt) for k, v in closes.items()}
     state, _ = op.step(state, nxt, [_q(12, "MRK", "C", 110, "2027-01-15", 9.4, 9.6, 0.7)], closes, ["MRK"])
     assert state["books"]["M"]["closed"][0]["reason"] == "take profit (3x)"
+
+
+def test_quote_without_bid_holds_the_position_instead_of_crashing():
+    state, _ = _state_after_entry()
+    nxt = "2026-10-16"
+    closes = {"QQQ": _closes(105, end=nxt), "SPY": _closes(100.0, end=nxt)}
+    quotes = [_q(2, "QQQ", "C", 108, "2026-11-13", None, 2.80, 0.40),
+              _q(9, "SPY", "P", 720, "2026-11-20", None, 0.45, -0.10)]
+    state, row = op.step(state, nxt, quotes, closes)
+    assert len(state["books"]["L"]["positions"]) == 1 and len(state["books"]["P"]["positions"]) == 1
+    assert any("no usable quote" in e for e in row["events"]["L"])

@@ -45,11 +45,14 @@ def _safe(symbol: str) -> str:
 
 
 def symbol_files(symbol: str, root: Optional[Path] = None) -> list[Path]:
-    """``<SYMBOL>.json`` first, then ``<SYMBOL>.<tag>.json`` sorted by name (later tags override earlier)."""
+    """``<SYMBOL>.json`` first, then named seed files (``<SYMBOL>.gapgo.json``, ``.investor.json``: first fetches),
+    then dated top-ups ``<SYMBOL>.<YYYYMMDD>.json`` in date order. Later files override earlier ones on the same date.
+    (Sorting all tags by name put the old seed files last, so they overrode newer top-ups.)"""
     d = Path(root) if root is not None else bars_dir()
     s = _safe(symbol)
     base = d / f"{s}.json"
-    tops = sorted(p for p in d.glob(f"{s}.*.json") if re.fullmatch(re.escape(s) + r"\.[^.]+\.json", p.name))
+    tops = [p for p in d.glob(f"{s}.*.json") if re.fullmatch(re.escape(s) + r"\.[^.]+\.json", p.name)]
+    tops.sort(key=lambda p: (bool(re.fullmatch(r"\d{8}", p.name[len(s) + 1:-5])), p.name))
     return ([base] if base.exists() else []) + tops
 
 
