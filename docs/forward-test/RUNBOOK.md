@@ -389,3 +389,9 @@ top-up is ingested:
    `{"asof", "source", "quotes": [{"contract_id", "underlying", "right", "strike", "expiry", "bid", "ask", "delta"}]}`.
 4. Run `.venv/bin/python scripts/lottery_paper.py step --quotes docs/lottery-paper/quotes/<session>.json` and commit
    `docs/lottery-paper/`. Tell the owner when an account is busted or a trade makes 3x its cost or more.
+5. Y4, the weekly moonshot (`docs/lottery-paper/MOONSHOT.md`): run `.venv/bin/python scripts/moonshot_paper.py plan` every
+   session. When it lists an `entry` (the week's first session), resolve that stock's conid, the expiry id for the
+   listed expiry (`get_option_parameters`), the chain around the strike (`get_option_data`) and one
+   `get_price_snapshot` of that call. Save it as `docs/lottery-paper/quotes/moonshot-<session>.json` (same format,
+   with `underlying` = the stock) and run `step --quotes <file>`. On other sessions run `step` with no quotes, so a
+   due ticket settles. Commit `docs/lottery-paper/`.
