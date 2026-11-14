@@ -1,0 +1,26 @@
+[
+ {
+  "name": "S2 Pre-Earnings Squeeze Strangle",
+  "why": "The claimed edge (the pre-earnings IV run-up) cannot be modelled from daily bars, and earnings dates are only a drifting 63-day proxy. A flat-IV backtest would test only the small, partly mechanical squeeze effect, so it is paper-only, not backtestable."
+ },
+ {
+  "name": "S3 Bear-Market Capitulation-Gap Rebound Call Spread",
+  "why": "About 93 events, nearly all from the single 2022 episode, on a 2026 survivor universe that recovered by construction. SPY was above its 200-day average on 95% of holdout days, so the holdout is empty. It also duplicates P3's bear-rebound exposure with a weaker sample."
+ },
+ {
+  "name": "M2 52-week-high breakout OTM call",
+  "why": "The 10-day underlying return equals the matched top-5 leader control (+2.7% vs +2.7%), so the breakout timing adds nothing. The option gain comes from leader membership, 2024 and survivor names. It overlaps M1/P2 in names and structure."
+ },
+ {
+  "name": "M3 Volatility-contraction breakout, IV-gated",
+  "why": "The probe shows no underlying edge (+1.0% vs +1.2% random), and the modelled option gain is an artefact of pricing at 1.25 x a depressed RV. Only the live IV gate could validate it, so there is nothing to test offline."
+ },
+ {
+  "name": "S1 Single-name capitulation call (live IV gate)",
+  "why": "After vol pricing, the approximated ATM calls lose on average (-3.9% vs -5.3% control, median -22%), so expectancy is negative. The edge depends entirely on an IV gate that cannot be backtested."
+ },
+ {
+  "name": "S3 Barbell bankroll engine",
+  "why": "A risk overlay, not a return engine, and it is fed by one rejected engine and one small-sample engine. Its useful parts (the drawdown governor and the halt) are built into the sizing of all three picks."
+ }
+]
