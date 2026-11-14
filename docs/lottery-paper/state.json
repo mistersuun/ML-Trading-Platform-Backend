@@ -1,0 +1,66 @@
+{
+ "inception": "2026-11-13",
+ "last_asof": "2026-11-13",
+ "bench": {
+  "spy_start": 754.37
+ },
+ "accounts": {
+  "Y1": {
+   "cash": 871.35,
+   "positions": [
+    {
+     "contract_id": 941443223,
+     "label": "SPY 2026-11-16 757C",
+     "right": "C",
+     "strike": 757.0,
+     "expiry": "2026-11-16",
+     "qty": 1,
+     "entry": 1.28,
+     "entry_date": "2026-11-13",
+     "spy_entry": 754.37,
+     "cost": 128.65
+    }
+   ],
+   "trades": [],
+   "busted": false
+  },
+  "Y2": {
+   "cash": 700.35,
+   "positions": [
+    {
+     "contract_id": 941443810,
+     "label": "SPY 2026-11-16 752P",
+     "right": "P",
+     "strike": 752.0,
+     "expiry": "2026-11-16",
+     "qty": 1,
+     "entry": 2.99,
+     "entry_date": "2026-11-13",
+     "spy_entry": 754.37,
+     "cost": 299.65
+    }
+   ],
+   "trades": [],
+   "busted": false
+  },
+  "Y3": {
+   "cash": 81.39999999999998,
+   "positions": [
+    {
+     "contract_id": 940866800,
+     "label": "SPY 2026-11-16 750P",
+     "right": "P",
+     "strike": 750.0,
+     "expiry": "2026-11-16",
+     "qty": 4,
+     "entry": 2.29,
+     "entry_date": "2026-11-13",
+     "spy_entry": 754.37,
+     "cost": 918.6
+    }
+   ],
+   "trades": [],
+   "busted": false
+  }
+ }
+}

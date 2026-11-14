@@ -374,3 +374,18 @@ git-ignored.
 informational except on the three look dates (2026-12-31, 2027-02-26, 2027-04-15), when the page states each arm's
 status under the pre-registered rule. Commit `docs/scoreboard/` with the other files. The graduation ladder for any
 move to real money is `docs/scoreboard/GRADUATION.md`; nothing graduates outside a look.
+
+## 13. Short-dated SPY option accounts Y1-Y3 (owner request 2026-11-14; rules frozen in `docs/lottery-paper/PREREG.md`)
+
+Paper only. IBKR read-only: `get_option_parameters`, `get_option_data`, `get_price_snapshot`. Nightly, after the SPY
+top-up is ingested:
+
+1. `.venv/bin/python scripts/lottery_paper.py plan` prints the session, the next session's expiry and each live
+   account's wanted contract (right and strike). Open contracts settle in `step` from SPY's close; they need no quote.
+2. Resolve the expiry id with `get_option_parameters` (SPY 756733; the row whose date is the next session and whose
+   trading class is SPY), then `get_option_data` around the wanted strikes and `get_price_snapshot`
+   (`bid_ask`, `option_greeks`) for each wanted contract.
+3. Save them, extracted from the tool results and never retyped, as `docs/lottery-paper/quotes/<session>.json` =
+   `{"asof", "source", "quotes": [{"contract_id", "underlying", "right", "strike", "expiry", "bid", "ask", "delta"}]}`.
+4. Run `.venv/bin/python scripts/lottery_paper.py step --quotes docs/lottery-paper/quotes/<session>.json` and commit
+   `docs/lottery-paper/`. Tell the owner when an account is busted or a trade makes 3x its cost or more.
