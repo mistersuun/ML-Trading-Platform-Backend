@@ -88,3 +88,8 @@ bull market for exactly these names, so a modest positive Sharpe is what beta al
   signals forward, pre-registered (long-only, 15 bp costs, de-duplicated, measured against buy-and-hold), and judge
   them only at the scoreboard's fixed looks. That needs the owner's go-ahead. Until then the pooled shadow keeps
   running nightly at no risk.
+
+## Update 2026-11-14
+
+The owner approved the forward scoring. Its rules were frozen in `docs/pooled-forward/PREREG.md` before any forward
+return was computed. It runs nightly, and only the looks on 2026-12-31, 2027-02-26 and 2027-04-15 decide.

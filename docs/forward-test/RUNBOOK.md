@@ -249,6 +249,12 @@ confirmation window (at least 20 forward shadow sessions over at least 28 days).
   Sequoia ETF (SEQ, NYSE Arca) after about 2026-10-16; once SEQUX stops printing, resolve SEQ with `search_contracts`, record the
   conversion ratio, and switch the `sequoia_nav` portfolio to SEQ in `investor-portfolios.json`.
 - Planned end: the 2026-11-13 session, then a short pooled-shadow summary; the routine is then disabled.
+- Pooled forward scoring (owner approved 2026-11-14; rules frozen in `docs/pooled-forward/PREREG.md`): after the forward
+  step, run `.venv/bin/python scripts/pooled_forward.py record` (append-only copy of the night's pooled shadow signals
+  into `docs/pooled-forward/signals.jsonl`; the payloads under `state/` are lost on a container reset) and then
+  `.venv/bin/python scripts/pooled_forward.py score` (`docs/pooled-forward/report.md`). Commit `docs/pooled-forward/`.
+  This keeps the forward step (and the 17 watchlist top-ups it needs) running nightly after 2026-11-16; only the
+  scoreboard looks (2026-12-31, 2027-02-26, 2027-04-15) decide.
 
 ## 6. Options paper test (owner request 2026-10-15; rules frozen in `docs/options-paper/PREREG.md`)
 

@@ -1,0 +1,143 @@
+# Pooled shadow, forward scoring
+
+As of 2026-11-13. Rules frozen in `PREREG.md` (2026-11-14). Paper only: pooled signals are never orders. Informational; only the looks on 2026-12-31, 2027-02-26, 2027-04-15 decide.
+
+Signals recorded: 198 over 9 sessions. De-duplicated trades: 131: 0 completed, 131 open.
+
+## Open trades (marked, not scored)
+
+| Pattern | Symbol | Entry | Mark | Return | vs SPY |
+|---|---|---|---|---:|---:|
+| bollinger_bounce | AMD | 2026-11-04 | 2026-11-13 | +10.06% | +11.19% |
+| bollinger_bounce | GOOG | 2026-11-04 | 2026-11-13 | +3.92% | +5.05% |
+| bollinger_bounce | MSFT | 2026-11-04 | 2026-11-13 | -3.54% | -2.41% |
+| bollinger_bounce | QQQ | 2026-11-04 | 2026-11-13 | -1.24% | -0.11% |
+| bollinger_bounce | SPY | 2026-11-04 | 2026-11-13 | -1.13% | +0.00% |
+| ichimoku_cloud | AMZN | 2026-11-04 | 2026-11-13 | +0.64% | +1.77% |
+| keltner_reversion | AMZN | 2026-11-04 | 2026-11-13 | +0.64% | +1.77% |
+| keltner_reversion | MSFT | 2026-11-04 | 2026-11-13 | -3.54% | -2.41% |
+| mean_rev_composite | AMD | 2026-11-04 | 2026-11-13 | +10.06% | +11.19% |
+| mean_rev_composite | GOOG | 2026-11-04 | 2026-11-13 | +3.92% | +5.05% |
+| mean_rev_composite | QQQ | 2026-11-04 | 2026-11-13 | -1.24% | -0.11% |
+| rsi2_pullback | AAPL | 2026-11-04 | 2026-11-13 | +4.41% | +5.54% |
+| rsi_divergence | GOOG | 2026-11-04 | 2026-11-13 | +3.92% | +5.05% |
+| rsi_divergence | QQQ | 2026-11-04 | 2026-11-13 | -1.24% | -0.11% |
+| sma_200_trend | NVDA | 2026-11-04 | 2026-11-13 | -20.00% | -18.86% |
+| stochastic_cross | AMD | 2026-11-04 | 2026-11-13 | +10.06% | +11.19% |
+| stochastic_cross | BAC | 2026-11-04 | 2026-11-13 | -0.47% | +0.66% |
+| stochastic_cross | GOOG | 2026-11-04 | 2026-11-13 | +3.92% | +5.05% |
+| stochastic_cross | META | 2026-11-04 | 2026-11-13 | +0.14% | +1.27% |
+| stochastic_cross | NVDA | 2026-11-04 | 2026-11-13 | -20.00% | -18.86% |
+| stochastic_cross | QQQ | 2026-11-04 | 2026-11-13 | -1.24% | -0.11% |
+| stochastic_cross | SPY | 2026-11-04 | 2026-11-13 | -1.13% | +0.00% |
+| trend_momentum_combo | AMZN | 2026-11-04 | 2026-11-13 | +0.64% | +1.77% |
+| trend_momentum_combo | META | 2026-11-04 | 2026-11-13 | +0.14% | +1.27% |
+| trend_momentum_combo | MSFT | 2026-11-04 | 2026-11-13 | -3.54% | -2.41% |
+| trend_momentum_combo | NVDA | 2026-11-04 | 2026-11-13 | -20.00% | -18.86% |
+| adx_trend | IWM | 2026-11-05 | 2026-11-13 | -2.19% | -0.74% |
+| atr_breakout | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| atr_breakout | AMZN | 2026-11-05 | 2026-11-13 | -1.79% | -0.34% |
+| atr_breakout | BAC | 2026-11-05 | 2026-11-13 | -3.10% | -1.65% |
+| atr_breakout | DIA | 2026-11-05 | 2026-11-13 | -2.39% | -0.94% |
+| atr_breakout | JPM | 2026-11-05 | 2026-11-13 | -3.47% | -2.02% |
+| atr_breakout | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| bollinger_bounce | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| bollinger_squeeze | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| donchian_breakout | AMZN | 2026-11-05 | 2026-11-13 | -1.79% | -0.34% |
+| donchian_breakout | DIA | 2026-11-05 | 2026-11-13 | -2.39% | -0.94% |
+| donchian_breakout | JPM | 2026-11-05 | 2026-11-13 | -3.47% | -2.02% |
+| donchian_breakout | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| ema_crossover | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| high52_breakout | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| high52_breakout | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| ichimoku_cloud | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| ichimoku_cloud | DIA | 2026-11-05 | 2026-11-13 | -2.39% | -0.94% |
+| ichimoku_cloud | JPM | 2026-11-05 | 2026-11-13 | -3.47% | -2.02% |
+| ichimoku_cloud | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| ichimoku_cloud | SPY | 2026-11-05 | 2026-11-13 | -1.45% | +0.00% |
+| inside_bar_breakout | AMZN | 2026-11-05 | 2026-11-13 | -1.79% | -0.34% |
+| inside_bar_breakout | IWM | 2026-11-05 | 2026-11-13 | -2.19% | -0.74% |
+| inside_bar_breakout | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| inside_bar_breakout | QQQ | 2026-11-05 | 2026-11-13 | -0.47% | +0.98% |
+| inside_bar_breakout | SPY | 2026-11-05 | 2026-11-13 | -1.45% | +0.00% |
+| keltner_reversion | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| keltner_reversion | BAC | 2026-11-05 | 2026-11-13 | -3.10% | -1.65% |
+| keltner_reversion | SPY | 2026-11-05 | 2026-11-13 | -1.45% | +0.00% |
+| macd_crossover | AMZN | 2026-11-05 | 2026-11-13 | -1.79% | -0.34% |
+| macd_crossover | DIA | 2026-11-05 | 2026-11-13 | -2.39% | -0.94% |
+| rsi2_pullback | CVX | 2026-11-05 | 2026-11-13 | -0.05% | +1.40% |
+| rsi2_pullback | TSLA | 2026-11-05 | 2026-11-13 | +4.35% | +5.80% |
+| rsi2_pullback | XOM | 2026-11-05 | 2026-11-13 | -0.27% | +1.18% |
+| rsi_divergence | NVDA | 2026-11-05 | 2026-11-13 | -16.91% | -15.46% |
+| rsi_reversal | BAC | 2026-11-05 | 2026-11-13 | -3.10% | -1.65% |
+| trend_momentum_combo | AMD | 2026-11-05 | 2026-11-13 | +18.15% | +19.60% |
+| trend_momentum_combo | QQQ | 2026-11-05 | 2026-11-13 | -0.47% | +0.98% |
+| trend_momentum_combo | SPY | 2026-11-05 | 2026-11-13 | -1.45% | +0.00% |
+| triple_ema | AAPL | 2026-11-05 | 2026-11-13 | +0.67% | +2.12% |
+| triple_ema | DIA | 2026-11-05 | 2026-11-13 | -2.39% | -0.94% |
+| triple_ema | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| volume_breakout | AMZN | 2026-11-05 | 2026-11-13 | -1.79% | -0.34% |
+| volume_breakout | MSFT | 2026-11-05 | 2026-11-13 | -5.66% | -4.21% |
+| ema_crossover | AMZN | 2026-11-06 | 2026-11-13 | +2.64% | -0.03% |
+| rsi_divergence | BAC | 2026-11-06 | 2026-11-13 | +2.99% | +0.32% |
+| rsi_divergence | IWM | 2026-11-06 | 2026-11-13 | +2.05% | -0.62% |
+| rsi_divergence | META | 2026-11-06 | 2026-11-13 | +5.57% | +2.91% |
+| trend_momentum_combo | AAPL | 2026-11-06 | 2026-11-13 | +5.18% | +2.51% |
+| bollinger_bounce | TSLA | 2026-11-09 | 2026-11-13 | +8.34% | +6.66% |
+| confluence | AMD | 2026-11-09 | 2026-11-13 | +12.89% | +11.22% |
+| keltner_reversion | IWM | 2026-11-09 | 2026-11-13 | +0.03% | -1.64% |
+| mean_rev_composite | NVDA | 2026-11-09 | 2026-11-13 | -5.86% | -7.53% |
+| mean_rev_composite | SPY | 2026-11-09 | 2026-11-13 | +1.67% | +0.00% |
+| rsi_divergence | SPY | 2026-11-09 | 2026-11-13 | +1.67% | +0.00% |
+| rsi_divergence | XOM | 2026-11-09 | 2026-11-13 | +4.13% | +2.46% |
+| rsi_reversal | AMD | 2026-11-09 | 2026-11-13 | +12.89% | +11.22% |
+| rsi_reversal | NVDA | 2026-11-09 | 2026-11-13 | -5.86% | -7.53% |
+| rsi_reversal | QQQ | 2026-11-09 | 2026-11-13 | +2.60% | +0.93% |
+| sma_200_trend | AMD | 2026-11-09 | 2026-11-13 | +12.89% | +11.22% |
+| stochastic_cross | CVX | 2026-11-09 | 2026-11-13 | +4.29% | +2.61% |
+| stochastic_cross | XOM | 2026-11-09 | 2026-11-13 | +4.13% | +2.46% |
+| triple_ema | AMZN | 2026-11-09 | 2026-11-13 | -1.05% | -2.73% |
+| atr_breakout | AMD | 2026-11-10 | 2026-11-13 | +6.14% | +5.28% |
+| atr_breakout | IWM | 2026-11-10 | 2026-11-13 | -0.80% | -1.66% |
+| atr_breakout | SPY | 2026-11-10 | 2026-11-13 | +0.86% | +0.00% |
+| bollinger_bounce | XOM | 2026-11-10 | 2026-11-13 | +5.39% | +4.53% |
+| ichimoku_cloud | TSLA | 2026-11-10 | 2026-11-13 | +5.33% | +4.47% |
+| inside_bar_breakout | GS | 2026-11-10 | 2026-11-13 | +0.69% | -0.17% |
+| inside_bar_breakout | META | 2026-11-10 | 2026-11-13 | +0.64% | -0.22% |
+| keltner_reversion | AMD | 2026-11-10 | 2026-11-13 | +6.14% | +5.28% |
+| keltner_reversion | DIA | 2026-11-10 | 2026-11-13 | +0.32% | -0.54% |
+| keltner_reversion | GS | 2026-11-10 | 2026-11-13 | +0.69% | -0.17% |
+| keltner_reversion | META | 2026-11-10 | 2026-11-13 | +0.64% | -0.22% |
+| keltner_reversion | TSLA | 2026-11-10 | 2026-11-13 | +5.33% | +4.47% |
+| macd_crossover | MSFT | 2026-11-10 | 2026-11-13 | -3.56% | -4.42% |
+| rsi_reversal | GOOG | 2026-11-10 | 2026-11-13 | +1.94% | +1.08% |
+| sma_200_trend | IWM | 2026-11-10 | 2026-11-13 | -0.80% | -1.66% |
+| sma_200_trend | META | 2026-11-10 | 2026-11-13 | +0.64% | -0.22% |
+| trend_momentum_combo | DIA | 2026-11-10 | 2026-11-13 | +0.32% | -0.54% |
+| adx_trend | BAC | 2026-11-11 | 2026-11-13 | +0.29% | +0.61% |
+| ema_crossover | DIA | 2026-11-11 | 2026-11-13 | +0.07% | +0.38% |
+| ema_crossover | IWM | 2026-11-11 | 2026-11-13 | -1.93% | -1.62% |
+| rsi_divergence | CVX | 2026-11-11 | 2026-11-13 | +3.57% | +3.88% |
+| triple_ema | JPM | 2026-11-11 | 2026-11-13 | +0.96% | +1.28% |
+| bollinger_bounce | NVDA | 2026-11-12 | 2026-11-13 | +7.85% | +7.80% |
+| donchian_breakout | AAPL | 2026-11-12 | 2026-11-13 | -0.43% | -0.48% |
+| ema_crossover | GS | 2026-11-12 | 2026-11-13 | -0.02% | -0.07% |
+| ema_crossover | TSLA | 2026-11-12 | 2026-11-13 | +1.03% | +0.98% |
+| ichimoku_cloud | AMD | 2026-11-12 | 2026-11-13 | -6.23% | -6.28% |
+| ichimoku_cloud | IWM | 2026-11-12 | 2026-11-13 | -1.39% | -1.44% |
+| inside_bar_breakout | DIA | 2026-11-12 | 2026-11-13 | -0.23% | -0.28% |
+| keltner_reversion | QQQ | 2026-11-12 | 2026-11-13 | -0.06% | -0.11% |
+| macd_crossover | AAPL | 2026-11-12 | 2026-11-13 | -0.43% | -0.48% |
+| macd_crossover | AMD | 2026-11-12 | 2026-11-13 | -6.23% | -6.28% |
+| macd_crossover | META | 2026-11-12 | 2026-11-13 | +2.60% | +2.55% |
+| sma_200_trend | QQQ | 2026-11-12 | 2026-11-13 | -0.06% | -0.11% |
+| sma_200_trend | TSLA | 2026-11-12 | 2026-11-13 | +1.03% | +0.98% |
+| trend_momentum_combo | CVX | 2026-11-12 | 2026-11-13 | +2.27% | +2.22% |
+| trend_momentum_combo | XOM | 2026-11-12 | 2026-11-13 | +1.39% | +1.34% |
+| donchian_breakout | AMD | 2026-11-13 | 2026-11-13 | -5.77% | -5.02% |
+| macd_crossover | GOOG | 2026-11-13 | 2026-11-13 | -2.46% | -1.71% |
+| triple_ema | TSLA | 2026-11-13 | 2026-11-13 | -2.93% | -2.18% |
+| ichimoku_cloud | CVX | next session | - | n/a | n/a |
+| keltner_reversion | CVX | next session | - | n/a | n/a |
+
+Costs: 15 bp per round trip on completed trades; open marks carry no cost. Entry at the next open, exit at the 10th session's close. Signals from 10-15 to 11-02 were lost in the 11-03 reset and are not included.
