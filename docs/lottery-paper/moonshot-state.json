@@ -1,0 +1,20 @@
+{
+ "tickets": [
+  {
+   "week_of": "2026-11-16",
+   "label": "TSLA 2026-11-20 392.5C",
+   "symbol": "TSLA",
+   "ret5": 0.0045,
+   "spot": 379.74,
+   "strike": 392.5,
+   "expiry": "2026-11-20",
+   "contract_id": 944609196,
+   "qty": 1,
+   "entry": 4.65,
+   "cost": 465.65,
+   "unspent": 234.35,
+   "settled": false
+  }
+ ],
+ "last_asof": "2026-11-16"
+}

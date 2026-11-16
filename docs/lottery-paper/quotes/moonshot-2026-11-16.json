@@ -1,0 +1,1 @@
+{"asof": "2026-11-16", "source": "IBKR get_price_snapshot (read-only), fetched 2026-11-16 ~23:00Z. The first snapshot returned greeks but no bid/ask; the immediate retry returned the bid/ask used here.", "quotes": [{"contract_id": 944609196, "underlying": "TSLA", "right": "C", "strike": 392.5, "expiry": "2026-11-20", "bid": 4.0, "ask": 4.65, "delta": null}]}
