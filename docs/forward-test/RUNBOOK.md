@@ -395,3 +395,21 @@ top-up is ingested:
    `get_price_snapshot` of that call. Save it as `docs/lottery-paper/quotes/moonshot-<session>.json` (same format,
    with `underlying` = the stock) and run `step --quotes <file>`. On other sessions run `step` with no quotes, so a
    due ticket settles. Commit `docs/lottery-paper/`.
+
+## 14. Next-day direction calls (owner request 2026-11-16; rules frozen in `docs/direction-calls/PREREG.md`)
+
+Paper only. Every session, after the daily bars are ingested and **before midnight New York**, so the push lands
+well before the next open:
+
+1. `.venv/bin/python scripts/direction_calls.py template > /tmp/...` gives the session (`asof`), the target session
+   and the 10 names.
+2. For each name, form a view from tonight's price action and recent bars, IBKR read-only earnings insights,
+   snapshots and implied volatility, and a few web searches for market and company news. Write `up` or `down`, a
+   confidence of 0.50 to 1.00 and a one-line reason. Set `made_at` to the current UTC time. Call every name; skip
+   none. Do not look at any later price.
+3. Save the file as `docs/direction-calls/calls/<asof>.json` and run `scripts/direction_calls.py check <file>`
+   (it must print `ok`).
+4. Commit and push that file **on its own, immediately**. The commit time is the proof that the call came before
+   the open.
+5. Run `scripts/direction_calls.py score` (it scores every call whose target close exists) and commit
+   `docs/direction-calls/report.md` with the other files.
