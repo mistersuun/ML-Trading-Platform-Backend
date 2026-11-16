@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-16",
+ "target": "2026-11-17",
+ "made_at": "2026-11-16T22:49:24Z",
+ "method": "Judgment from tonight's daily bars (1/5/20-day moves, distance from 20/200-day averages, close location in the day's range), IBKR earnings calendar (only NVDA reports, after the 11-17 close) and news searches (little same-day coverage found; earlier reports: NVDA CEO resignation 11-12, AMD -6% and NVDA -4% intraday on 11-16).",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "Broad -1.9% selloff closing near the low (16% of range); after 1-2% index down days the next close leans to a partial bounce; still above the 200-day average."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "-2.7% on semis/AI selling, 4.5% below the 20-day average; short-term oversold, bounce odds slightly better than continuation."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "-12.6% in 5 sessions, 20% below the 20-day average, earnings after tomorrow's close; shorts may cover into the report, but CEO turmoil keeps it close to a coin flip."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "Relative strength: only -1.0% today, above its 20- and 200-day averages; least exposed to the AI-capex scare."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-5% on the week with the AI-capex worry; close at the low (11% of range) argues for some continuation, oversold argues for a bounce; slight bounce lean."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "-3.3% today but still at its 20-day average and above the 200-day; one-day drop on sector selling, mild rebound lean."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-2.4% after +2.9% the day before; no company-specific news found; near its averages, small mean-reversion lean."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-2.7% with the market; high beta follows the index, and I lean to an index bounce; essentially a coin flip."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "-17.6% over 20 sessions, -4.1% today closing at the very low (7% of range), 16% below its 200-day average: persistent selling, continuation lean."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-5.6% after -8.8% (24/7 Wall St. reported AMD -6% with NVDA); deeply oversold two-day drop, slight bounce lean ahead of NVDA's report."
+  }
+ ]
+}
