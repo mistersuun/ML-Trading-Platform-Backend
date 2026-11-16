@@ -10,7 +10,7 @@ Paper only. Rules in `PREREG.md` (frozen 2026-11-12), ladder in `GRADUATION.md`.
 |---|---|---|---:|---:|---:|---:|
 | ORB QQQ (`dt_qqq`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-16 | 23 (0) | +7.41% | -7.90% | +15.30% |
 | ORB SPY (`dt_spy`) | SPY buy-and-hold | 2026-10-14 to 2026-11-16 | 23 (0) | +20.39% | -3.42% | +23.81% |
-| Gap-and-go (`gapgo`) | SPY | 2026-10-16 to 2026-11-13 | 20 (0) | +4.77% | -1.16% | +5.93% |
+| Gap-and-go (`gapgo`) | SPY | 2026-10-16 to 2026-11-16 | 21 (0) | +4.77% | -3.05% | +7.82% |
 | Quant: trend following (`q_trend`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -2.74% | -3.85% | +1.12% |
 | Quant: cross-sectional momentum (`q_momentum`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -5.43% | -3.85% | -1.58% |
 | Quant: low volatility (`q_lowvol`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | +9.64% | -3.85% | +13.49% |
@@ -21,7 +21,7 @@ Paper only. Rules in `PREREG.md` (frozen 2026-11-12), ladder in `GRADUATION.md`.
 | Options Book L ($500 lottery) (`opt_L`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-16 | 22 (1) | -39.72% | -9.22% | -30.50% |
 | Options Book P (SPY put writer) (`opt_P`) | SPY buy-and-hold | 2026-10-14 to 2026-11-16 | 22 (1) | +0.46% | -3.85% | +4.31% |
 | Options Book M ($1,000 momentum calls) (`opt_M`) | QQQ buy-and-hold | 2026-10-16 to 2026-11-16 | 20 (1) | -69.19% | -6.77% | -62.42% |
-| Forward-test pipeline account (cash; 1-share plumbing test) (`ft_account`) | SPY | 2026-10-05 to 2026-11-13 | 29 (0) | -0.00% | -2.64% | +2.64% |
+| Forward-test pipeline account (cash; 1-share plumbing test) (`ft_account`) | SPY | 2026-10-05 to 2026-11-16 | 30 (0) | -0.00% | -4.50% | +4.50% |
 | Altimeter basket (`inv_altimeter`) | SPY | 2026-10-12 to 2026-11-16 | 25 (0) | -27.70% | -4.90% | -22.80% |
 | Appaloosa basket (`inv_appaloosa`) | SPY | 2026-10-06 to 2026-11-16 | 29 (0) | -14.85% | -5.02% | -9.83% |
 | Berkshire basket (`inv_berkshire`) | SPY | 2026-10-06 to 2026-11-16 | 29 (0) | +1.97% | -5.02% | +6.99% |
@@ -48,7 +48,7 @@ Gap = a return taken between journal dates that are not consecutive sessions (a 
 |---|---:|---|---:|---|---:|---:|---:|---:|---:|
 | `dt_qqq` | +67.1 | [-19.9, +165.3] | -28.7 | [-150.5, +100.3] | -0.32 | +23.1 | 0.70 | 23.0 | 168% |
 | `dt_spy` | +97.5 | [+10.6, +192.5] | +19.3 | [-77.1, +133.5] | -0.96 | +69.8 | 2.12 | 23.0 | 64% |
-| `gapgo` | +28.8 | [-15.0, +81.2] | -14.1 | [-78.4, +49.4] | 0.09 | +24.3 | 1.15 | 16.9 | 128% |
+| `gapgo` | +36.5 | [-4.0, +83.7] | -3.3 | [-72.6, +68.7] | 0.09 | +24.0 | 1.15 | 17.8 | 128% |
 | `q_trend` | +4.2 | [-19.0, +24.4] | -15.4 | [-58.2, +30.1] | 0.30 | -7.1 | -1.46 | 23.0 | n/a |
 | `q_momentum` | -5.7 | [-56.7, +46.3] | -25.7 | [-107.5, +47.7] | 1.34 | -0.3 | -0.01 | 23.0 | n/a |
 | `q_lowvol` | +57.0 | [+8.4, +105.4] | +21.6 | [-81.3, +133.4] | 0.01 | +41.1 | 2.48 | 23.0 | 65% |
@@ -59,7 +59,7 @@ Gap = a return taken between journal dates that are not consecutive sessions (a 
 | `opt_L` | -166.6 | [-468.2, +67.2] | -273.6 | [-749.3, +97.6] | -1.28 | -262.0 | -2.15 | 12.4 | n/a |
 | `opt_P` | +19.1 | [-5.2, +45.4] | -7.5 | [-54.7, +38.8] | 0.11 | +4.0 | 1.46 | 22.0 | 186% |
 | `opt_M` | -423.8 | [-833.1, -54.8] | -676.9 | [-1446.6, +26.0] | 3.43 | -343.8 | -1.59 | 20.0 | n/a |
-| `ft_account` | +8.5 | [-15.6, +32.6] | -13.7 | [-58.7, +31.1] | 0.00 | -0.0 | -0.36 | 29.0 | n/a |
+| `ft_account` | +14.6 | [-10.7, +38.1] | -6.9 | [-54.5, +42.0] | 0.00 | -0.0 | -0.27 | 30.0 | n/a |
 | `inv_altimeter` | -103.0 | [-184.1, -22.0] | -149.5 | [-318.6, +19.3] | 2.03 | -83.1 | -2.49 | 25.0 | n/a |
 | `inv_appaloosa` | -35.2 | [-73.2, +9.8] | -52.1 | [-146.7, +42.9] | 1.77 | -22.1 | -1.51 | 29.0 | n/a |
 | `inv_berkshire` | +24.2 | [-5.0, +50.7] | +9.6 | [-42.2, +62.9] | 0.53 | +16.3 | 1.43 | 29.0 | 246% |
@@ -86,7 +86,7 @@ Holm across clusters, alpha 0.05 / 3 = 0.0167 per look. Size = independent days 
 |---|---:|:---:|:---:|---:|:---:|:---:|
 | `dt_qqq` | 0.225 | no | no | 23 trade(s) | no | no |
 | `dt_spy` | 0.225 | no | no | 23 trade(s) | no | no |
-| `gapgo` | 0.520 | no | no | 14 trade(s) | no | no |
+| `gapgo` | 0.238 | no | no | 14 trade(s) | no | no |
 | `q_trend` | 0.171 | no | no | 23.0 days | no | no |
 | `q_momentum` | 0.171 | no | no | 23.0 days | no | no |
 | `q_lowvol` | 0.171 | no | no | 23.0 days | no | no |
