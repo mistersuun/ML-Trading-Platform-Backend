@@ -1,18 +1,19 @@
-# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-13)
+# Day-trading paper test: 5-minute opening range breakout (as of 2026-11-16)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-10-15. Warm-up replay of the pre-freeze sessions is in `warmup.md` and is not counted here. Not advice.
 
 | Book | Start | Equity | Return | Buy-and-hold | Trades |
 |---|---:|---:|---:|---:|---:|
-| QQQ ORB | $25,000 | $27,129.82 | +8.52% | $23,655.28 | 22 |
-| SPY ORB | $25,000 | $29,100.96 | +16.40% | $24,608.80 | 22 |
+| QQQ ORB | $25,000 | $26,852.10 | +7.41% | $23,026.23 | 23 |
+| SPY ORB | $25,000 | $30,097.95 | +20.39% | $24,145.83 | 23 |
 
 ## QQQ
 
-22 trades, win rate 27%, mean +0.40R (t = 0.78), total P&L +2,129.82, max drawdown -7.0%
+23 trades, win rate 26%, mean +0.34R (t = 0.69), total P&L +1,852.10, max drawdown -7.0%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-16 | short | 81 | 667.85 | 671.26 | 09:35 | stop | -1.02 | -277.72 |
 | 2026-11-13 | short | 112 | 686.33 | 679.97 | 15:55 | end of day | +2.69 | +710.70 |
 | 2026-11-12 | long | 65 | 683.83 | 688.13 | 15:55 | end of day | +1.06 | +277.68 |
 | 2026-11-11 | short | 139 | 687.13 | 689.09 | 10:40 | stop | -1.04 | -274.11 |
@@ -32,14 +33,14 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 | 2026-10-22 | long | 145 | 714.22 | 712.38 | 09:45 | stop | -1.03 | -269.19 |
 | 2026-10-21 | long | 145 | 722.41 | 720.97 | 09:35 | stop | -0.81 | -211.43 |
 | 2026-10-20 | short | 144 | 713.69 | 715.59 | 09:55 | stop | -1.04 | -276.02 |
-| 2026-10-19 | short | 148 | 719.38 | 720.29 | 10:10 | stop | -0.51 | -137.27 |
 
 ## SPY
 
-22 trades, win rate 36%, mean +0.72R (t = 1.52), total P&L +4,100.96, max drawdown -2.3%
+23 trades, win rate 39%, mean +0.83R (t = 1.79), total P&L +5,097.95, max drawdown -2.3%
 
 | Date | Side | Shares | Entry | Exit | Exit time | Reason | R | P&L |
 |---|---|---:|---:|---:|---|---|---:|---:|
+| 2026-11-16 | short | 133 | 747.65 | 740.13 | 15:55 | end of day | +3.43 | +996.99 |
 | 2026-11-13 | short | 137 | 758.03 | 754.33 | 15:55 | end of day | +1.77 | +506.10 |
 | 2026-11-12 | long | 150 | 755.43 | 757.11 | 15:55 | end of day | +0.89 | +251.31 |
 | 2026-11-11 | short | 150 | 756.61 | 758.03 | 10:50 | stop | -0.75 | -213.72 |
@@ -59,6 +60,5 @@ Paper only, rules in `PREREG.md` (frozen 2026-10-15). Forward record from 2026-1
 | 2026-10-22 | long | 134 | 767.34 | 765.87 | 09:45 | stop | -0.77 | -198.09 |
 | 2026-10-21 | short | 135 | 770.14 | 771.31 | 09:45 | stop | -0.61 | -159.16 |
 | 2026-10-20 | short | 136 | 765.43 | 766.00 | 09:35 | stop | -0.30 | -78.59 |
-| 2026-10-19 | long | 136 | 767.43 | 766.86 | 09:35 | stop | -0.30 | -78.63 |
 
 A real edge needs at least 60 trades and t above about 2. Costs: 1 bp slippage per side, US$0.005 per share (US$1 minimum) commission; no borrow fee on shorts.
