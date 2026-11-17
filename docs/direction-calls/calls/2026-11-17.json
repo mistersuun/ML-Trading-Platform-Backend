@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-17",
+ "target": "2026-11-18",
+ "made_at": "2026-11-17T22:49:48Z",
+ "method": "Judgment from tonight's daily bars, IBKR's NVDA earnings recap (Q3 FY2027: revenue $115.8B vs $108.8B est, EPS $2.68 vs $2.47, Q4 guide $130B, gross margin guide 71-72%), NVDA's after-hours quote (161.54 at about 22:48Z) and web searches (press coverage of the results; no futures coverage found). Night 1 scored 3 of 10 (momentum baseline 8 of 10).",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.57,
+   "reason": "NVDA beat and raised (Q3 rev $115.8B vs $108.8B est, Q4 guide $130B vs ~$125B) and trades +3.9% after hours; SPY bounced off its intraday low to close mid-range right at the 200-day average after three down days."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.59,
+   "reason": "Same catalyst, larger NVDA and semis weight; QQQ closed in the upper part of its range (62%) after -8.5% over 20 sessions."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "up",
+   "confidence": 0.58,
+   "reason": "Trading about 161.5 after hours vs a 155.46 close (+3.9%) on the beat and $130B guide. Risks: guided gross margin 71-72%, and after past beats the median next-day move was -2.2% (IBKR, 19 reports); the gap gives a cushion."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "Steady relative strength (-0.25% today, above its 20- and 200-day averages); a market relief day lifts it modestly."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "-5% in 5 sessions on AI-capex worries; NVDA's demand numbers support the AI spending story (Azure named as a Rubin partner); oversold bounce lean."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "Held flat today (+0.05%), closing in the upper part of its range; AWS is an NVDA customer; market relief lean."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "Down three of four sessions, near its 20- and 200-day averages; follows a Nasdaq relief day; no company news found."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "Flat today, closed in the upper part of its range; high beta to a Nasdaq bounce; near a coin flip."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "Persistent downtrend (-17.7% in 20 sessions) but only -1.2% today and Google Cloud named as a Rubin launch partner; relief lean, low confidence. Last night's down call was right, so the trend risk is real."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "Semis sympathy with NVDA after -14% in two sessions, closing in the upper part of today's range; IBKR's recap rates NVDA's ramp as a competitive negative for AMD, which caps confidence."
+  }
+ ]
+}
