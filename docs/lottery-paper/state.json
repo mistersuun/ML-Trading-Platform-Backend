@@ -1,26 +1,13 @@
 {
  "inception": "2026-11-13",
- "last_asof": "2026-11-16",
+ "last_asof": "2026-11-17",
  "bench": {
   "spy_start": 754.37
  },
  "accounts": {
   "Y1": {
    "cash": 627.7,
-   "positions": [
-    {
-     "contract_id": 941729849,
-     "label": "SPY 2026-11-17 743C",
-     "right": "C",
-     "strike": 743.0,
-     "expiry": "2026-11-17",
-     "qty": 1,
-     "entry": 2.43,
-     "entry_date": "2026-11-16",
-     "spy_entry": 739.95,
-     "cost": 243.65
-    }
-   ],
+   "positions": [],
    "trades": [
     {
      "contract_id": 941443223,
@@ -37,24 +24,40 @@
      "settle": 0.0,
      "spy_close": 739.95,
      "pnl": -128.65
+    },
+    {
+     "contract_id": 941729849,
+     "label": "SPY 2026-11-17 743C",
+     "right": "C",
+     "strike": 743.0,
+     "expiry": "2026-11-17",
+     "qty": 1,
+     "entry": 2.43,
+     "entry_date": "2026-11-16",
+     "spy_entry": 739.95,
+     "cost": 243.65,
+     "exit_date": "2026-11-17",
+     "settle": 0.0,
+     "spy_close": 732.44,
+     "pnl": -243.65
     }
    ],
    "busted": false
   },
   "Y2": {
-   "cash": 1648.0499999999952,
+   "cash": 1735.7499999999895,
    "positions": [
     {
-     "contract_id": 941730792,
-     "label": "SPY 2026-11-17 737P",
+     "contract_id": 941731984,
+     "label": "SPY 2026-11-18 730P",
      "right": "P",
-     "strike": 737.0,
-     "expiry": "2026-11-17",
+     "strike": 730.0,
+     "expiry": "2026-11-18",
      "qty": 1,
-     "entry": 2.56,
-     "entry_date": "2026-11-16",
-     "spy_entry": 739.95,
-     "cost": 256.65
+     "entry": 3.67,
+     "entry_date": "2026-11-17",
+     "spy_entry": 732.44,
+     "cost": 367.65
     }
    ],
    "trades": [
@@ -73,24 +76,40 @@
      "settle": 12.05,
      "spy_close": 739.95,
      "pnl": 904.7
+    },
+    {
+     "contract_id": 941730792,
+     "label": "SPY 2026-11-17 737P",
+     "right": "P",
+     "strike": 737.0,
+     "expiry": "2026-11-17",
+     "qty": 1,
+     "entry": 2.56,
+     "entry_date": "2026-11-16",
+     "spy_entry": 739.95,
+     "cost": 256.65,
+     "exit_date": "2026-11-17",
+     "settle": 4.56,
+     "spy_close": 732.44,
+     "pnl": 198.7
     }
    ],
    "busted": false
   },
   "Y3": {
-   "cash": 55.099999999981264,
+   "cash": 221.74999999988358,
    "positions": [
     {
-     "contract_id": 941730772,
-     "label": "SPY 2026-11-17 736P",
+     "contract_id": 942263471,
+     "label": "SPY 2026-11-18 728P",
      "right": "P",
-     "strike": 736.0,
-     "expiry": "2026-11-17",
-     "qty": 18,
-     "entry": 2.24,
-     "entry_date": "2026-11-16",
-     "spy_entry": 739.95,
-     "cost": 4043.7
+     "strike": 728.0,
+     "expiry": "2026-11-18",
+     "qty": 21,
+     "entry": 2.96,
+     "entry_date": "2026-11-17",
+     "spy_entry": 732.44,
+     "cost": 6229.65
     }
    ],
    "trades": [
@@ -109,6 +128,22 @@
      "settle": 10.05,
      "spy_close": 739.95,
      "pnl": 3098.8
+    },
+    {
+     "contract_id": 941730772,
+     "label": "SPY 2026-11-17 736P",
+     "right": "P",
+     "strike": 736.0,
+     "expiry": "2026-11-17",
+     "qty": 18,
+     "entry": 2.24,
+     "entry_date": "2026-11-16",
+     "spy_entry": 739.95,
+     "cost": 4043.7,
+     "exit_date": "2026-11-17",
+     "settle": 3.56,
+     "spy_close": 732.44,
+     "pnl": 2352.6
     }
    ],
    "busted": false
