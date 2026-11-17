@@ -413,3 +413,24 @@ well before the next open:
    the open.
 5. Run `scripts/direction_calls.py score` (it scores every call whose target close exists) and commit
    `docs/direction-calls/report.md` with the other files.
+
+## 15. Y5 Manager's book (owner request 2026-11-17; rules frozen in `docs/manager-book/PREREG.md`)
+
+Paper only. IBKR read-only. Every session, after the direction calls (section 14) and before midnight New York:
+
+1. `.venv/bin/python scripts/manager_book.py status` gives the cash, the open positions and tonight's size limits.
+2. **Research desk.** Launch the subagents in one message, each with the status output and tonight's bar summary.
+   They may use web search and IBKR `get_*`/`search_*` tools only, and they never write to the repo.
+   - Three scouts (`model: sonnet`): (a) news and calendar for the 10 names and the macro week; (b) price action
+     from `state/external_bars` (trend, momentum, volatility, levels); (c) options pricing: implied vs realized
+     volatility, implied moves, and real bid/ask for 2 to 4 candidate contracts per idea (1 to 45 days out).
+   - Two analysts (`model: opus`), after the scouts report: one builds the best case for at most 3 candidate
+     trades, one tries to refute each (red team).
+3. **The manager decides**: buy, sell, change a take-profit or stop, or no trade. Write
+   `docs/manager-book/decisions/<session>.json` with the research summary, each action and its thesis.
+4. Quotes file `docs/manager-book/quotes/<session>.json`: one `get_price_snapshot` (`bid_ask`) per open contract
+   and per contract to buy, extracted from the tool results and never retyped. For each open contract with a
+   take-profit order, also fetch its 5-minute bars for the session (`get_price_history`, `security_type="OPT"`) and
+   record the session high as `session_high`; if no bars come back, leave it null (the order did not fill).
+5. Run `scripts/manager_book.py step --decisions <file> --quotes <file>`, then commit and push
+   `docs/manager-book/` straight away (before the next open). Tell the owner when a trade opens or closes.
