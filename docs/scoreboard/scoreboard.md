@@ -1,6 +1,6 @@
-# Master scoreboard (data to 2026-11-16, built 2026-11-16)
+# Master scoreboard (data to 2026-11-17, built 2026-11-17)
 
-**Informational, not a look (2026-11-16).** Next look: 2026-12-31. Looks are fixed (2026-12-31, 2027-02-26, 2027-04-15); nothing below promotes an arm.
+**Informational, not a look (2026-11-17).** Next look: 2026-12-31. Looks are fixed (2026-12-31, 2027-02-26, 2027-04-15); nothing below promotes an arm.
 
 Paper only. Rules in `PREREG.md` (frozen 2026-11-12), ladder in `GRADUATION.md`. Daily excess return over each arm's pre-named benchmark, over the arm's own window. No arm's rules are ever changed by this page.
 
@@ -8,20 +8,20 @@ Paper only. Rules in `PREREG.md` (frozen 2026-11-12), ladder in `GRADUATION.md`.
 
 | Arm | Benchmark | Window | Days (gap) | Total | Bench | Excess |
 |---|---|---|---:|---:|---:|---:|
-| ORB QQQ (`dt_qqq`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-16 | 23 (0) | +7.41% | -7.90% | +15.30% |
-| ORB SPY (`dt_spy`) | SPY buy-and-hold | 2026-10-14 to 2026-11-16 | 23 (0) | +20.39% | -3.42% | +23.81% |
-| Gap-and-go (`gapgo`) | SPY | 2026-10-16 to 2026-11-16 | 21 (0) | +4.77% | -3.05% | +7.82% |
+| ORB QQQ (`dt_qqq`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-17 | 24 (0) | +6.30% | -8.56% | +14.87% |
+| ORB SPY (`dt_spy`) | SPY buy-and-hold | 2026-10-14 to 2026-11-17 | 24 (0) | +19.49% | -4.42% | +23.91% |
+| Gap-and-go (`gapgo`) | SPY | 2026-10-16 to 2026-11-17 | 22 (0) | +3.65% | -4.04% | +7.68% |
 | Quant: trend following (`q_trend`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -2.74% | -3.85% | +1.12% |
 | Quant: cross-sectional momentum (`q_momentum`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -5.43% | -3.85% | -1.58% |
 | Quant: low volatility (`q_lowvol`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | +9.64% | -3.85% | +13.49% |
 | Quant: 52-week-high proximity (`q_high52`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -0.70% | -3.85% | +3.15% |
 | Quant: RSI-2 mean reversion (`q_rsi2`) | SPY | 2026-10-14 to 2026-11-16 | 23 (0) | -0.38% | -3.85% | +3.47% |
-| Aggressive: 3x Nasdaq trend (`ag_lev_trend`) | SPY | 2026-10-15 to 2026-11-16 | 22 (0) | -31.24% | -4.13% | -27.11% |
-| Aggressive: all-in top momentum stock (`ag_top1_mom`) | SPY | 2026-10-15 to 2026-11-16 | 22 (0) | -7.93% | -4.13% | -3.80% |
-| Options Book L ($500 lottery) (`opt_L`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-16 | 22 (1) | -39.72% | -9.22% | -30.50% |
-| Options Book P (SPY put writer) (`opt_P`) | SPY buy-and-hold | 2026-10-14 to 2026-11-16 | 22 (1) | +0.46% | -3.85% | +4.31% |
-| Options Book M ($1,000 momentum calls) (`opt_M`) | QQQ buy-and-hold | 2026-10-16 to 2026-11-16 | 20 (1) | -69.19% | -6.77% | -62.42% |
-| Forward-test pipeline account (cash; 1-share plumbing test) (`ft_account`) | SPY | 2026-10-05 to 2026-11-16 | 30 (0) | -0.00% | -4.50% | +4.50% |
+| Aggressive: 3x Nasdaq trend (`ag_lev_trend`) | SPY | 2026-10-15 to 2026-11-17 | 23 (0) | -31.25% | -5.10% | -26.15% |
+| Aggressive: all-in top momentum stock (`ag_top1_mom`) | SPY | 2026-10-15 to 2026-11-17 | 23 (0) | -8.09% | -5.10% | -2.99% |
+| Options Book L ($500 lottery) (`opt_L`) | QQQ buy-and-hold | 2026-10-14 to 2026-11-17 | 23 (1) | -39.72% | -9.88% | -29.84% |
+| Options Book P (SPY put writer) (`opt_P`) | SPY buy-and-hold | 2026-10-14 to 2026-11-17 | 23 (1) | +0.15% | -4.83% | +4.98% |
+| Options Book M ($1,000 momentum calls) (`opt_M`) | QQQ buy-and-hold | 2026-10-16 to 2026-11-17 | 21 (1) | -69.19% | -7.45% | -61.74% |
+| Forward-test pipeline account (cash; 1-share plumbing test) (`ft_account`) | SPY | 2026-10-05 to 2026-11-17 | 31 (0) | -0.00% | -5.47% | +5.47% |
 | Altimeter basket (`inv_altimeter`) | SPY | 2026-10-12 to 2026-11-16 | 25 (0) | -27.70% | -4.90% | -22.80% |
 | Appaloosa basket (`inv_appaloosa`) | SPY | 2026-10-06 to 2026-11-16 | 29 (0) | -14.85% | -5.02% | -9.83% |
 | Berkshire basket (`inv_berkshire`) | SPY | 2026-10-06 to 2026-11-16 | 29 (0) | +1.97% | -5.02% | +6.99% |
@@ -46,20 +46,20 @@ Gap = a return taken between journal dates that are not consecutive sessions (a 
 
 | Arm | Mean excess/day | 95% CI (block bootstrap) | Ex-top-2 mean | Ex-top-2 CI | Beta | Alpha/day | NW t | Eff. days | Top-2 days' share of P&L |
 |---|---:|---|---:|---|---:|---:|---:|---:|---:|
-| `dt_qqq` | +67.1 | [-19.9, +165.3] | -28.7 | [-150.5, +100.3] | -0.32 | +23.1 | 0.70 | 23.0 | 168% |
-| `dt_spy` | +97.5 | [+10.6, +192.5] | +19.3 | [-77.1, +133.5] | -0.96 | +69.8 | 2.12 | 23.0 | 64% |
-| `gapgo` | +36.5 | [-4.0, +83.7] | -3.3 | [-72.6, +68.7] | 0.09 | +24.0 | 1.15 | 17.8 | 128% |
+| `dt_qqq` | +63.0 | [-16.4, +145.4] | -28.7 | [-145.1, +95.3] | -0.31 | +17.1 | 0.54 | 24.0 | 198% |
+| `dt_spy` | +94.7 | [+15.2, +179.7] | +19.7 | [-72.5, +129.5] | -0.91 | +60.5 | 1.91 | 24.0 | 67% |
+| `gapgo` | +34.6 | [-5.1, +81.3] | -3.4 | [-69.8, +65.0] | 0.12 | +19.0 | 0.88 | 19.1 | 167% |
 | `q_trend` | +4.2 | [-19.0, +24.4] | -15.4 | [-58.2, +30.1] | 0.30 | -7.1 | -1.46 | 23.0 | n/a |
 | `q_momentum` | -5.7 | [-56.7, +46.3] | -25.7 | [-107.5, +47.7] | 1.34 | -0.3 | -0.01 | 23.0 | n/a |
 | `q_lowvol` | +57.0 | [+8.4, +105.4] | +21.6 | [-81.3, +133.4] | 0.01 | +41.1 | 2.48 | 23.0 | 65% |
 | `q_high52` | +13.6 | [-20.7, +46.6] | -11.9 | [-98.0, +79.1] | 0.21 | +0.9 | 0.06 | 23.0 | n/a |
 | `q_rsi2` | +14.7 | [-12.4, +41.2] | -6.4 | [-44.4, +31.3] | 0.34 | +4.0 | 0.92 | 23.0 | n/a |
-| `ag_lev_trend` | -133.7 | [-266.8, -14.0] | -185.4 | [-491.5, +90.9] | 3.41 | -89.8 | -1.94 | 22.0 | n/a |
-| `ag_top1_mom` | +7.1 | [-224.2, +262.5] | -100.3 | [-488.5, +249.4] | 4.37 | +68.4 | 0.90 | 18.7 | n/a |
-| `opt_L` | -166.6 | [-468.2, +67.2] | -273.6 | [-749.3, +97.6] | -1.28 | -262.0 | -2.15 | 12.4 | n/a |
-| `opt_P` | +19.1 | [-5.2, +45.4] | -7.5 | [-54.7, +38.8] | 0.11 | +4.0 | 1.46 | 22.0 | 186% |
-| `opt_M` | -423.8 | [-833.1, -54.8] | -676.9 | [-1446.6, +26.0] | 3.43 | -343.8 | -1.59 | 20.0 | n/a |
-| `ft_account` | +14.6 | [-10.7, +38.1] | -6.9 | [-54.5, +42.0] | 0.00 | -0.0 | -0.27 | 30.0 | n/a |
+| `ag_lev_trend` | -123.5 | [-257.2, -4.0] | -171.8 | [-466.6, +97.2] | 3.33 | -72.7 | -1.41 | 23.0 | n/a |
+| `ag_top1_mom` | +10.5 | [-210.9, +258.2] | -91.5 | [-464.0, +237.5] | 4.30 | +82.4 | 1.10 | 19.7 | n/a |
+| `opt_L` | -156.2 | [-445.5, +73.6] | -257.1 | [-710.2, +97.2] | -1.29 | -254.9 | -2.12 | 12.7 | n/a |
+| `opt_P` | +21.3 | [-4.7, +48.0] | -3.7 | [-51.0, +43.3] | 0.11 | +3.1 | 1.07 | 23.0 | 543% |
+| `opt_M` | -400.2 | [-834.0, -19.6] | -637.4 | [-1399.6, +50.9] | 3.41 | -316.5 | -1.66 | 21.0 | n/a |
+| `ft_account` | +17.4 | [-9.2, +42.6] | -3.2 | [-52.1, +46.8] | 0.00 | -0.0 | -0.22 | 31.0 | n/a |
 | `inv_altimeter` | -103.0 | [-184.1, -22.0] | -149.5 | [-318.6, +19.3] | 2.03 | -83.1 | -2.49 | 25.0 | n/a |
 | `inv_appaloosa` | -35.2 | [-73.2, +9.8] | -52.1 | [-146.7, +42.9] | 1.77 | -22.1 | -1.51 | 29.0 | n/a |
 | `inv_berkshire` | +24.2 | [-5.0, +50.7] | +9.6 | [-42.2, +62.9] | 0.53 | +16.3 | 1.43 | 29.0 | 246% |
@@ -84,16 +84,16 @@ Holm across clusters, alpha 0.05 / 3 = 0.0167 per look. Size = independent days 
 
 | Arm | Holm-adj p (cluster) | p < alpha | Ex-top-2 CI > 0 | Size | Size ok | All three today (informational) |
 |---|---:|:---:|:---:|---:|:---:|:---:|
-| `dt_qqq` | 0.225 | no | no | 23 trade(s) | no | no |
-| `dt_spy` | 0.225 | no | no | 23 trade(s) | no | no |
-| `gapgo` | 0.238 | no | no | 14 trade(s) | no | no |
+| `dt_qqq` | 0.171 | no | no | 24 trade(s) | no | no |
+| `dt_spy` | 0.171 | no | no | 24 trade(s) | no | no |
+| `gapgo` | 0.275 | no | no | 15 trade(s) | no | no |
 | `q_trend` | 0.171 | no | no | 23.0 days | no | no |
 | `q_momentum` | 0.171 | no | no | 23.0 days | no | no |
 | `q_lowvol` | 0.171 | no | no | 23.0 days | no | no |
 | `q_high52` | 0.675 | no | no | 23.0 days | no | no |
 | `q_rsi2` | 0.171 | no | no | 23.0 days | no | no |
-| `ag_lev_trend` | 0.171 | no | no | 22.0 days | no | no |
-| `ag_top1_mom` | 0.171 | no | no | 18.7 days | no | no |
+| `ag_lev_trend` | 0.171 | no | no | 23.0 days | no | no |
+| `ag_top1_mom` | 0.171 | no | no | 19.7 days | no | no |
 | `opt_L` | 1.000 | no | no | 2 trade(s) | no | no |
 | `opt_P` | 0.171 | no | no | 2 trade(s) | no | no |
 | `opt_M` | 1.000 | no | no | 3 trade(s) | no | no |
