@@ -1,0 +1,16 @@
+{
+ "asof": "2026-11-17",
+ "made_at": "2026-11-17T22:57:01Z",
+ "decision": "No trade tonight.",
+ "research": {
+  "news_scout": "NVDA beat and raised (rev $115.8B vs $108.8B est; Q4 guide $130B vs ~$125B; gross margin guided 71-72%), about +3.9% after hours. Reasons for the 11-16/11-17 selloff not found; context is an AI-capex and rates scare. FOMC minutes Wed 11-18 2pm ET; Target and Lowe's report Wed, Walmart Thu; monthly expiry Fri 11-20.",
+  "price_scout": "Bounce base rates are positive but small: SPY after 3 down closes (n=123) next day +0.39% (63% up), next 5 days +0.91% (67% up); QQQ after a 20-session drop of 8%+ next 5 days +1.26% (72% up over 18 episodes). No clean put setup. Edges are small next to typical moves (SPY 5-day typical move 1.4%).",
+  "options_scout": "Index options are expensive: SPY implied vol 20.2% vs 14.0% realized (93rd-99th percentile), QQQ 28.4% vs 24.0%. NVDA implied vol 65.7% will drop at the open and its spreads are unusable. Only 3 quoted contracts fit the US$300 single-contract cap: SPY 750C 11-24 at 2.39 (needs +2.7%), SPY 765C 12-11 at 2.85 (needs +4.8%), QQQ 716C 12-11 at 2.13 (needs +9.3%).",
+  "analyst_best_case": "Verdict: no index trade. A normal SPY bounce (+1.4% in 5 days) leaves the 750C worth about 1.50 against 2.39 paid; expected value about -45%. Rank 1 was one AMD 12-04 call 7-10% out of the money, only if its ask was at most 2.50 (AMD implied vol is below realized). Rank 2, a GOOGL call, had expected value about zero (pass).",
+  "manager_check": "Quoted the AMD 12-04 calls: 540C 18.00/25.95, 555C 12.20/21.00, 580C 5.85/14.65. Each costs US$1,465 to US$2,595, five to nine times the cap, with one-lot markets. The analyst's entry test fails.",
+  "red_team": "Not run: no candidate survived its own entry test, so there was nothing to refute."
+ },
+ "reasoning": "The only affordable contracts need a 2.7% to 9% move within days, and index options are priced at the top of their yearly range, so a normal bounce still loses money. A US$1,000 account with a US$300 cap can only buy far out-of-the-money options tonight. Waiting costs nothing.",
+ "watch": "If SPY closes above about 738 on Wednesday after the FOMC minutes and index implied volatility has fallen, re-quote SPY and QQQ calls 1 to 3 weeks out. Also quote GOOGL calls (implied vol below realized) before ruling them out.",
+ "actions": []
+}
