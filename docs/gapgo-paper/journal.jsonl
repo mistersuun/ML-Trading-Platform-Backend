@@ -20,3 +20,4 @@
 {"date": "2026-11-12", "candidates": [], "pnl": 0}
 {"date": "2026-11-13", "candidates": [{"symbol": "CBRS", "gap": 0.112, "prev_close": 97.75, "adv_shares": 7178810.25, "adv_dollar": 758679987, "result": {"trade": false, "reason": "no breakout above the first bar's high by 10:30"}}], "pnl": 0}
 {"date": "2026-11-16", "candidates": [], "pnl": 0}
+{"date": "2026-11-17", "candidates": [{"symbol": "NKE", "gap": 0.0507, "prev_close": 38.26, "adv_shares": 14992790.55, "adv_dollar": 577667967, "result": {"trade": true, "shares": 58, "entry": 40.5405, "entry_time": "09:35", "stop": 39.65, "target": 42.3215, "exits": [{"shares": 58, "price": 39.6103, "why": "stop", "time": "09:35"}], "r": -1.068, "pnl": -55.95, "fees": 2.0}}], "pnl": -55.95}

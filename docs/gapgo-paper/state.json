@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-11-16",
-  "equity": 5238.35,
+  "last_date": "2026-11-17",
+  "equity": 5182.4,
   "trades": [
     {
       "date": "2026-10-26",
@@ -327,6 +327,28 @@
       ],
       "r": -0.757,
       "pnl": -39.8,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-17",
+      "symbol": "NKE",
+      "gap": 0.0507,
+      "trade": true,
+      "shares": 58,
+      "entry": 40.5405,
+      "entry_time": "09:35",
+      "stop": 39.65,
+      "target": 42.3215,
+      "exits": [
+        {
+          "shares": 58,
+          "price": 39.6103,
+          "why": "stop",
+          "time": "09:35"
+        }
+      ],
+      "r": -1.068,
+      "pnl": -55.95,
       "fees": 2.0
     }
   ]
