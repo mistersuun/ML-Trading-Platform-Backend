@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-11-17)
+# Gap-and-go day-trading paper account (as of 2026-11-18)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,182.40** (+3.65%).
 
@@ -24,6 +24,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-18** P&L +0.00. no gap candidates
 - **2026-11-17** P&L -55.95. NKE +5.1% (trade)
 - **2026-11-16** P&L +0.00. no gap candidates
 - **2026-11-13** P&L +0.00. CBRS +11.2% (no breakout above the first bar's high by 10:30)
@@ -38,6 +39,5 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 - **2026-11-02** P&L -8.66. MAR +6.4% (first 5-minute bar not green), RIVN +4.9% (trade), UAL +4.5% (trade), BABA +4.0% (daily trade limit reached)
 - **2026-10-30** P&L +0.00. RIVN +5.7% (first 5-minute bar not green)
 - **2026-10-29** P&L +49.20. CROX +17.0% (trade), CVNA +10.5% (trade), DASH +5.3% (daily trade limit reached)
-- **2026-10-28** P&L +0.00. no gap candidates
 
 Costs: 10 bp slippage per side, US$0.005 per share (US$1 minimum). The scan uses a fixed universe of about 130 liquid US stocks, not a full-market scanner, so it misses small-cap gappers.
