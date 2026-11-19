@@ -1,11 +1,13 @@
-# Gap-and-go day-trading paper account (as of 2026-11-18)
+# Gap-and-go day-trading paper account (as of 2026-11-19)
 
-Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,182.40** (+3.65%).
+Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,138.24** (+2.76%).
 
-15 trades, win rate 60%, mean +0.25R (t = 0.88), total P&L +182.40, max drawdown -1.8%
+17 trades, win rate 59%, mean +0.17R (t = 0.65), total P&L +138.24, max drawdown -2.7%
 
 | Date | Stock | Gap | Entry | Exits | R | P&L |
 |---|---|---:|---:|---|---:|---:|
+| 2026-11-19 | HOOD | +5.2% | 30 @ 73.83 09:35 | 30 @ 72.05 stop 10:15 | -1.07 | -55.58 |
+| 2026-11-19 | PDD | +6.4% | 16 @ 85.08 09:35 | 16 @ 85.92 close 15:55 | +0.22 | +11.42 |
 | 2026-11-17 | NKE | +5.1% | 58 @ 40.54 09:35 | 58 @ 39.61 stop 09:35 | -1.07 | -55.95 |
 | 2026-11-11 | ORCL | +5.3% | 20 @ 125.92 09:35 | 20 @ 124.03 stop 09:50 | -0.76 | -39.80 |
 | 2026-11-11 | DELL | +7.8% | 5 @ 368.73 10:05 | 5 @ 373.36 close 15:55 | +0.40 | +21.14 |
@@ -24,6 +26,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-19** P&L -44.16. ASTS +8.4% (no breakout above the first bar's high by 10:30), PDD +6.4% (trade), WDC +6.3% (first 5-minute bar not green), RIOT +6.3% (no breakout above the first bar's high by 10:30), STX +6.2% (opening volume 129,942 below 5% of average daily volume), HOOD +5.2% (trade), INTC +5.2% (daily trade limit reached), MU +4.9% (5-minute bars missing), DELL +4.7% (5-minute bars missing), LRCX +4.7% (5-minute bars missing), DDOG +4.7% (5-minute bars missing), PANW +4.7% (5-minute bars missing), MARA +4.6% (5-minute bars missing), MDB +4.6% (5-minute bars missing), CRWV +4.6% (5-minute bars missing), AMAT +4.4% (5-minute bars missing), KLAC +4.4% (5-minute bars missing), GOOGL +4.2% (5-minute bars missing), NET +4.2% (5-minute bars missing), ARM +4.1% (5-minute bars missing), GOOG +4.1% (5-minute bars missing), RKLB +4.0% (5-minute bars missing)
 - **2026-11-18** P&L +0.00. no gap candidates
 - **2026-11-17** P&L -55.95. NKE +5.1% (trade)
 - **2026-11-16** P&L +0.00. no gap candidates
@@ -38,6 +41,5 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 - **2026-11-03** P&L +0.00. JD +4.2% (first 5-minute bar not green)
 - **2026-11-02** P&L -8.66. MAR +6.4% (first 5-minute bar not green), RIVN +4.9% (trade), UAL +4.5% (trade), BABA +4.0% (daily trade limit reached)
 - **2026-10-30** P&L +0.00. RIVN +5.7% (first 5-minute bar not green)
-- **2026-10-29** P&L +49.20. CROX +17.0% (trade), CVNA +10.5% (trade), DASH +5.3% (daily trade limit reached)
 
 Costs: 10 bp slippage per side, US$0.005 per share (US$1 minimum). The scan uses a fixed universe of about 130 liquid US stocks, not a full-market scanner, so it misses small-cap gappers.

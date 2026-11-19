@@ -1,7 +1,7 @@
 {
   "inception": "2026-10-16",
-  "last_date": "2026-11-18",
-  "equity": 5182.4,
+  "last_date": "2026-11-19",
+  "equity": 5138.24,
   "trades": [
     {
       "date": "2026-10-26",
@@ -349,6 +349,50 @@
       ],
       "r": -1.068,
       "pnl": -55.95,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-19",
+      "symbol": "PDD",
+      "gap": 0.0644,
+      "trade": true,
+      "shares": 16,
+      "entry": 85.085,
+      "entry_time": "09:35",
+      "stop": 82.02,
+      "target": 91.215,
+      "exits": [
+        {
+          "shares": 16,
+          "price": 85.924,
+          "why": "close",
+          "time": "15:55"
+        }
+      ],
+      "r": 0.22,
+      "pnl": 11.42,
+      "fees": 2.0
+    },
+    {
+      "date": "2026-11-19",
+      "symbol": "HOOD",
+      "gap": 0.0522,
+      "trade": true,
+      "shares": 30,
+      "entry": 73.8338,
+      "entry_time": "09:35",
+      "stop": 72.12,
+      "target": 77.2613,
+      "exits": [
+        {
+          "shares": 30,
+          "price": 72.0479,
+          "why": "stop",
+          "time": "10:15"
+        }
+      ],
+      "r": -1.072,
+      "pnl": -55.58,
       "fees": 2.0
     }
   ]
