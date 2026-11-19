@@ -1,12 +1,12 @@
-# Options paper test (as of 2026-11-18)
+# Options paper test (as of 2026-11-19)
 
 Paper only, rules in `PREREG.md` (frozen 2026-10-15). Inception 2026-10-14. Fills at ask/bid plus US$0.65 per contract; positions marked at mid. Not advice.
 
 | Book | Start | Equity | Return | Benchmark | Bench value | Open | Closed |
 |---|---:|---:|---:|---|---:|---:|---:|
-| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $301.40 | -39.72% | QQQ buy-and-hold | $452.37 | 0 | 2 |
-| Book P: SPY cash-secured put writer | $100,000 | $100,164.25 | +0.16% | SPY buy-and-hold | $94,880.46 | 1 | 2 |
-| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $299.95 | -70.01% | QQQ buy-and-hold | $929.15 | 1 | 3 |
+| Book L: $500 lottery (buys calls/puts on QQQ/SPY) | $500 | $301.40 | -39.72% | QQQ buy-and-hold | $442.44 | 0 | 2 |
+| Book P: SPY cash-secured put writer | $100,000 | $99,517.75 | -0.48% | SPY buy-and-hold | $93,018.45 | 1 | 2 |
+| Book M: $1,000 momentum calls (aggressive group, from 2026-10-16) | $1,000 | $293.30 | -70.67% | QQQ buy-and-hold | $908.76 | 2 | 3 |
 
 ## Book L: $500 lottery (buys calls/puts on QQQ/SPY)
 
@@ -25,7 +25,7 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| SPY 2026-12-18 715P | 1 | short | 5.95 | 2026-11-09 | 11.41 |
+| SPY 2026-12-18 715P | 1 | short | 5.95 | 2026-11-09 | 17.88 |
 
 Closed trades: 2, win rate 100%, total P&L +711.40, average win +355.70
 
@@ -40,7 +40,8 @@ Open:
 
 | Contract | Qty | Side | Entry | Entry date | Mark |
 |---|---:|---|---:|---|---:|
-| CSCO 2027-02-19 120C | 1 | long | 1.15 | 2026-11-18 | 1.07 |
+| CSCO 2027-02-19 120C | 1 | long | 1.15 | 2026-11-18 | 1.09 |
+| XOM 2027-02-19 195C | 1 | long | 0.86 | 2026-11-19 | 0.79 |
 
 Closed trades: 3, win rate 0%, total P&L -691.90, average loss -230.63
 
@@ -52,6 +53,7 @@ Closed trades: 3, win rate 0%, total P&L -691.90, average loss -230.63
 
 ## Session log
 
+- **2026-11-19** L $301.40, P $99,517.75, M $293.30. L: QQQ put signal; no contract fits the US$90.42 budget; L: SPY put signal; no contract fits the US$90.42 budget; M: buy XOM 2027-02-19 195C x1 at 0.86 (delta 0.08712651900004852)
 - **2026-11-18** L $301.40, P $100,164.25, M $299.95. L: SPY put signal; no contract fits the US$90.42 budget; M: buy CSCO 2027-02-19 120C x1 at 1.15 (delta 0.14071134743236946)
 - **2026-11-17** L $301.40, P $100,154.75, M $308.10. L: SPY put signal; no contract fits the US$90.42 budget; M: no affordable call on AMD, MRK, XOM, CVX, CSCO within US$154.05
 - **2026-11-16** L $301.40, P $100,458.25, M $308.10. M: close MRK 2027-01-15 160C x1 at 1.79 (stop (-60%)), P&L -272.30; M: no affordable call on AMD, MRK, XOM, CVX, CSCO within US$154.05
@@ -66,6 +68,5 @@ Closed trades: 3, win rate 0%, total P&L -691.90, average loss -230.63
 - **2026-11-02** L $376.05, P $99,787.85, M $856.70. L: QQQ put signal; no contract fits the US$112.81 budget
 - **2026-10-30** L $365.55, P $99,903.85, M $977.20. L: QQQ put signal; no contract fits the US$109.67 budget
 - **2026-10-29** L $334.05, P $100,139.35, M $943.70. no action
-- **2026-10-28** L $329.55, P $100,205.85, M $914.70. L: close QQQ 2026-11-20 570P x1 at 0.43 (stop (-60%)), P&L -93.30
 
 Caveats: closing quotes are used for both decision and fill; Book P's collateral earns nothing here (a real account would earn about the T-bill rate); no early assignment or dividends are modelled. Fewer than 30 closed trades per book is an illustration, not evidence.
