@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-19",
+ "target": "2026-11-20",
+ "made_at": "2026-11-19T22:49:33Z",
+ "method": "Tonight the calls lean on computed base rates rather than a narrative: next-day results after large down days that close at the low (SPY 49% up, QQQ 55%, 8 mega-caps 56%). Press coverage via search: S&P 500 about -2.0%, Nasdaq -2.25%, Dow below 50,000; Anthropic rose about 17% on its debut but the AI trade sold off. Record so far: 12 of 30 (night 3: 2 of 10); momentum baseline 16 of 30.",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.5,
+   "reason": "-2.0% closing at the day's low, a new 20-day low and 2.3% below the 200-day average. Over 5 years, SPY days down 1.5%+ that closed at the low were followed by an up day 49% of the time (n=49): a coin flip, called up only because a direction is required."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "-2.2% at the low; the same setup for QQQ was followed by an up day 55% of the time (n=47). Friday is monthly options expiry."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-3.3% to a new 20-day low (145.98); now -6.1% from its pre-earnings close, already past the median post-beat drift in IBKR's history (about -5%). Stocks down 3%+ closing at the low rose next day 56% of the time (8 names, n=378)."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "Only -0.9% on a -2% market day and still above its 20-day average; relative strength."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-2.0% closing at the exact low, near its 20-day low (496.51); coin flip with a slight oversold lean."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "-3.9% closing at the low after +3.8% yesterday; the pooled base rate for that setup is 56% up next day."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "-3.3% closing at the low, fifth down close in a row; same pooled base rate (56% up)."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-2.4% with the market, closed in the lower part of its range; near a coin flip."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "-3.5% at the low to a new 20-day low; press reports tie the drop to Anthropic's debut putting a value on Google's stake while AI stocks sold off; pooled base rate 56% up, tempered by a steep downtrend."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-7.7% after +5.3%; extreme volatility (about 125% realized) makes either direction easy; slight bounce lean."
+  }
+ ]
+}
