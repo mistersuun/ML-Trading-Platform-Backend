@@ -1,0 +1,14 @@
+{
+ "cash": 1000.0,
+ "position": null,
+ "trades": [],
+ "day": {
+  "date": "2026-11-20",
+  "entries": 0,
+  "stopped": false
+ },
+ "status": "live",
+ "last_ts": "2026-11-20T10:05",
+ "inception": "2026-11-20T10:05",
+ "spy_start": 715.84
+}

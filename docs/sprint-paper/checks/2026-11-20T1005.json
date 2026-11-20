@@ -1,0 +1,4 @@
+{"ts": "2026-11-20T10:05", "final": false,
+ "source": "IBKR get_price_snapshot SPY at 10:05:42 New York (last 715.84, open 713.66); prior close 715.87 from a second snapshot seconds later (the first returned it empty)",
+ "spy": {"last": 715.84, "open": 713.66, "prior_close": 715.87},
+ "quotes": []}
