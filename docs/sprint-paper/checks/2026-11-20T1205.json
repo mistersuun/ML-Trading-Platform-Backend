@@ -1,0 +1,4 @@
+{"ts": "2026-11-20T12:05", "asof": "11:49:58", "final": false,
+ "source": "IBKR, option quote 15 minutes delayed (top_status DELAYED): SPY 704 put snapshot requested 12:05:58 New York, last-trade time 11:49:58 (ts 1795193398). spy.last is the close of SPY's 1-minute bar 11:49 (702.39). Open 713.66 from the 12:05 SPY snapshot; prior close 715.87 from the 10:05 snapshot (empty again). Real-time SPY at 12:05:58 was 701.64 and is not used.",
+ "spy": {"last": 702.39, "open": 713.66, "prior_close": 715.87},
+ "quotes": [{"contract_id": 927881262, "right": "P", "strike": 704, "expiry": "2026-11-20", "bid": 4.03, "ask": 4.06}]}

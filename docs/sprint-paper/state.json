@@ -11,7 +11,7 @@
   "entry_asof": "10:52:59",
   "cost": 423.3,
   "spy_entry": 707.8,
-  "mark": 2.09
+  "mark": 4.03
  },
  "trades": [],
  "day": {
@@ -20,7 +20,7 @@
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-20T11:05",
+ "last_ts": "2026-11-20T12:05",
  "inception": "2026-11-20T10:05",
  "spy_start": 715.84
 }
