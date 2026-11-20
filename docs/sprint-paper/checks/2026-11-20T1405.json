@@ -1,0 +1,4 @@
+{"ts": "2026-11-20T14:05", "asof": "13:51:59", "final": false,
+ "source": "IBKR. No open position. spy.last is the close of SPY's 1-minute bar 13:51 (700.62), about 15 minutes before the check at 14:05:56 New York. The entry rule holds and gives strike 697 (696 to 698 for any bar from 13:47 to 13:53), but today's chain lists only 690, 695 and 700 to 704 (get_option_data 688-704), so no put was quoted and there is no entry (the unlisted-strike amendment starts 2026-11-23). Open 713.66 from the 14:05 SPY snapshot; prior close 715.87 from the 10:05 snapshot.",
+ "spy": {"last": 700.62, "open": 713.66, "prior_close": 715.87},
+ "quotes": []}

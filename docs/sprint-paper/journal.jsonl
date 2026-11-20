@@ -2,3 +2,4 @@
 {"ts": "2026-11-20T11:05", "asof": "10:52:59", "final": false, "spy": 707.8, "events": ["buy SPY 2026-11-20 704P x2 at 2.11 (US$423.30), SPY 707.80"], "equity": 994.7, "cash": 576.7, "status": "live", "bench_value": 988.77}
 {"ts": "2026-11-20T12:05", "asof": "11:49:58", "final": false, "spy": 702.39, "events": ["hold SPY 2026-11-20 704P x2: bid 4.03 vs entry 2.11"], "equity": 1382.7, "cash": 576.7, "status": "live", "bench_value": 981.21}
 {"ts": "2026-11-20T13:05", "asof": "12:50:55", "final": false, "spy": 700.58, "events": ["sell SPY 2026-11-20 704P x2 at 4.88 (take profit): P&L +551.40", "no entry: no ask for SPY 2026-11-20 697P"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 978.68}
+{"ts": "2026-11-20T14:05", "asof": "13:51:59", "final": false, "spy": 700.62, "events": ["no entry: no ask for SPY 2026-11-20 697P"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 978.74}
