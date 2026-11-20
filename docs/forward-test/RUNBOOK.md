@@ -434,3 +434,22 @@ Paper only. IBKR read-only. Every session, after the direction calls (section 14
    record the session high as `session_high`; if no bars come back, leave it null (the order did not fill).
 5. Run `scripts/manager_book.py step --decisions <file> --quotes <file>`, then commit and push
    `docs/manager-book/` straight away (before the next open). Tell the owner when a trade opens or closes.
+
+## 16. Y6 Put sprint: intraday checks (owner request 2026-11-20; rules frozen in `docs/sprint-paper/PREREG.md`)
+
+Paper only. Runs at 10:05, 11:05, 12:05, 13:05, 14:05, 15:05 (regular) and 15:50 (final) New York time, from its own
+scheduled tasks. On a half day the 12:05 check is the final one. A check that cannot run is skipped, never back-filled.
+
+1. SPY snapshot (`get_price_snapshot` 756733 with `last`, `open`, `prior_close`, `bid_ask`). Use the last price; if it
+   is empty use the bid/ask midpoint.
+2. `.venv/bin/python scripts/sprint_paper.py plan --spot S --open O --prev-close C --ts YYYY-MM-DDTHH:MM [--final]`.
+   It prints the open position's contract and the wanted strike.
+3. Quotes: the open position's contract (`bid_ask`), and when `entry_possible_now` or `entry_possible_after_an_exit`
+   is true, today's SPY put at the wanted strike (`get_option_data` with expiry id
+   `756733@SMART/OPT/SMART/YYYYMMDD/SPY/0`, or `/1` on a monthly expiry, then `get_price_snapshot` on the put). Retry an
+   empty quote once.
+4. Write `docs/sprint-paper/checks/<date>T<HHMM>.json` with the script's check format, copying numbers from the tool
+   results, then `sprint_paper.py check <file>`.
+5. Commit `docs/sprint-paper/` and push. Message the owner only on a trade (buy or sell), a bust, or the target.
+
+The nightly run only reports Y6's equity; it never steps it.
