@@ -92,3 +92,18 @@ def test_target_stops_the_account():
     sp.check(st, _snap("10:05", DOWN, [_q(1, 0.95, 1.00)]))
     row = sp.check(st, _snap("11:05", DOWN, [_q(1, 1.80, 1.90)]))
     assert row["status"] == "target" and st["position"] is None
+
+
+def test_unlisted_strike_uses_nearest_listed_below_within_one_percent_from_the_effective_date():
+    day = "2026-11-23"
+    spy = {"last": 700.58, "open": 713.0, "prior_close": 715.0}          # rule strike 697, not listed
+    st = sp.new_state()
+    sp.check(st, _snap("10:05", spy, [_q(1, 1.0, 1.1, strike=695.0, expiry=day)], date=day))
+    assert st["position"]["strike"] == 695.0 and st["position"]["label"].endswith("695P")
+    st2 = sp.new_state()
+    row = sp.check(st2, _snap("10:05", spy, [_q(1, 1.0, 1.1, strike=690.0, expiry=day)], date=day))
+    assert st2["position"] is None and "no ask" in row["events"][0]      # 690 is more than 1% below
+    st3 = sp.new_state()
+    old = "2026-11-20"
+    sp.check(st3, _snap("10:05", spy, [_q(1, 1.0, 1.1, strike=695.0, expiry=old)], date=old))
+    assert st3["position"] is None                                       # before the effective date: no entry

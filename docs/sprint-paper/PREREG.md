@@ -91,3 +91,12 @@ So the account acts on what was true at about 09:50, 10:50, 11:50, 12:50, 13:50,
 15:35. Nothing else changes.
 
 **Not back-filled.** The 10:05 check was done with the real-time price and found no entry; it stands as recorded.
+
+## Amendment 2, written 2026-11-20 13:15 New York, effective from the 2026-11-23 session
+
+**What was found.** At the 13:05 check the rule's strike (697) was not listed: after the morning's fall, today's
+chain had only 695 and 700 below 701. The script needs the exact strike, so there was no re-entry. That stands for
+the rest of 2026-11-20.
+
+**The change, from 2026-11-23.** When the rule's strike is not listed, the nearest listed strike below it is used,
+provided it is no more than 1% below SPY at the quote time. Otherwise there is no entry.

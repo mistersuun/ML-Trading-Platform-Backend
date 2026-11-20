@@ -24,6 +24,7 @@ OUT = ROOT / "docs" / "sprint-paper"
 START, TARGET, BUST = 1_000.0, 200_000.0, 100.0
 OTM, STAKE, ONE_MAX, TP, STOP, COMMISSION = 0.005, 0.50, 0.75, 2.0, 0.5, 0.65
 MAX_ENTRIES, LAST_ENTRY_HOUR = 2, 14
+OTM_MAX, UNLISTED_FROM = 0.01, "2026-11-23"      # amendment 2 (2026-11-20): unlisted strikes
 
 
 def new_state() -> dict:
@@ -105,8 +106,12 @@ def check(state: dict, snap: dict) -> dict:
                       f"and the open {spy['open']:.2f}")
         else:
             k = strike_for(spy["last"])
-            q = next((x for x in snap.get("quotes", []) if x.get("right") == "P" and float(x["strike"]) == k
-                      and x.get("expiry") == date), None)
+            puts = [x for x in snap.get("quotes", []) if x.get("right") == "P" and x.get("expiry") == date]
+            q = next((x for x in puts if float(x["strike"]) == k), None)
+            if q is None and date >= UNLISTED_FROM:    # strike not listed: nearest listed strike below, within 1%
+                near = [x for x in puts if spy["last"] * (1 - OTM_MAX) <= float(x["strike"]) < k]
+                q = max(near, key=lambda x: float(x["strike"]), default=None)
+                k = float(q["strike"]) if q else k
             label = f"SPY {date} {k:g}P"
             if q is None or not q.get("ask") or float(q["ask"]) <= 0:
                 ev.append(f"no entry: no ask for {label}")

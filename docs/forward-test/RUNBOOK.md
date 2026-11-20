@@ -463,5 +463,7 @@ check is priced as of the quote's own time:
 - In the check file put that SPY close in `spy.last` and the quote time (New York, HH:MM:SS) in `asof`. `open` and
   `prior_close` come from the SPY snapshot as before.
 - Exits use the open contract's delayed bid directly.
+- If `get_option_data` does not list the wanted strike, quote the nearest listed strike below it (from 2026-11-23 the
+  script uses it when it is within 1% of SPY; before that date an unlisted strike means no entry).
 
 The nightly run only reports Y6's equity; it never steps it.
