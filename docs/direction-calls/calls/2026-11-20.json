@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-20",
+ "target": "2026-11-23",
+ "made_at": "2026-11-20T22:50:36Z",
+ "method": "Each call follows the base rate computed tonight for that name from 5 years of daily bars (next-day direction after days like today), with after-hours trade as a tie-breaker. Second heavy selloff in a row: S&P 500 ETF -3.6%, Nasdaq 100 ETF -5.7%, NVDA -14%, AMD -13%; press cites an AI sell-off, Anthropic falling 8.5% on its second day, and reports of an SEC inquiry into Nvidia (thin, unverified coverage). Last night's ten 'up' calls were all wrong: record 12 of 40.",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "-3.6% to 689.81, closing in the bottom 10% of the range, -8.6% in 5 sessions and 5.9% below the 200-day average. Over 5 years, SPY days down 2.5%+ were followed by an up day 43% of the time (n=23; 47% when closing in the bottom fifth, n=17), and two straight days down 1.5%+ by an up day 25% of the time (n=8). Against: after-hours trade was about 0.9% above the close."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-5.7% to 608.45 at the low, -10.5% in 5 sessions. Mixed base rates: 48% up after days down 2.5%+ (n=54), 70% up after two straight days down 1.5%+ (n=20), 60% up after 5-session drops of 7%+ (n=15), 39% up when more than 5% below the 200-day on a -2% day (n=18). After-hours about +1.4%."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "up",
+   "confidence": 0.58,
+   "reason": "-14.0% to 125.53 (-22.9% in 5 sessions). The 8 stocks rose next day 67% of the time after a one-day drop of 10%+ (n=27, mean +1.3%), and NVDA rose 70% of the time on the day after SPY fell 2.5%+ (n=23). After-hours about +3%. Risk: press reports of an SEC inquiry and more headlines over the weekend."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "Only -1.9% on a -3.6% market day: relative strength, but AAPL rose 48% of the time on the day after SPY fell 2.5%+ (n=23, mean -0.8%), often catching up on the downside."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "down",
+   "confidence": 0.51,
+   "reason": "-2.8% near its 20-day low; 48% up on the day after SPY fell 2.5%+ (n=23): a coin flip with a slight downside lean."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-4.1% closing in the bottom 10% of the range; 52% up on the day after SPY fell 2.5%+ (n=23) and 53% for this size of drop closing at the low (n=543). Coin flip."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-5.9% at the low, -12.6% in 5 sessions. Stocks down 5%+ closing in the bottom fifth rose next day 54% of the time (n=221); META alone after SPY fell 2.5%+ was 44% (n=16). Near coin flip."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "-7.6% at the low. 54% up after drops of 5%+ closing in the bottom fifth (n=221); TSLA 57% up on the day after SPY fell 2.5%+ (n=23). After-hours about +1.3%."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-2.7% at the low, -10.3% in 5 sessions; stocks down 10%+ in 5 sessions with a 2.5%+ down day rose next day 56% of the time (n=196)."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.57,
+   "reason": "-13.2% to 424.39 (-20.5% in 5 sessions). 67% up after a one-day drop of 10%+ (8 stocks, n=27); 60% up after 5-session drops of 20%+ (n=20, mean +3.4%); AMD 57% up after SPY fell 2.5%+ (n=23). After-hours about +3%."
+  }
+ ]
+}
