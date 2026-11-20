@@ -1,12 +1,12 @@
 # Y5 Manager's book
 
-As of 2026-11-19. Paper only; rules frozen in `PREREG.md`. US$1,000 from 2026-11-17.
+As of 2026-11-20. Paper only; rules frozen in `PREREG.md`. US$1,000 from 2026-11-17.
 
 | | Value |
 |---|---:|
 | Equity | **US$1,000.00** |
-| US$1,000 in SPY | US$977.38 |
-| Y2 mechanical trend account (its own US$1,000, from 2026-11-13) | US$2,629.80 |
+| US$1,000 in SPY | US$941.80 |
+| Y2 mechanical trend account (its own US$1,000, from 2026-11-13) | US$4,578.15 |
 | Closed trades | 0 (0 wins) |
 | Average win / average loss | +0.00 / +0.00 |
 

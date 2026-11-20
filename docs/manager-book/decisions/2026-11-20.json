@@ -1,0 +1,15 @@
+{
+ "asof": "2026-11-20",
+ "made_at": "2026-11-20T23:02:50Z",
+ "decision": "No trade tonight. The analyst ranked 'no trade' first: every contract the account can afford has a modelled expected value of 0.27 to 0.53 per dollar after the spread. No candidate survived its own entry test, so the red team was not run; the manager agrees.",
+ "research": {
+  "news_scout": "Thin, low-confidence coverage. A second heavy selloff blamed on an AI sell-off: Anthropic fell 8.5% on its second trading day, AI-capex and rate worries, press reports of an SEC inquiry into Nvidia's disclosures (date unclear) and an unconfirmed short report on AMD. No verified VIX, yields, forced-selling estimates or calendar for next week. Thanksgiving 11-26, half day 11-27.",
+  "price_scout": "SPY 689.81 (-3.6%, -8.6% in 5 sessions, 5.9% below its 200-day), QQQ 608.45 (-5.7%), NVDA 125.53 (-14.0%), AMD 424.39 (-13.2%). After 5-session SPY drops of 7%+ (9 events, only 4 episodes): next 5 days mean +3.4%, 75% up. After one-day SPY drops of 3%+ (7 episodes): +0.4%, 58% up; first event of each episode -0.8%, 33% up. QQQ after a 5%+ day: 5 days median -1.0%, 10 days 20% up (5 episodes). The 8 stocks after a 10%+ one-day drop (27 episodes): 3 days +4.0%, 59% up. Verdict: no clean directional setup; large moves follow in both directions.",
+  "options_scout": "Implied vs 30-day realized volatility: SPY 30.8% vs 15.1% (100th percentile of the year), QQQ 29.0% vs 25.8%, NVDA 72.6% vs 68.9%, AMD 78.1% vs 92.8%. Under the US$300 cap: SPY 725C 11-27 1.90/1.99 (delta 0.14, breakeven +5.4%), SPY 738C 12-04 1.91/2.01, SPY 640P 11-27 2.47/2.60 (breakeven -7.6%), QQQ 660C 11-27 1.13/1.33, NVDA 145C 11-27 1.30/1.50 (breakeven +16.7%, bid size 1), NVDA 150C 11-27 0.73/1.00. AMD: no quote.",
+  "analyst": "SPY 725C 11-27: needs about +4% by Wednesday to break even after time decay and a volatility drop; expected value about 0.53 per dollar. NVDA 145C 11-27: about 0.33. SPY 640P 11-27: about 0.27. Rank 1: no trade. Rule proposed: trade only if modelled expected value is at least 1.0 per dollar after the spread.",
+  "red_team": "Not run: no candidate survived the analyst's own entry test (allowed by the runbook)."
+ },
+ "reasoning": "Options are priced for a crash: SPY implied volatility is double its realized volatility, and the US$300 cap leaves only contracts with deltas near 0.1 in a holiday-shortened week. The bounce base rates rest on 4 to 27 episodes and the desk's own direction calls are 12 of 40. Paying the full fear premium for a low-delta contract is the same mistake the desk declined on 11-18 and 11-19.",
+ "watch": "Rejected tonight, to be checked against later prices: SPY 725C 11-27 at 1.99, NVDA 145C 11-27 at 1.50, SPY 640P 11-27 at 2.60. Earlier rejections: NVDA 160C 11-27 (11-18) and SPY 751C 12-04 (11-19). Re-look when implied volatility falls back toward realized, or when a contract with delta of 0.25 or more fits the cap.",
+ "actions": []
+}
