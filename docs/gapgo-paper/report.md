@@ -1,4 +1,4 @@
-# Gap-and-go day-trading paper account (as of 2026-11-19)
+# Gap-and-go day-trading paper account (as of 2026-11-20)
 
 Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward record from 2026-10-16. Equity **US$5,138.24** (+2.76%).
 
@@ -26,6 +26,7 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 
 ## Session log (latest first)
 
+- **2026-11-20** P&L +0.00. no gap candidates
 - **2026-11-19** P&L -44.16. ASTS +8.4% (no breakout above the first bar's high by 10:30), PDD +6.4% (trade), WDC +6.3% (first 5-minute bar not green), RIOT +6.3% (no breakout above the first bar's high by 10:30), STX +6.2% (opening volume 129,942 below 5% of average daily volume), HOOD +5.2% (trade), INTC +5.2% (daily trade limit reached), MU +4.9% (5-minute bars missing), DELL +4.7% (5-minute bars missing), LRCX +4.7% (5-minute bars missing), DDOG +4.7% (5-minute bars missing), PANW +4.7% (5-minute bars missing), MARA +4.6% (5-minute bars missing), MDB +4.6% (5-minute bars missing), CRWV +4.6% (5-minute bars missing), AMAT +4.4% (5-minute bars missing), KLAC +4.4% (5-minute bars missing), GOOGL +4.2% (5-minute bars missing), NET +4.2% (5-minute bars missing), ARM +4.1% (5-minute bars missing), GOOG +4.1% (5-minute bars missing), RKLB +4.0% (5-minute bars missing)
 - **2026-11-18** P&L +0.00. no gap candidates
 - **2026-11-17** P&L -55.95. NKE +5.1% (trade)
@@ -40,6 +41,5 @@ Paper only, US$5,000 start, rules in `PREREG.md` (frozen 2026-10-16). Forward re
 - **2026-11-04** P&L -46.77. RIOT +11.3% (first 5-minute bar not green), FSLR +10.8% (trade), XYZ +9.9% (trade), ENPH +6.2% (daily trade limit reached), AMZN +5.7% (5-minute bars missing), SYK +5.6% (5-minute bars missing), ANET +5.3% (5-minute bars missing), UAL +4.6% (5-minute bars missing), BABA +4.6% (5-minute bars missing), MSFT +4.2% (5-minute bars missing), CHWY +4.1% (5-minute bars missing)
 - **2026-11-03** P&L +0.00. JD +4.2% (first 5-minute bar not green)
 - **2026-11-02** P&L -8.66. MAR +6.4% (first 5-minute bar not green), RIVN +4.9% (trade), UAL +4.5% (trade), BABA +4.0% (daily trade limit reached)
-- **2026-10-30** P&L +0.00. RIVN +5.7% (first 5-minute bar not green)
 
 Costs: 10 bp slippage per side, US$0.005 per share (US$1 minimum). The scan uses a fixed universe of about 130 liquid US stocks, not a full-market scanner, so it misses small-cap gappers.
