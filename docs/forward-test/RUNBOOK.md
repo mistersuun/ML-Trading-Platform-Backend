@@ -452,4 +452,16 @@ scheduled tasks. On a half day the 12:05 check is the final one. A check that ca
    results, then `sprint_paper.py check <file>`.
 5. Commit `docs/sprint-paper/` and push. Message the owner only on a trade (buy or sell), a bust, or the target.
 
+**Delayed quotes (PREREG amendment 2026-11-20).** Option quotes are 15 minutes old (`top_status` DELAYED), so the
+check is priced as of the quote's own time:
+
+- Fetch SPY 1-minute bars (`get_price_history` ONE_MIN, step_count 40). Estimate SPY 15 minutes ago, run `plan` with
+  that as `--spot`, and quote the wanted put with `bid_ask`, `last`, `top_status`.
+- The quote time is the put's `last.ts`. SPY for the rule is the close of the 1-minute bar containing it. Re-run
+  `plan` with that spot: if the wanted strike differs from the quoted one, quote the right strike once more and repeat;
+  no match after that means no entry at this check.
+- In the check file put that SPY close in `spy.last` and the quote time (New York, HH:MM:SS) in `asof`. `open` and
+  `prior_close` come from the SPY snapshot as before.
+- Exits use the open contract's delayed bid directly.
+
 The nightly run only reports Y6's equity; it never steps it.

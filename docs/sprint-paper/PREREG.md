@@ -68,3 +68,26 @@ or reaches the target.
 - **Puts only is a bet on the market falling.** In a rising market the entry rule rarely triggers and the account
   mostly waits.
 - **The honest expected outcome is a bust.** The account exists to show the path, with real quotes.
+
+## Amendment 2026-11-20, 11:10 New York (before the first trade)
+
+**What was found.** At the 11:05 check the entry rule fired for the first time, and the option quote came back marked
+*delayed*: this account's option quotes are 15 minutes old, while SPY itself is real-time. Buying at a 15-minute-old
+ask on a real-time signal would be a look-ahead in the account's favour (at 11:05 the 701 put showed an ask of 1.14
+from 10:51, when SPY was about 3 points higher). No trade had been recorded.
+
+**The change.** Every check is priced **as of the option quote's own time**, about 15 minutes before the check.
+
+- **Quote time.** The option quote's last-trade timestamp.
+- **SPY for the entry rule and the strike.** The close of SPY's 1-minute bar that contains the quote time, not the
+  real-time price.
+- **Fills.** Buys at the delayed ask and sells at the delayed bid, as before.
+- **Strike match.** The quoted put must be the strike the rule gives for SPY at the quote time. If it is not, the
+  right strike is quoted once more; if that still does not match, there is no entry at this check.
+- **Stale quote.** A quote whose time is missing or more than 25 minutes before the check gives no entry; an open
+  position is held (at the final check it is sold at that bid regardless).
+
+So the account acts on what was true at about 09:50, 10:50, 11:50, 12:50, 13:50, 14:50 and, for the final check,
+15:35. Nothing else changes.
+
+**Not back-filled.** The 10:05 check was done with the real-time price and found no entry; it stands as recorded.

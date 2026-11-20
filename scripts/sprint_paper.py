@@ -5,9 +5,11 @@
 
 `plan` prints which quotes this check needs (the open position's contract and, if an entry is possible, today's put
 at the wanted strike). The check file is
-{"ts": "YYYY-MM-DDTHH:MM" (New York), "final": bool, "spy": {"last", "open", "prior_close"},
+{"ts": "YYYY-MM-DDTHH:MM" (New York), "asof": "HH:MM:SS", "final": bool, "spy": {"last", "open", "prior_close"},
  "quotes": [{"contract_id", "right": "P", "strike", "expiry", "bid", "ask"}]}.
 `check` applies the rules in order: stale position, take-profit / stop / final exit, then an entry.
+Option quotes are 15 minutes delayed, so `spy.last` is SPY at the quotes' own time and `asof` records that time
+(amendment 2026-11-20 in the PREREG).
 """
 from __future__ import annotations
 
@@ -54,18 +56,19 @@ def _roll_day(state: dict, date: str, ev: list) -> None:
     state["day"] = {"date": date, "entries": 0, "stopped": False}
 
 
-def _sell(state: dict, price: float, ts: str, why: str) -> str:
+def _sell(state: dict, price: float, ts: str, why: str, asof: str | None = None) -> str:
     p = state["position"]
     proceeds = price * 100 * p["qty"] - (COMMISSION * p["qty"] if price > 0 else 0.0)
     state["cash"] += proceeds
     pnl = proceeds - p["cost"]
-    state["trades"].append({**p, "exit": price, "exit_ts": ts, "why": why, "pnl": round(pnl, 2)})
+    state["trades"].append({**p, "exit": price, "exit_ts": ts, "exit_asof": asof, "why": why, "pnl": round(pnl, 2)})
     state["position"] = None
     return f"sell {p['label']} x{p['qty']} at {price:.2f} ({why}): P&L {pnl:+.2f}"
 
 
 def check(state: dict, snap: dict) -> dict:
     ts, final, spy = snap["ts"], bool(snap.get("final")), snap["spy"]
+    asof = snap.get("asof")                            # time of the delayed quotes (amendment 2026-11-20)
     if state["last_ts"] and ts <= state["last_ts"]:
         raise SystemExit(f"check {ts} is not after the last check {state['last_ts']}")
     ev: list[str] = []
@@ -82,16 +85,16 @@ def check(state: dict, snap: dict) -> dict:
         q = qmap.get(p["contract_id"])
         bid = float(q["bid"]) if q and q.get("bid") is not None else None
         if bid is not None and state["cash"] + bid * 100 * p["qty"] >= TARGET:
-            ev.append(_sell(state, bid, ts, "target reached"))
+            ev.append(_sell(state, bid, ts, "target reached", asof))
             state["status"] = "target"
         elif final:
-            ev.append(_sell(state, bid or 0.0, ts, "final check"))
+            ev.append(_sell(state, bid or 0.0, ts, "final check", asof))
         elif bid is None:
             ev.append(f"no bid for {p['label']}: held")
         elif bid >= TP * p["entry"]:
-            ev.append(_sell(state, bid, ts, "take profit"))
+            ev.append(_sell(state, bid, ts, "take profit", asof))
         elif bid <= STOP * p["entry"]:
-            ev.append(_sell(state, bid, ts, "stop"))
+            ev.append(_sell(state, bid, ts, "stop", asof))
             state["day"]["stopped"] = True
         else:
             p["mark"] = bid
@@ -119,7 +122,8 @@ def check(state: dict, snap: dict) -> dict:
                     cost = qty * unit
                     state["cash"] -= cost
                     state["position"] = {"contract_id": q["contract_id"], "label": label, "strike": k, "expiry": date,
-                                         "qty": qty, "entry": ask, "entry_ts": ts, "cost": round(cost, 2),
+                                         "qty": qty, "entry": ask, "entry_ts": ts, "entry_asof": asof,
+                                         "cost": round(cost, 2),
                                          "spy_entry": spy["last"], "mark": float(q.get("bid") or 0)}
                     state["day"]["entries"] += 1
                     ev.append(f"buy {label} x{qty} at {ask:.2f} (US${cost:.2f}), SPY {spy['last']:.2f}")
@@ -128,7 +132,7 @@ def check(state: dict, snap: dict) -> dict:
         ev.append(f"BUSTED: cash US${state['cash']:.2f}")
     state["last_ts"] = ts
     eq = state["cash"] + (state["position"]["mark"] * 100 * state["position"]["qty"] if state["position"] else 0.0)
-    return {"ts": ts, "final": final, "spy": spy["last"], "events": ev or ["nothing to do"], "equity": round(eq, 2),
+    return {"ts": ts, "asof": asof, "final": final, "spy": spy["last"], "events": ev or ["nothing to do"], "equity": round(eq, 2),
             "cash": round(state["cash"], 2), "status": state["status"],
             "bench_value": round(START * spy["last"] / state["spy_start"], 2)}
 
