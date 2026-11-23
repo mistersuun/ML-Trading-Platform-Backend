@@ -1,18 +1,18 @@
 # Y6 Put sprint: US$1,000 to US$200,000
 
-As of 2026-11-23T10:05 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-20T10:05.
+As of 2026-11-23T11:05 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-20T10:05.
 
 | | Value |
 |---|---:|
 | Equity | **US$1,551.40** |
 | Status | live |
 | Progress to US$200,000 | 0.78% |
-| US$1,000 in SPY | US$1,007.10 |
+| US$1,000 in SPY | US$1,011.19 |
 | Closed trades | 1 (1 wins) |
 
 ## Last check
 
-- no entry: SPY 720.92 is not beyond both the prior close 689.81 and the open 724.43
+- no entry: SPY 723.85 is not beyond both the prior close 689.81 and the open 724.43
 
 ## Trades
 

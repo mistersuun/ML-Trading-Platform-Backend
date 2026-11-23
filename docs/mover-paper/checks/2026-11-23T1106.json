@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T11:06", "kind": "regular",
+ "source": "IBKR. A position is open, so only its quote is needed: TSLA 397.5 call snapshot requested 11:05:45 New York, 15 minutes delayed (top_status DELAYED, last-trade time 10:49:58). SPY real-time for the benchmark (prior close = last minus change).",
+ "prices": {"SPY": {"last": 723.43, "open": 724.43, "prior_close": 689.81}},
+ "quotes": [{"contract_id": 943826160, "underlying": "TSLA", "right": "C", "strike": 397.5, "expiry": "2026-11-23", "bid": 0.57, "ask": 0.60}]}

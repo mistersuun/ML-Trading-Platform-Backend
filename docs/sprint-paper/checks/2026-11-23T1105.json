@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T11:05", "asof": "10:49:59", "final": false,
+ "source": "IBKR. No open position. SPY's 1-minute close about 15 minutes before the check (10:50 bar, 724.96) was above both the open 724.43 and the prior close 689.81, so the 729 call was quoted (requested 11:05:54 New York, top_status DELAYED, last-trade time 10:49:59, ts 1795448999). SPY for the rule is the close of the 1-minute bar containing that time (10:49 bar): 723.85, which is below the open, so there is no entry. Open from the 11:05 SPY snapshot; prior close = last 723.43 minus change 33.62.",
+ "spy": {"last": 723.85, "open": 724.43, "prior_close": 689.81},
+ "quotes": [{"contract_id": 943822700, "right": "C", "strike": 729, "expiry": "2026-11-23", "bid": 1.32, "ask": 1.33}]}
