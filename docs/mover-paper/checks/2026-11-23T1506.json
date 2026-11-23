@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T15:06", "kind": "regular",
+ "source": "IBKR. No position and no order is allowed this late (and none today after the 12:06 stop), so only SPY was fetched (real-time, for the benchmark; prior close = last minus change).",
+ "prices": {"SPY": {"last": 722.42, "open": 724.43, "prior_close": 689.81}},
+ "quotes": []}
