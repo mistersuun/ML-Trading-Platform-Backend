@@ -1,18 +1,18 @@
 # Y7 Mover sprint: US$1,000 to US$200,000
 
-As of 2026-11-23T12:06 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
+As of 2026-11-23T13:06 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
 
 | | Value |
 |---|---:|
 | Equity | **US$618.50** |
 | Status | live |
 | Progress to US$200,000 | 0.31% |
-| US$1,000 in SPY | US$1,001.66 |
+| US$1,000 in SPY | US$1,001.12 |
 | Closed trades | 1 (0 wins) |
 
 ## Last check
 
-- sell TSLA 2026-11-23 397.5C x5 at 0.21 (stop): P&L -381.50
+- nothing to do
 
 ## Trades
 

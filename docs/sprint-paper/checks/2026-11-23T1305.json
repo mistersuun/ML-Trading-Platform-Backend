@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T13:05", "asof": "12:50:59", "final": false,
+ "source": "IBKR. No open position. spy.last is the close of SPY's 1-minute bar 12:50 (721.09), about 15 minutes before the check at 13:05:57 New York. Open 724.43 from the SPY snapshot; prior close 689.81 = last 722.71 minus change 32.90. Every 1-minute close from 12:40 to 13:05 was below the open and above the prior close, so no option was quoted and there is no entry.",
+ "spy": {"last": 721.09, "open": 724.43, "prior_close": 689.81},
+ "quotes": []}
