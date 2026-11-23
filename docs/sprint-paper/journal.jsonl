@@ -11,3 +11,4 @@
 {"ts": "2026-11-23T13:05", "asof": "12:50:59", "final": false, "spy": 721.09, "events": ["no entry: SPY 721.09 is not beyond both the prior close 689.81 and the open 724.43"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1007.33}
 {"ts": "2026-11-23T14:05", "asof": "13:51:59", "final": false, "spy": 721.96, "events": ["no entry: SPY 721.96 is not beyond both the prior close 689.81 and the open 724.43"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1008.55}
 {"ts": "2026-11-23T15:05", "asof": "14:50:59", "final": false, "spy": 720.68, "events": ["nothing to do"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1006.76}
+{"ts": "2026-11-23T15:50", "asof": "15:35:59", "final": true, "spy": 724.3, "events": ["nothing to do"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1011.82}

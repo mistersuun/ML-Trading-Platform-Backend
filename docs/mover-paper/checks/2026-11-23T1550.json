@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T15:51", "kind": "final",
+ "source": "IBKR. Final check, no position and no order. SPY real-time for the benchmark (prior close = last minus change).",
+ "prices": {"SPY": {"last": 722.59, "open": 724.43, "prior_close": 689.81}},
+ "quotes": []}
