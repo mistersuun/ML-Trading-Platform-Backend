@@ -5,3 +5,4 @@
 {"ts": "2026-11-20T14:05", "asof": "13:51:59", "final": false, "spy": 700.62, "events": ["no entry: no ask for SPY 2026-11-20 697P"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 978.74}
 {"ts": "2026-11-20T15:05", "asof": "14:50:59", "final": false, "spy": 695.51, "events": ["nothing to do"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 971.6}
 {"ts": "2026-11-20T15:50", "asof": "15:35:59", "final": true, "spy": 689.74, "events": ["nothing to do"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 963.54}
+{"ts": "2026-11-23T10:05", "asof": "09:57:59", "final": false, "spy": 720.92, "events": ["no entry: SPY 720.92 is not beyond both the prior close 689.81 and the open 724.43"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1007.1}

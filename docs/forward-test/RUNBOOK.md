@@ -475,6 +475,9 @@ The nightly run only reports Y6's equity; it never steps it.
 Paper only. Same wake-ups as Y6 (section 16), plus a fill check after an order. Check files are
 `docs/mover-paper/checks/<date>T<HHMM>.json` in the format of the `scripts/mover_paper.py` docstring.
 
+**Time stamps.** A Y7 check's `ts` (and file name) is the actual New York time when its real-time prices were taken,
+not the scheduled HH:05: the fill quote must come from after the decision.
+
 **Regular check (HH:05).**
 
 1. One real-time `get_price_snapshot` (`last`, `open`, `prior_close`, `change`) for each of SPY 756733, QQQ 320227571,

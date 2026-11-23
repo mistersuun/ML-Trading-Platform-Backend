@@ -1,0 +1,77 @@
+{
+ "ts": "2026-11-23T10:13",
+ "kind": "regular",
+ "source": "IBKR real-time get_price_snapshot, taken 10:11:40 to 10:12:30 New York (the data connection returned errors from about 09:45 to 10:11). prior_close = last minus change. The check's time is the actual time the order was decided, so that the fill quote (17 to 40 minutes later) is from after the decision. Option quotes: 15 minutes delayed (top_status DELAYED), requested about 10:13; TSLA has a same-day expiry; strikes at or beyond the level 395.93 are 397.5, 400, 402.5, 405; the first fits, the second was also quoted.",
+ "prices": {
+  "SPY": {
+   "last": 721.9,
+   "open": 724.43,
+   "prior_close": 689.81
+  },
+  "QQQ": {
+   "last": 650.83,
+   "open": 656.0,
+   "prior_close": 608.45
+  },
+  "NVDA": {
+   "last": 166.12,
+   "open": 167.08,
+   "prior_close": 125.53
+  },
+  "AAPL": {
+   "last": 348.65,
+   "open": 347.5,
+   "prior_close": 342.56
+  },
+  "MSFT": {
+   "last": 504.02,
+   "open": 506.0,
+   "prior_close": 484.52
+  },
+  "AMZN": {
+   "last": 255.73,
+   "open": 260.0,
+   "prior_close": 246.82
+  },
+  "META": {
+   "last": 587.8,
+   "open": 590.42,
+   "prior_close": 560.84
+  },
+  "TSLA": {
+   "last": 389.12,
+   "open": 373.61,
+   "prior_close": 345.82
+  },
+  "GOOGL": {
+   "last": 280.38,
+   "open": 284.52,
+   "prior_close": 265.29
+  },
+  "AMD": {
+   "last": 451.0,
+   "open": 475.36,
+   "prior_close": 424.39
+  }
+ },
+ "quotes": [
+  {
+   "contract_id": 943826160,
+   "underlying": "TSLA",
+   "right": "C",
+   "strike": 397.5,
+   "expiry": "2026-11-23",
+   "bid": 1.15,
+   "ask": 1.19
+  },
+  {
+   "contract_id": 943286004,
+   "underlying": "TSLA",
+   "right": "C",
+   "strike": 400.0,
+   "expiry": "2026-11-23",
+   "bid": 0.75,
+   "ask": 0.77
+  }
+ ]
+}

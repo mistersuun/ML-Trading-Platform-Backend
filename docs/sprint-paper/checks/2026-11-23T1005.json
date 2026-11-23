@@ -1,0 +1,4 @@
+{"ts": "2026-11-23T10:05", "asof": "09:57:59", "final": false,
+ "source": "IBKR. The data connection returned errors from about 09:45 to 10:11 New York; the check ran at 10:12, inside the 20-minute window. No open position. spy.last is the close of SPY's 1-minute bar 09:57 (720.92), about 15 minutes before the check ran. Open 724.43 and prior close 689.81 (last 721.90 minus change 32.09) from the 10:11 SPY snapshot. SPY is above the prior close but below the open (every 1-minute close from 09:45 to 10:11 was below 724.43), so no option was quoted and there is no entry.",
+ "spy": {"last": 720.92, "open": 724.43, "prior_close": 689.81},
+ "quotes": []}

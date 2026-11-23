@@ -1,0 +1,26 @@
+{
+ "cash": 1000.0,
+ "position": null,
+ "pending": {
+  "ts": "2026-11-23T10:13",
+  "contract_id": 943826160,
+  "label": "TSLA 2026-11-23 397.5C",
+  "underlying": "TSLA",
+  "right": "C",
+  "strike": 397.5,
+  "expiry": "2026-11-23",
+  "reason": "TSLA +12.5% (3.6x a typical day)",
+  "seen_ask": 1.19
+ },
+ "trades": [],
+ "day": {
+  "date": "2026-11-23",
+  "entries": 0,
+  "stopped": false
+ },
+ "status": "live",
+ "last_ts": "2026-11-23T10:13",
+ "inception": "2026-11-23T10:13",
+ "spy_start": 721.9,
+ "bench_last": 1000.0
+}
