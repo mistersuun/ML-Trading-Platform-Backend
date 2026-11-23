@@ -22,8 +22,9 @@ def _snap(hhmm, spy=DOWN, quotes=(), final=False, date=D):
 
 def test_strike_and_entry_signal():
     assert sp.strike_for(715.80) == 712.0
-    assert sp.entry_signal(DOWN) and not sp.entry_signal(UP)
-    assert not sp.entry_signal({"last": 100.2, "open": 100.0, "prior_close": 100.5})
+    assert sp.entry_signal(DOWN, D) == "P" and sp.entry_signal(UP, D) is None      # before calls were added
+    assert sp.entry_signal(UP, "2026-11-23") == "C" and sp.strike_for(715.80, "C") == 720.0
+    assert sp.entry_signal({"last": 100.2, "open": 100.0, "prior_close": 100.5}, "2026-11-23") is None
 
 
 def test_entry_sizes_half_the_cash_and_waits_when_no_signal():
@@ -107,3 +108,20 @@ def test_unlisted_strike_uses_nearest_listed_below_within_one_percent_from_the_e
     old = "2026-11-20"
     sp.check(st3, _snap("10:05", spy, [_q(1, 1.0, 1.1, strike=695.0, expiry=old)], date=old))
     assert st3["position"] is None                                       # before the effective date: no entry
+
+
+def test_calls_on_up_days_from_the_effective_date_and_unlisted_call_strike():
+    day = "2026-11-23"
+    up = {"last": 700.0, "open": 695.0, "prior_close": 690.0}                 # rule strike 704
+    call = {"contract_id": 9, "right": "C", "strike": 704.0, "expiry": day, "bid": 0.95, "ask": 1.00}
+    st = sp.new_state()
+    sp.check(st, _snap("10:05", up, [call], date=day))
+    assert st["position"]["label"] == f"SPY {day} 704C" and st["position"]["qty"] == 4
+    sp.check(st, _snap("11:05", up, [{**call, "bid": 2.1, "ask": 2.2}], date=day))
+    assert st["trades"][0]["why"] == "take profit"
+    st2 = sp.new_state()
+    sp.check(st2, _snap("10:05", up, [{**call, "strike": 705.0}], date=day))  # 704 not listed: 705 is within 1%
+    assert st2["position"]["strike"] == 705.0
+    st3 = sp.new_state()
+    sp.check(st3, _snap("10:05", up, [{**call, "strike": 708.0}], date=day))  # 708 is more than 1% above
+    assert st3["position"] is None

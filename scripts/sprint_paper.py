@@ -6,7 +6,7 @@
 `plan` prints which quotes this check needs (the open position's contract and, if an entry is possible, today's put
 at the wanted strike). The check file is
 {"ts": "YYYY-MM-DDTHH:MM" (New York), "asof": "HH:MM:SS", "final": bool, "spy": {"last", "open", "prior_close"},
- "quotes": [{"contract_id", "right": "P", "strike", "expiry", "bid", "ask"}]}.
+ "quotes": [{"contract_id", "right": "P" | "C", "strike", "expiry", "bid", "ask"}]}.
 `check` applies the rules in order: stale position, take-profit / stop / final exit, then an entry.
 Option quotes are 15 minutes delayed, so `spy.last` is SPY at the quotes' own time and `asof` records that time
 (amendment 2026-11-20 in the PREREG).
@@ -25,6 +25,7 @@ START, TARGET, BUST = 1_000.0, 200_000.0, 100.0
 OTM, STAKE, ONE_MAX, TP, STOP, COMMISSION = 0.005, 0.50, 0.75, 2.0, 0.5, 0.65
 MAX_ENTRIES, LAST_ENTRY_HOUR = 2, 14
 OTM_MAX, UNLISTED_FROM = 0.01, "2026-11-23"      # amendment 2 (2026-11-20): unlisted strikes
+CALLS_FROM = "2026-11-23"                          # amendment 3 (2026-11-23): calls on up days
 
 
 def new_state() -> dict:
@@ -32,12 +33,19 @@ def new_state() -> dict:
             "status": "live", "last_ts": None, "inception": None, "spy_start": None}
 
 
-def strike_for(spot: float) -> float:
+def strike_for(spot: float, right: str = "P") -> float:
+    if right == "C":                                   # calls from 2026-11-23 (amendment 3)
+        return float(math.ceil(spot * (1 + OTM) - 1e-9))
     return float(math.floor(spot * (1 - OTM) + 1e-9))
 
 
-def entry_signal(spy: dict) -> bool:
-    return spy["last"] < spy["prior_close"] and spy["last"] < spy["open"]
+def entry_signal(spy: dict, date: str = "9999") -> str | None:
+    """'P' when SPY is below both the prior close and the open; 'C' when above both (from CALLS_FROM); else None."""
+    if spy["last"] < spy["prior_close"] and spy["last"] < spy["open"]:
+        return "P"
+    if date >= CALLS_FROM and spy["last"] > spy["prior_close"] and spy["last"] > spy["open"]:
+        return "C"
+    return None
 
 
 def can_enter(state: dict, ts: str, final: bool) -> bool:
@@ -101,18 +109,23 @@ def check(state: dict, snap: dict) -> dict:
             p["mark"] = bid
             ev.append(f"hold {p['label']} x{p['qty']}: bid {bid:.2f} vs entry {p['entry']:.2f}")
     if can_enter(state, ts, final):
-        if not entry_signal(spy):
-            ev.append(f"no entry: SPY {spy['last']:.2f} is not below both the prior close {spy['prior_close']:.2f} "
+        right = entry_signal(spy, date)
+        if right is None:
+            ev.append(f"no entry: SPY {spy['last']:.2f} is not beyond both the prior close {spy['prior_close']:.2f} "
                       f"and the open {spy['open']:.2f}")
         else:
-            k = strike_for(spy["last"])
-            puts = [x for x in snap.get("quotes", []) if x.get("right") == "P" and x.get("expiry") == date]
-            q = next((x for x in puts if float(x["strike"]) == k), None)
-            if q is None and date >= UNLISTED_FROM:    # strike not listed: nearest listed strike below, within 1%
-                near = [x for x in puts if spy["last"] * (1 - OTM_MAX) <= float(x["strike"]) < k]
-                q = max(near, key=lambda x: float(x["strike"]), default=None)
+            k = strike_for(spy["last"], right)
+            opts = [x for x in snap.get("quotes", []) if x.get("right") == right and x.get("expiry") == date]
+            q = next((x for x in opts if float(x["strike"]) == k), None)
+            if q is None and date >= UNLISTED_FROM:    # strike not listed: nearest listed strike further out, within 1%
+                if right == "P":
+                    near = [x for x in opts if spy["last"] * (1 - OTM_MAX) <= float(x["strike"]) < k]
+                    q = max(near, key=lambda x: float(x["strike"]), default=None)
+                else:
+                    near = [x for x in opts if k < float(x["strike"]) <= spy["last"] * (1 + OTM_MAX)]
+                    q = min(near, key=lambda x: float(x["strike"]), default=None)
                 k = float(q["strike"]) if q else k
-            label = f"SPY {date} {k:g}P"
+            label = f"SPY {date} {k:g}{right}"
             if q is None or not q.get("ask") or float(q["ask"]) <= 0:
                 ev.append(f"no entry: no ask for {label}")
             else:
@@ -181,13 +194,15 @@ def main(argv=None) -> int:
         probe = state if same_day else {**state, "day": {"date": a.ts[:10], "entries": 0, "stopped": False},
                                         "position": None}
         p = state["position"] if same_day else None
-        entry = can_enter(probe, a.ts, a.final) and entry_signal(spy)
+        right = entry_signal(spy, a.ts[:10])
+        entry = can_enter(probe, a.ts, a.final) and right is not None
         print(json.dumps({"status": state["status"], "cash": round(state["cash"], 2),
                           "open_position": {"contract_id": p["contract_id"], "label": p["label"]} if p else None,
                           "entry_possible_now": entry,
                           "entry_possible_after_an_exit": can_enter({**probe, "position": None}, a.ts, a.final)
-                          and entry_signal(spy),
-                          "wanted": {"right": "P", "strike": strike_for(a.spot), "expiry": a.ts[:10]}}, indent=1))
+                          and right is not None,
+                          "wanted": {"right": right, "strike": strike_for(a.spot, right) if right else None,
+                                     "expiry": a.ts[:10]}}, indent=1))
         return 0
     snap = json.loads(Path(a.file).read_text())
     row = check(state, snap)

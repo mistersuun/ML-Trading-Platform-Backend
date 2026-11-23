@@ -100,3 +100,17 @@ the rest of 2026-11-20.
 
 **The change, from 2026-11-23.** When the rule's strike is not listed, the nearest listed strike below it is used,
 provided it is no more than 1% below SPY at the quote time. Otherwise there is no entry.
+
+## Amendment 3, 2026-11-23 09:30 New York (owner's request; before the day's first check)
+
+The owner on 2026-11-23: "And not just puts, right? Calls work as well. Same to Y6."
+
+**The change, from the 2026-11-23 session.** The account also buys calls, as the mirror image of the put rule.
+
+- **Entry.** When SPY (at the quote time) is above both the prior close and today's open, buy a same-day call.
+  Below both still means a put. In between, wait.
+- **Strike.** The first whole-dollar strike at or above SPY x 1.005.
+- **Unlisted strike.** The nearest listed strike above it, if it is no more than 1% above SPY.
+- **Everything else** (size, take profit, stop, final check, two entries a day) is the same for calls and puts.
+
+The account's name stays "Put sprint" in the files. Its first day (2026-11-20, puts only) stands as recorded.
