@@ -1,30 +1,36 @@
 {
- "cash": 516.75,
- "position": {
-  "contract_id": 943826160,
-  "label": "TSLA 2026-11-23 397.5C",
-  "underlying": "TSLA",
-  "right": "C",
-  "strike": 397.5,
-  "expiry": "2026-11-23",
-  "reason": "TSLA +12.5% (3.6x a typical day)",
-  "qty": 5,
-  "entry": 0.96,
-  "ordered_ts": "2026-11-23T10:13",
-  "entry_ts": "2026-11-23T10:32",
-  "cost": 483.25,
-  "mark": 0.57
- },
+ "cash": 618.5,
+ "position": null,
  "pending": null,
- "trades": [],
+ "trades": [
+  {
+   "contract_id": 943826160,
+   "label": "TSLA 2026-11-23 397.5C",
+   "underlying": "TSLA",
+   "right": "C",
+   "strike": 397.5,
+   "expiry": "2026-11-23",
+   "reason": "TSLA +12.5% (3.6x a typical day)",
+   "qty": 5,
+   "entry": 0.96,
+   "ordered_ts": "2026-11-23T10:13",
+   "entry_ts": "2026-11-23T10:32",
+   "cost": 483.25,
+   "mark": 0.57,
+   "exit": 0.21,
+   "exit_ts": "2026-11-23T12:06",
+   "why": "stop",
+   "pnl": -381.5
+  }
+ ],
  "day": {
   "date": "2026-11-23",
   "entries": 1,
-  "stopped": false
+  "stopped": true
  },
  "status": "live",
- "last_ts": "2026-11-23T11:06",
+ "last_ts": "2026-11-23T12:06",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 1002.12
+ "bench_last": 1001.66
 }
