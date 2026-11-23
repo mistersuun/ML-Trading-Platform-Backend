@@ -1,1 +1,2 @@
 {"ts": "2026-11-23T10:13", "kind": "regular", "events": ["order: buy TSLA 2026-11-23 397.5C (delayed ask 1.19); TSLA +12.5% (3.6x a typical day); movers TSLA +12.5% (3.6x), AAPL +1.8% (1.1x)"], "equity": 1000.0, "cash": 1000.0, "status": "live", "pending": true, "bench_value": 1000.0}
+{"ts": "2026-11-23T10:32", "kind": "fill", "events": ["buy TSLA 2026-11-23 397.5C x5 at 0.96 (US$483.25); ordered 10:13: TSLA +12.5% (3.6x a typical day)"], "equity": 981.75, "cash": 516.75, "status": "live", "pending": false}
