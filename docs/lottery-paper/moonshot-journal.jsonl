@@ -1,2 +1,3 @@
 {"asof": "2026-11-16", "events": ["buy TSLA 2026-11-20 392.5C x1 at 4.65 (US$465.65; US$234.35 unspent)"]}
 {"asof": "2026-11-20", "events": ["settle TSLA 2026-11-20 392.5C x1 at 0.00 (TSLA 345.82): US$700 -> US$234.35 (0.33x)"]}
+{"asof": "2026-11-23", "events": ["buy NVDA 2026-11-27 172.5C x1 at 3.55 (US$355.65; US$344.35 unspent)"]}

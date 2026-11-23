@@ -1,6 +1,6 @@
 {
  "inception": "2026-11-13",
- "last_asof": "2026-11-20",
+ "last_asof": "2026-11-23",
  "bench": {
   "spy_start": 754.37
  },
@@ -45,8 +45,21 @@
    "busted": false
   },
   "Y2": {
-   "cash": 4578.149999999994,
-   "positions": [],
+   "cash": 3886.849999999994,
+   "positions": [
+    {
+     "contract_id": 943830107,
+     "label": "SPY 2026-11-24 720P",
+     "right": "P",
+     "strike": 720.0,
+     "expiry": "2026-11-24",
+     "qty": 2,
+     "entry": 3.45,
+     "entry_date": "2026-11-23",
+     "spy_entry": 722.29,
+     "cost": 691.3
+    }
+   ],
    "trades": [
     {
      "contract_id": 941443810,

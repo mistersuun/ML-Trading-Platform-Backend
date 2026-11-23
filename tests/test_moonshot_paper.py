@@ -56,3 +56,17 @@ def test_no_ask_keeps_the_ticket_uncashed():
     w = mp.wanted(c, c.index[-1], SESS, st)
     ev = mp.enter(st, "2026-01-12", w, [])
     assert "no ticket" in ev[0] and st["tickets"][0]["multiple"] == 1.0
+
+
+def test_unlisted_grid_strike_uses_the_first_listed_strike_at_or_above_the_level():
+    st = mp.new_state()
+    want = {"symbol": "NVDA", "ret5": 0.05, "spot": 165.05, "strike": 171.0, "expiry": "2026-01-16"}
+    quotes = [{"contract_id": 1, "underlying": "NVDA", "right": "C", "strike": 170.0, "expiry": "2026-01-16",
+               "bid": 4.0, "ask": 4.1},                                   # below 165.05 x 1.03 = 170.0015
+              {"contract_id": 2, "underlying": "NVDA", "right": "C", "strike": 172.5, "expiry": "2026-01-16",
+               "bid": 3.0, "ask": 3.1},
+              {"contract_id": 3, "underlying": "NVDA", "right": "C", "strike": 175.0, "expiry": "2026-01-16",
+               "bid": 2.0, "ask": 2.1}]
+    ev = mp.enter(st, "2026-01-12", want, quotes)
+    t = st["tickets"][0]
+    assert t["strike"] == 172.5 and t["contract_id"] == 2 and t["qty"] == 2 and "172.5C" in ev[0]

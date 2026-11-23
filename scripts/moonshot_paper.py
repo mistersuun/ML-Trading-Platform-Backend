@@ -75,8 +75,17 @@ def settle(state: dict, asof: str, closes: pd.DataFrame) -> list[str]:
 
 
 def enter(state: dict, asof: str, want: dict, quotes: list[dict]) -> list[str]:
-    q = next((x for x in quotes if x.get("underlying") == want["symbol"] and x.get("right") == "C"
-              and float(x["strike"]) == want["strike"] and x.get("expiry") == want["expiry"]), None)
+    calls = [x for x in quotes if x.get("underlying") == want["symbol"] and x.get("right") == "C"
+             and x.get("expiry") == want["expiry"]]
+    q = next((x for x in calls if float(x["strike"]) == want["strike"]), None)
+    if q is None and want.get("spot"):
+        # The grid in call_strike() only approximates the listings. The rule is "the first listed strike at or above
+        # close x 1.03": when the grid strike is not listed, take the lowest quoted strike at or above that level
+        # (clarification 2026-11-23; the operator quotes the first listed one).
+        above = [x for x in calls if float(x["strike"]) >= want["spot"] * (1 + OTM) - 1e-9]
+        q = min(above, key=lambda x: float(x["strike"]), default=None)
+        if q is not None:
+            want = {**want, "strike": float(q["strike"])}
     label = f"{want['symbol']} {want['expiry']} {want['strike']:g}C"
     if q is None or not q.get("ask") or float(q["ask"]) <= 0:
         state["tickets"].append({"week_of": asof, "label": label, **want, "skipped": "no ask", "settled": True,

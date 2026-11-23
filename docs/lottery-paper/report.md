@@ -1,20 +1,20 @@
 # Short-dated SPY option accounts (Y1-Y3)
 
-As of 2026-11-20. Paper only; rules frozen in `PREREG.md`. US$1,000 each from 2026-11-13. SPY bought with US$1,000 at the same close: **US$914.42**.
+As of 2026-11-23. Paper only; rules frozen in `PREREG.md`. US$1,000 each from 2026-11-13. SPY bought with US$1,000 at the same close: **US$957.47**.
 
 | Account | Equity | Trades | Wins | Best trade | Open | Status |
 |---|---:|---:|---:|---:|---:|---|
 | Y1 calls every day | US$627.70 | 2 | 0 | -128.65 | 0 | live |
-| Y2 follow the trend | US$4,578.15 | 5 | 4 | +1,947.70 | 0 | live |
+| Y2 follow the trend | US$4,576.85 | 5 | 4 | +1,947.70 | 1 | live |
 | Y3 YOLO roll | US$221.75 | 3 | 2 | +3,098.80 | 0 | live |
 
 Open contracts are carried at their entry cost until they settle at the next close.
 
 ## Tonight
 
-- **Y1**: no trade: no ask for SPY 2026-11-23 692C
-- **Y2**: settle SPY 2026-11-20 713P x1 at 23.19 (SPY 689.81): P&L +1947.70; no trade: no ask for SPY 2026-11-23 687P
-- **Y3**: no trade: no ask for SPY 2026-11-23 686P
+- **Y1**: no trade: SPY 2026-11-24 725C at 3.63 does not fit US$125.54
+- **Y2**: buy SPY 2026-11-24 720P x2 at 3.45 (cost US$691.30)
+- **Y3**: no trade: SPY 2026-11-24 718P at 2.85 does not fit US$221.75
 
 ## Closed trades
 

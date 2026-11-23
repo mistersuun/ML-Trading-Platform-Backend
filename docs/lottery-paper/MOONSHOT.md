@@ -33,3 +33,10 @@ and SPY/QQQ, rolling all-in one-session options for 5 sessions.
 
 A single weekly call needs about a 1,429x move, so the expected record is mostly zeros, an occasional 2x to 10x, and no
 US$1M week. If one happens, it will be in the report.
+
+## Clarification 2026-11-23 (before the week's ticket)
+
+The rule says "the first listed strike at or above close x 1.03"; the price grid in the script only approximates
+what is listed. On 2026-11-23 the grid gave NVDA 171, but NVDA's 2026-11-27 chain lists 170 and 172.5 there. From
+this week, when the grid strike is not listed, the lowest listed strike at or above close x 1.03 is used (here
+172.5). The rule itself is unchanged.
