@@ -467,3 +467,29 @@ check is priced as of the quote's own time:
   script uses it when it is within 1% of SPY; before that date an unlisted strike means no entry).
 
 The nightly run only reports Y6's equity; it never steps it.
+
+## 17. Y7 Mover sprint: intraday checks (owner request 2026-11-23; rules frozen in `docs/mover-paper/PREREG.md`)
+
+Paper only. Same wake-ups as Y6 (section 16), plus a fill check after an order. Check files are
+`docs/mover-paper/checks/<date>T<HHMM>.json` in the format of the `scripts/mover_paper.py` docstring.
+
+**Regular check (HH:05).**
+
+1. One real-time `get_price_snapshot` (`last`, `open`, `prior_close`, `change`) for each of SPY 756733, QQQ 320227571,
+   NVDA 4815747, AAPL 265598, MSFT 272093, AMZN 3691937, META 107113386, TSLA 76792991, GOOGL 208813719, AMD 4391.
+   When `prior_close` is empty use last minus `change`. Write them into `prices`.
+2. `scripts/mover_paper.py rank <file>` lists up to two movers with the right and the `strike_level`.
+3. Quotes (`bid_ask`, 15 minutes delayed): the open position's contract; and, when an order is possible now or after
+   an exit, for each listed mover the nearest expiry (`get_option_parameters`: the first date on or after today,
+   trading class equal to the symbol) and the four listed strikes at or beyond `strike_level` (`get_option_data`).
+   Stop quoting a mover's strikes once one fits half the cash. Quote the second mover only if none of the first fits.
+4. `scripts/mover_paper.py check <file>`. If it prints an `order:` event, schedule the fill check with `send_later`,
+   `delay_minutes` 18.
+
+**Fill check.** One `get_price_snapshot` (`bid_ask`) of the ordered contract, requested at least 17 minutes after the
+order's check time. File `kind` is `fill`, `ts` is the current New York time, no `prices` needed. Run `check`.
+
+**Final check (15:50).** `kind` `final`; quote the open position (`bid_ask`); SPY in `prices` for the benchmark.
+
+Commit `docs/mover-paper/` and push after every check. Message the owner only on a fill, a sale, a bust or the target.
+The nightly run only reports Y7's equity.
