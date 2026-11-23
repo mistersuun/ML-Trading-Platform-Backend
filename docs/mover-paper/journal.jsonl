@@ -3,3 +3,4 @@
 {"ts": "2026-11-23T11:06", "kind": "regular", "events": ["hold TSLA 2026-11-23 397.5C x5: bid 0.57 vs entry 0.96"], "equity": 801.75, "cash": 516.75, "status": "live", "pending": false, "bench_value": 1002.12}
 {"ts": "2026-11-23T12:06", "kind": "regular", "events": ["sell TSLA 2026-11-23 397.5C x5 at 0.21 (stop): P&L -381.50"], "equity": 618.5, "cash": 618.5, "status": "live", "pending": false, "bench_value": 1001.66}
 {"ts": "2026-11-23T13:06", "kind": "regular", "events": ["nothing to do"], "equity": 618.5, "cash": 618.5, "status": "live", "pending": false, "bench_value": 1001.12}
+{"ts": "2026-11-23T14:06", "kind": "regular", "events": ["nothing to do"], "equity": 618.5, "cash": 618.5, "status": "live", "pending": false, "bench_value": 1003.12}
