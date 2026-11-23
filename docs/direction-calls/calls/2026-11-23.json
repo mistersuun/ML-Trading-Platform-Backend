@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-23",
+ "target": "2026-11-24",
+ "made_at": "2026-11-23T22:50:02Z",
+ "method": "Each call follows the base rate computed tonight for that name from 5 years of daily bars (next-day direction after days like today). News: Nvidia's board reinstated Jensen Huang as CEO (press reports of the company's 11-23 release); NVDA +31%, press calls it the indexes' best day since April 2025. Almost the whole gain was the opening gap. No verified calendar for Tuesday. Last night's calls: 7 of 10 (SPY, AAPL and MSFT were called down and rose). Record 19 of 50.",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "+4.7% to 722.29, all of it in the opening gap (it closed below its open). After SPY days up 2.5%+ the next day was up 50% of the time (n=18, median +0.25%); after gaps up of 1.5%+ that closed below the open, 45% (n=11). A coin flip; called up on the positive median and a holiday-shortened week."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "down",
+   "confidence": 0.53,
+   "reason": "+7.0% to 651.03, gap only. After QQQ days up 3.5%+ the next day was up 45% of the time with a mean of -0.7% (n=11)."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "down",
+   "confidence": 0.54,
+   "reason": "+31.5% to 165.05 on the board reinstating Jensen Huang as CEO (company release, 11-23); it closed slightly below its open. The 8 stocks rose the day after a 10%+ gain 47% of the time (n=49) and after a 20%+ gain 43% of the time, mean -1.5% (n=7)."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "+1.9%, the laggard, closing mid-range. AAPL rose 61% of the time on the day after SPY gained 2.5%+ (n=18)."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "down",
+   "confidence": 0.56,
+   "reason": "+1.6% but closed at the very bottom of its range (3rd percentile) after opening near 506 and ending 492.50. MSFT rose only 39% of the time on the day after SPY gained 2.5%+ (n=18)."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "+3.5%. AMZN rose 61% of the time on the day after SPY gained 2.5%+ (n=18, median +1.1%)."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "+6.6%, closing in the top fifth of its range, the strongest finish of the group; stocks up 5-10% rose next day 53% of the time (n=307)."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "+11.5% to 385.46 in the same rally, off its high. The 8 stocks rose 47% of the time the day after a 10%+ gain (n=49, median -0.6%)."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "+6.3%, closing in the upper third of its range; 53% up after gains of 5-10% (n=307). Near coin flip."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "down",
+   "confidence": 0.51,
+   "reason": "+6.9% but it opened at 475 and closed at 453.46: stocks that gapped up 3%+ and closed below the open rose next day 49% of the time (n=163). Near coin flip."
+  }
+ ]
+}
