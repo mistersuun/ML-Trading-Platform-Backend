@@ -15,3 +15,4 @@
 {"ts": "2026-11-24T10:05", "asof": "09:51:59", "final": false, "spy": 719.84, "events": ["no entry: SPY 719.84 is not beyond both the prior close 722.29 and the open 715.19"], "equity": 1551.4, "cash": 1551.4, "status": "live", "bench_value": 1005.59}
 {"ts": "2026-11-24T11:05", "asof": "10:50:59", "final": false, "spy": 714.35, "events": ["buy SPY 2026-11-24 710P x5 at 1.48 (US$743.25), SPY 714.35"], "equity": 1543.15, "cash": 808.15, "status": "live", "bench_value": 997.92}
 {"ts": "2026-11-24T12:05", "asof": "11:50:59", "final": false, "spy": 716.17, "events": ["sell SPY 2026-11-24 710P x5 at 0.63 (stop): P&L -431.50"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1000.46}
+{"ts": "2026-11-24T13:05", "asof": "12:51:59", "final": false, "spy": 718.18, "events": ["nothing to do"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1003.27}

@@ -1,0 +1,4 @@
+{"ts": "2026-11-24T13:06", "kind": "regular",
+ "source": "IBKR. A position is open, so only its quote is needed: NVDA 150 put (11-25) snapshot requested 13:06:01 New York, 15 minutes delayed (top_status DELAYED, last-trade time 12:50:58). SPY real-time for the benchmark (prior close = last minus change).",
+ "prices": {"SPY": {"last": 719.06, "open": 715.19, "prior_close": 722.29}},
+ "quotes": [{"contract_id": 943810785, "underlying": "NVDA", "right": "P", "strike": 150.0, "expiry": "2026-11-25", "bid": 2.28, "ask": 2.30}]}
