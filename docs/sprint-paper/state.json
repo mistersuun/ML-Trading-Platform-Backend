@@ -1,18 +1,6 @@
 {
- "cash": 808.1500000000001,
- "position": {
-  "contract_id": 943830060,
-  "label": "SPY 2026-11-24 710P",
-  "strike": 710.0,
-  "expiry": "2026-11-24",
-  "qty": 5,
-  "entry": 1.48,
-  "entry_ts": "2026-11-24T11:05",
-  "entry_asof": "10:50:59",
-  "cost": 743.25,
-  "spy_entry": 714.35,
-  "mark": 1.47
- },
+ "cash": 1119.9,
+ "position": null,
  "trades": [
   {
    "contract_id": 927881262,
@@ -31,15 +19,33 @@
    "exit_asof": "12:50:55",
    "why": "take profit",
    "pnl": 551.4
+  },
+  {
+   "contract_id": 943830060,
+   "label": "SPY 2026-11-24 710P",
+   "strike": 710.0,
+   "expiry": "2026-11-24",
+   "qty": 5,
+   "entry": 1.48,
+   "entry_ts": "2026-11-24T11:05",
+   "entry_asof": "10:50:59",
+   "cost": 743.25,
+   "spy_entry": 714.35,
+   "mark": 1.47,
+   "exit": 0.63,
+   "exit_ts": "2026-11-24T12:05",
+   "exit_asof": "11:50:59",
+   "why": "stop",
+   "pnl": -431.5
   }
  ],
  "day": {
   "date": "2026-11-24",
   "entries": 1,
-  "stopped": false
+  "stopped": true
  },
  "status": "live",
- "last_ts": "2026-11-24T11:05",
+ "last_ts": "2026-11-24T12:05",
  "inception": "2026-11-20T10:05",
  "spy_start": 715.84
 }
