@@ -1,7 +1,17 @@
 {
  "cash": 618.5,
  "position": null,
- "pending": null,
+ "pending": {
+  "ts": "2026-11-24T10:07",
+  "contract_id": 943810785,
+  "label": "NVDA 2026-11-25 150P",
+  "underlying": "NVDA",
+  "right": "P",
+  "strike": 150.0,
+  "expiry": "2026-11-25",
+  "reason": "NVDA -6.6% (2.2x a typical day)",
+  "seen_ask": 1.68
+ },
  "trades": [
   {
    "contract_id": 943826160,
@@ -24,13 +34,13 @@
   }
  ],
  "day": {
-  "date": "2026-11-23",
-  "entries": 1,
-  "stopped": true
+  "date": "2026-11-24",
+  "entries": 0,
+  "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-23T15:51",
+ "last_ts": "2026-11-24T10:07",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 1000.96
+ "bench_last": 995.21
 }

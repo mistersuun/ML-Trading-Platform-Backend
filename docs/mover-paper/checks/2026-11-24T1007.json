@@ -1,0 +1,20 @@
+{"ts": "2026-11-24T10:07", "kind": "regular",
+ "source": "IBKR real-time get_price_snapshot taken 10:06:11 to 10:06:21 New York; prior_close = last minus change. Movers: AMD (-8.9%) then NVDA (-6.6%). Option quotes 15 minutes delayed (top_status DELAYED), requested 10:06:30 to 10:06:54. AMD: nearest expiry 2026-11-25 (get_option_parameters); the four listed strikes at or below the level 406.08 are 405, 402.5, 400, 397.5; none fits the cash. NVDA: 2026-11-25 chain; the listed strikes at or below the level 151.84 start at 150 (151 is not listed); 150 fits, 149 also quoted.",
+ "prices": {
+  "SPY": {"last": 718.44, "open": 715.19, "prior_close": 722.29},
+  "QQQ": {"last": 639.26, "open": 640.61, "prior_close": 651.03},
+  "NVDA": {"last": 154.15, "open": 159.13, "prior_close": 165.05},
+  "AAPL": {"last": 352.83, "open": 347.56, "prior_close": 349.08},
+  "MSFT": {"last": 492.43, "open": 490.17, "prior_close": 492.50},
+  "AMZN": {"last": 254.57, "open": 252.23, "prior_close": 255.39},
+  "META": {"last": 595.52, "open": 589.09, "prior_close": 597.60},
+  "TSLA": {"last": 384.71, "open": 384.10, "prior_close": 385.46},
+  "GOOGL": {"last": 280.07, "open": 281.26, "prior_close": 282.10},
+  "AMD": {"last": 413.31, "open": 425.45, "prior_close": 453.46}},
+ "quotes": [
+  {"contract_id": 944115582, "underlying": "AMD", "right": "P", "strike": 405.0, "expiry": "2026-11-25", "bid": 8.5, "ask": 8.85},
+  {"contract_id": 947512697, "underlying": "AMD", "right": "P", "strike": 402.5, "expiry": "2026-11-25", "bid": 7.7, "ask": 8.1},
+  {"contract_id": 944115548, "underlying": "AMD", "right": "P", "strike": 400.0, "expiry": "2026-11-25", "bid": 6.95, "ask": 7.3},
+  {"contract_id": 947512657, "underlying": "AMD", "right": "P", "strike": 397.5, "expiry": "2026-11-25", "bid": 6.25, "ask": 6.65},
+  {"contract_id": 943810785, "underlying": "NVDA", "right": "P", "strike": 150.0, "expiry": "2026-11-25", "bid": 1.65, "ask": 1.68},
+  {"contract_id": 944118865, "underlying": "NVDA", "right": "P", "strike": 149.0, "expiry": "2026-11-25", "bid": 1.41, "ask": 1.44}]}

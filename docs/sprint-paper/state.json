@@ -22,12 +22,12 @@
   }
  ],
  "day": {
-  "date": "2026-11-23",
+  "date": "2026-11-24",
   "entries": 0,
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-23T15:50",
+ "last_ts": "2026-11-24T10:05",
  "inception": "2026-11-20T10:05",
  "spy_start": 715.84
 }
