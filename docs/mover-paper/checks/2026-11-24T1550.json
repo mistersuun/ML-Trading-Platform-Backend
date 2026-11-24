@@ -1,0 +1,4 @@
+{"ts": "2026-11-24T15:50", "kind": "final",
+ "source": "IBKR. Final check: NVDA 150 put (11-25) snapshot requested 15:50:31 New York, 15 minutes delayed (top_status DELAYED, last-trade time about 15:34:58); sold at that bid. SPY real-time for the benchmark (prior close = last minus change).",
+ "prices": {"SPY": {"last": 718.33, "open": 715.19, "prior_close": 722.29}},
+ "quotes": [{"contract_id": 943810785, "underlying": "NVDA", "right": "P", "strike": 150.0, "expiry": "2026-11-25", "bid": 2.09, "ask": 2.10}]}

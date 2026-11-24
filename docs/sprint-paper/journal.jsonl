@@ -18,3 +18,4 @@
 {"ts": "2026-11-24T13:05", "asof": "12:51:59", "final": false, "spy": 718.18, "events": ["nothing to do"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1003.27}
 {"ts": "2026-11-24T14:05", "asof": "13:51:59", "final": false, "spy": 717.84, "events": ["nothing to do"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1002.79}
 {"ts": "2026-11-24T15:05", "asof": "14:50:59", "final": false, "spy": 717.06, "events": ["nothing to do"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1001.7}
+{"ts": "2026-11-24T15:50", "asof": "15:35:59", "final": true, "spy": 716.18, "events": ["nothing to do"], "equity": 1119.9, "cash": 1119.9, "status": "live", "bench_value": 1000.47}

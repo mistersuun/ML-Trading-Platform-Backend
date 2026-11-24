@@ -1,20 +1,6 @@
 {
- "cash": 373.85,
- "position": {
-  "contract_id": 943810785,
-  "label": "NVDA 2026-11-25 150P",
-  "underlying": "NVDA",
-  "right": "P",
-  "strike": 150.0,
-  "expiry": "2026-11-25",
-  "reason": "NVDA -6.6% (2.2x a typical day)",
-  "qty": 1,
-  "entry": 2.44,
-  "ordered_ts": "2026-11-24T10:07",
-  "entry_ts": "2026-11-24T10:26",
-  "cost": 244.65,
-  "mark": 1.96
- },
+ "cash": 582.2,
+ "position": null,
  "pending": null,
  "trades": [
   {
@@ -35,6 +21,25 @@
    "exit_ts": "2026-11-23T12:06",
    "why": "stop",
    "pnl": -381.5
+  },
+  {
+   "contract_id": 943810785,
+   "label": "NVDA 2026-11-25 150P",
+   "underlying": "NVDA",
+   "right": "P",
+   "strike": 150.0,
+   "expiry": "2026-11-25",
+   "reason": "NVDA -6.6% (2.2x a typical day)",
+   "qty": 1,
+   "entry": 2.44,
+   "ordered_ts": "2026-11-24T10:07",
+   "entry_ts": "2026-11-24T10:26",
+   "cost": 244.65,
+   "mark": 1.96,
+   "exit": 2.09,
+   "exit_ts": "2026-11-24T15:50",
+   "why": "final check",
+   "pnl": -36.3
   }
  ],
  "day": {
@@ -43,8 +48,8 @@
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-24T15:06",
+ "last_ts": "2026-11-24T15:50",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 992.16
+ "bench_last": 995.05
 }
