@@ -1,0 +1,15 @@
+{
+ "asof": "2026-11-24",
+ "made_at": "2026-11-24T22:58:16Z",
+ "decision": "No trade tonight. The analyst's best candidate, a SPY 745 call for 12-04 at 1.20, has a modelled expected value of about 0.84 per dollar; a SPY call paired with a QQQ put comes out near 0.58. No candidate survived its own entry test, so the red team was not run; the manager agrees.",
+ "research": {
+  "news_scout": "Nothing verified for today's close. Press in the morning: chip and AI selling as Monday's Nvidia rally faded, plus rate worries. Wednesday 08:30 New York is reported to bring PCE inflation, jobless claims and the GDP revision (unverified). Thanksgiving 11-26, half day 11-27.",
+  "price_scout": "SPY 718.78 (-0.5%), QQQ 638.10 (-2.0%), NVDA 155.38 (-5.9%), AMD 413.27 (-8.9%). SPY in a high-volatility pause (13 episodes): next 8 sessions median +1.6%, 54% positive, beyond +/-4% in 38% of episodes against 14% normally. QQQ (12 episodes): mean -1.6%, beyond +/-4% in 50%. No directional case; excess movement only, on weak samples.",
+  "options_scout": "Implied vs 30-day realized volatility: SPY 21.8% vs 22.2%, QQQ 27.2% vs 35.1%, NVDA 66.5% vs 110%, AMD 78.8% vs 102%. Under the cap: SPY 745C 12-04 1.16/1.20 (breakeven +3.8%), SPY 755C 12-11 1.20/1.24, SPY 680P 12-04 2.60/2.64 (breakeven -5.8%), QQQ 676C 12-04 1.59/1.68, QQQ 585P 12-04 2.78/2.90 (breakeven -8.8%). Last night's SPY 750C went from 1.65 to 0.62 in one day on a -0.5% move.",
+  "analyst": "Far calls are priced at about 18% volatility and far puts at 35% to 45%. SPY 745C 12-04: about 0.84 per dollar, error bar +/-0.3 from 13 episodes. SPY 745C + QQQ 585P: about 0.58 per dollar; the put needs a two-sigma fall and both legs lose in the most likely range. Verdict: no trade.",
+  "red_team": "Not run: no candidate survived the analyst's own entry test (allowed by the runbook)."
+ },
+ "reasoning": "This morning's six-study review found no directional edge in five years of data, and the only supported idea, larger-than-normal moves after shocks, is already in option prices at index level. A low-delta call that loses two-thirds of its value on a flat day needs more than a weak base rate. Tomorrow's data at 08:30 and the holiday gap add time decay without adding an edge.",
+ "watch": "Rejected tonight, to be checked later: SPY 745C 12-04 at 1.20; SPY 680P 12-04 at 2.64; QQQ 585P 12-04 at 2.90. Earlier rejections so far: SPY 750C 12-04 (1.65 on 11-23, 0.62 tonight), NVDA 185C 12-04 (2.48 on 11-23), NVDA 145C 11-27 (1.50 on 11-20, deep in the money since Monday).",
+ "actions": []
+}
