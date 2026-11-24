@@ -8,3 +8,4 @@
 {"ts": "2026-11-23T15:51", "kind": "final", "events": ["nothing to do"], "equity": 618.5, "cash": 618.5, "status": "live", "pending": false, "bench_value": 1000.96}
 {"ts": "2026-11-24T10:07", "kind": "regular", "events": ["order: buy NVDA 2026-11-25 150P (delayed ask 1.68); NVDA -6.6% (2.2x a typical day); movers AMD -8.8% (2.5x), NVDA -6.6% (2.2x), QQQ -1.8% (1.4x)"], "equity": 618.5, "cash": 618.5, "status": "live", "pending": true, "bench_value": 995.21}
 {"ts": "2026-11-24T10:26", "kind": "fill", "events": ["buy NVDA 2026-11-25 150P x1 at 2.44 (US$244.65); ordered 10:07: NVDA -6.6% (2.2x a typical day)"], "equity": 616.85, "cash": 373.85, "status": "live", "pending": false}
+{"ts": "2026-11-24T11:06", "kind": "regular", "events": ["hold NVDA 2026-11-25 150P x1: bid 2.80 vs entry 2.44"], "equity": 653.85, "cash": 373.85, "status": "live", "pending": false, "bench_value": 987.67}

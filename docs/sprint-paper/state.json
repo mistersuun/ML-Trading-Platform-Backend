@@ -1,6 +1,18 @@
 {
- "cash": 1551.4,
- "position": null,
+ "cash": 808.1500000000001,
+ "position": {
+  "contract_id": 943830060,
+  "label": "SPY 2026-11-24 710P",
+  "strike": 710.0,
+  "expiry": "2026-11-24",
+  "qty": 5,
+  "entry": 1.48,
+  "entry_ts": "2026-11-24T11:05",
+  "entry_asof": "10:50:59",
+  "cost": 743.25,
+  "spy_entry": 714.35,
+  "mark": 1.47
+ },
  "trades": [
   {
    "contract_id": 927881262,
@@ -23,11 +35,11 @@
  ],
  "day": {
   "date": "2026-11-24",
-  "entries": 0,
+  "entries": 1,
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-24T10:05",
+ "last_ts": "2026-11-24T11:05",
  "inception": "2026-11-20T10:05",
  "spy_start": 715.84
 }
