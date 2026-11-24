@@ -13,7 +13,7 @@
   "ordered_ts": "2026-11-24T10:07",
   "entry_ts": "2026-11-24T10:26",
   "cost": 244.65,
-  "mark": 1.83
+  "mark": 1.96
  },
  "pending": null,
  "trades": [
@@ -43,8 +43,8 @@
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-24T14:06",
+ "last_ts": "2026-11-24T15:06",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 993.78
+ "bench_last": 992.16
 }

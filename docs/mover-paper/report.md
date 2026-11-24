@@ -1,20 +1,20 @@
 # Y7 Mover sprint: US$1,000 to US$200,000
 
-As of 2026-11-24T14:06 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
+As of 2026-11-24T15:06 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
 
 | | Value |
 |---|---:|
-| Equity | **US$556.85** |
+| Equity | **US$569.85** |
 | Status | live |
 | Progress to US$200,000 | 0.28% |
-| US$1,000 in SPY | US$993.78 |
+| US$1,000 in SPY | US$992.16 |
 | Closed trades | 1 (0 wins) |
 
 ## Last check
 
-- hold NVDA 2026-11-25 150P x1: bid 1.83 vs entry 2.44
+- hold NVDA 2026-11-25 150P x1: bid 1.96 vs entry 2.44
 
-Open: NVDA 2026-11-25 150P x1, entry 2.44 at 2026-11-24T10:26, last bid 1.83.
+Open: NVDA 2026-11-25 150P x1, entry 2.44 at 2026-11-24T10:26, last bid 1.96.
 
 ## Trades
 

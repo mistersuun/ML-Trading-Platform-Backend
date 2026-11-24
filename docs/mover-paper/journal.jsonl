@@ -12,3 +12,4 @@
 {"ts": "2026-11-24T12:06", "kind": "regular", "events": ["hold NVDA 2026-11-25 150P x1: bid 2.99 vs entry 2.44"], "equity": 672.85, "cash": 373.85, "status": "live", "pending": false, "bench_value": 992.13}
 {"ts": "2026-11-24T13:06", "kind": "regular", "events": ["hold NVDA 2026-11-25 150P x1: bid 2.28 vs entry 2.44"], "equity": 601.85, "cash": 373.85, "status": "live", "pending": false, "bench_value": 996.07}
 {"ts": "2026-11-24T14:06", "kind": "regular", "events": ["hold NVDA 2026-11-25 150P x1: bid 1.83 vs entry 2.44"], "equity": 556.85, "cash": 373.85, "status": "live", "pending": false, "bench_value": 993.78}
+{"ts": "2026-11-24T15:06", "kind": "regular", "events": ["hold NVDA 2026-11-25 150P x1: bid 1.96 vs entry 2.44"], "equity": 569.85, "cash": 373.85, "status": "live", "pending": false, "bench_value": 992.16}
