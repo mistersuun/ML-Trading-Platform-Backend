@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-11-23",
+  "last_asof": "2026-11-24",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -60,7 +60,7 @@
           "side": "short",
           "entry_price": 5.95,
           "entry_date": "2026-11-09",
-          "last_mid": 14.115
+          "last_mid": 15.47
         }
       ],
       "closed": [
@@ -112,7 +112,7 @@
           "side": "long",
           "entry_price": 0.86,
           "entry_date": "2026-11-19",
-          "last_mid": 0.86
+          "last_mid": 0.525
         }
       ],
       "closed": [
