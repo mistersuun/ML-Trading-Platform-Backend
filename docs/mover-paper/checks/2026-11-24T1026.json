@@ -1,0 +1,3 @@
+{"ts": "2026-11-24T10:26", "kind": "fill",
+ "source": "IBKR get_price_snapshot of the ordered contract, requested 10:26:47 New York, 19 minutes after the 10:07 order; 15 minutes delayed (top_status DELAYED), last-trade time about 10:11, so the quote is from after the decision.",
+ "quotes": [{"contract_id": 943810785, "underlying": "NVDA", "right": "P", "strike": 150.0, "expiry": "2026-11-25", "bid": 2.43, "ask": 2.44}]}

@@ -1,10 +1,10 @@
 # Y7 Mover sprint: US$1,000 to US$200,000
 
-As of 2026-11-24T10:07 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
+As of 2026-11-24T10:26 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
 
 | | Value |
 |---|---:|
-| Equity | **US$618.50** |
+| Equity | **US$616.85** |
 | Status | live |
 | Progress to US$200,000 | 0.31% |
 | US$1,000 in SPY | US$995.21 |
@@ -12,9 +12,9 @@ As of 2026-11-24T10:07 New York. Paper only; rules frozen in `PREREG.md`. Starte
 
 ## Last check
 
-- order: buy NVDA 2026-11-25 150P (delayed ask 1.68); NVDA -6.6% (2.2x a typical day); movers AMD -8.8% (2.5x), NVDA -6.6% (2.2x), QQQ -1.8% (1.4x)
+- buy NVDA 2026-11-25 150P x1 at 2.44 (US$244.65); ordered 10:07: NVDA -6.6% (2.2x a typical day)
 
-Order waiting for its fill: NVDA 2026-11-25 150P, placed 2026-11-24T10:07.
+Open: NVDA 2026-11-25 150P x1, entry 2.44 at 2026-11-24T10:26, last bid 2.43.
 
 ## Trades
 
