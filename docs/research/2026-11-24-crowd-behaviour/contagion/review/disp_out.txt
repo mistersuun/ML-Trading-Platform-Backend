@@ -1,0 +1,6 @@
+dropped |move|>45% in this subset: 5
+{'NVDA': 118, 'AAPL': 445, 'TSLA': 483, 'COIN': 137, 'BABA': 324, 'CRM': 308}
+high-dispersion NON-event days, next c2c       | disc: n=581 mean=-0.090% t=-0.90 hit=51% med=+0.063% | hold: n=391 mean=+0.025% t=+0.25 hit=48% med=-0.090%
+high-dispersion NON-event days, next o2c       | disc: n=581 mean=+0.010% t=+0.11 hit=54% med=+0.135% | hold: n=391 mean=+0.080% t=+0.98 hit=49% med=-0.036%
+disc episodes 32
+hold episodes 19

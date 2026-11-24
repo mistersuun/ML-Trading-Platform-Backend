@@ -1,0 +1,37 @@
+names 129, sessions 1267, split-like dropped 15
+
+== replication ==
+unconditional P(|next|>1.5x typ) = 21.8%
+3sig 1.5x | disc: dates  484 eps  69 obs  1281 hit  36.1% excess +14.69pp t  8.38 | hold: dates  313 eps  45 obs  1078 hit  45.6% excess +16.24pp t  7.39
+2sig 1.5x | disc: dates  683 eps  73 obs  4644 hit  30.1% excess  +8.21pp t  8.00 | hold: dates  446 eps  47 obs  3534 hit  34.4% excess  +6.87pp t  5.39
+3sig 1.0x | disc: dates  484 eps  69 obs  1281 hit  55.0% excess +16.52pp t  9.15 | hold: dates  313 eps  45 obs  1078 hit  60.7% excess +17.00pp t  7.67
+
+== placebo (a): shock 20 sessions ago ==
+3sig lag20 | disc: dates  473 eps  68 obs  1250 hit  17.9% excess  -3.13pp t -2.20 | hold: dates  307 eps  45 obs  1003 hit  21.6% excess  +2.58pp t  1.28
+3sig lag5 (descriptive) | disc: dates  484 eps  69 obs  1280 hit  22.4% excess  -0.37pp t -0.24 | hold: dates  309 eps  44 obs  1057 hit  22.8% excess  +1.03pp t  0.54
+
+== placebo (b): shock dates shuffled within stock-year ==
+3sig shuffled | disc: dates  601 eps  72 obs  1281 hit  21.9% excess  +1.64pp t  1.15 | hold: dates  422 eps  47 obs  1078 hit  23.3% excess  -1.19pp t -0.81
+
+== check (c): market-wide vs idiosyncratic shock dates ==
+market-wide 3sig dates: 16 (stock-events 420), idio stock-events 1939
+3sig market-wide | disc: dates    7 eps   7 obs   136 hit  35.3% excess +13.24pp t  1.12 | hold: dates    9 eps   6 obs   284 hit  70.1% excess +41.19pp t  4.19
+3sig idiosyncratic | disc: dates  477 eps  69 obs  1145 hit  36.2% excess +14.71pp t  8.30 | hold: dates  304 eps  44 obs   794 hit  36.9% excess +15.50pp t  6.94
+SPY 2sig | disc: dates   40 eps  22 obs    40 hit  22.5% excess  -1.27pp t -0.19 | hold: dates   36 eps  17 obs    36 hit  38.9% excess +15.68pp t  1.90
+
+== check (d): matched baseline = same stock, same sample, same trailing-vol quintile ==
+3sig vs vol-quintile base | disc: dates  484 eps  69 obs  1281 hit  36.1% excess +12.67pp t  7.20 | hold: dates  313 eps  45 obs  1078 hit  45.6% excess +13.04pp t  5.99
+
+== check (e): straddle proxy, cost model sensitivity ==
+  EWMA incl shock (theirs)     x1.0: all  disc -0.08% (t -2.6)  hold -0.06% (t -1.5)
+  EWMA incl shock (theirs)     x1.0: 3sig disc -1.75% (t -12.0)  hold -1.51% (t -10.1)
+  EWMA incl shock (theirs)     x1.2: all  disc -0.53% (t -17.5)  hold -0.52% (t -12.7)
+  EWMA incl shock (theirs)     x1.2: 3sig disc -2.74% (t -17.7)  hold -2.39% (t -14.8)
+  EWMA excl shock              x1.0: all  disc -0.08% (t -2.6)  hold -0.06% (t -1.4)
+  EWMA excl shock              x1.0: 3sig disc +0.78% (t 5.6)  hold +0.80% (t 6.0)
+  EWMA excl shock              x1.2: all  disc -0.53% (t -17.5)  hold -0.52% (t -12.0)
+  EWMA excl shock              x1.2: 3sig disc +0.30% (t 2.1)  hold +0.38% (t 2.8)
+  trailing sigma60 excl shock  x1.0: all  disc -0.20% (t -6.5)  hold -0.18% (t -4.0)
+  trailing sigma60 excl shock  x1.0: 3sig disc +0.90% (t 6.4)  hold +0.82% (t 6.3)
+  trailing sigma60 excl shock  x1.2: all  disc -0.68% (t -22.0)  hold -0.66% (t -14.9)
+  trailing sigma60 excl shock  x1.2: 3sig disc +0.45% (t 3.2)  hold +0.39% (t 3.1)

@@ -1,0 +1,101 @@
+Universe: 129 symbols, 1267 sessions 2021-11-05..2026-11-23
+Split-like moves dropped (|cc|>45%): 15 [('APP', '2024-11-07', 46.3), ('ARM', '2024-02-08', 47.9), ('ASTS', '2024-05-16', 68.6), ('ASTS', '2024-05-29', 69.2), ('ASTS', '2024-08-15', 50.7), ('CVNA', '2023-01-12', 46.0), ('CVNA', '2023-06-08', 56.0), ('GME', '2024-05-13', 74.4), ('GME', '2024-05-14', 60.1), ('GME', '2024-06-06', 47.5), ('MRNA', '2026-08-19', 177.0), ('PDD', '2022-03-16', 56.1), ('SNAP', '2022-02-04', 58.8), ('UPST', '2022-05-10', -56.4), ('UPST', '2024-11-08', 46.0)]
+
+=== (1) TAIL FREQUENCIES: % of sessions (count) ===
+
+-- close-to-close --   name   n   2% dn/up   3% dn/up   4% dn/up   5% dn/up   8% dn/up 
+   SPY     1266    3.2/  3.0    1.0/  0.6    0.5/  0.2    0.1/  0.2    0.0/  0.1
+   QQQ     1266    7.3/  7.7    2.6/  2.4    1.1/  0.5    0.5/  0.2    0.0/  0.1
+   NVDA    1266   22.0/ 25.1   14.2/ 15.6    8.4/  9.6    4.9/  5.5    0.9/  1.3
+   TSLA    1266   25.4/ 26.3   17.8/ 19.3   11.2/ 12.4    7.4/  7.7    2.3/  1.9
+   AMD     1266   24.1/ 26.4   16.1/ 17.7    9.9/ 12.2    6.9/  8.0    1.9/  2.5
+   POOLED 158238  18.6/ 18.7   11.7/ 11.8    7.5/  7.8    5.1/  5.4    1.6/  2.0
+
+-- open-to-close --   name   n   2% dn/up   3% dn/up   4% dn/up   5% dn/up   8% dn/up 
+   SPY     1267    2.2/  0.9    0.5/  0.4    0.2/  0.2    0.0/  0.1    0.0/  0.1
+   QQQ     1267    5.3/  3.3    1.8/  0.8    0.4/  0.3    0.2/  0.2    0.0/  0.1
+   NVDA    1267   18.6/ 18.2   11.0/ 10.3    6.0/  5.6    3.1/  2.8    0.6/  0.6
+   TSLA    1267   21.6/ 22.9   12.9/ 12.9    8.3/  8.3    4.9/  5.1    1.0/  0.6
+   AMD     1267   20.7/ 21.2   12.1/ 13.0    6.8/  7.0    4.3/  3.6    1.1/  0.7
+   POOLED 158367  16.0/ 15.5    9.4/  9.3    5.8/  5.7    3.7/  3.7    1.0/  1.2
+
+SPY: days <= -8%: 0, <= -5%: 1, <= -4%: 6
+SPY 5 worst days: 2025-04-04 -5.85%, 2025-04-03 -4.93%, 2026-11-05 -4.41%, 2025-04-10 -4.38%, 2022-09-13 -4.35%
+SPY 3 best days: 2025-04-09 10.50%, 2022-11-10 5.50%, 2026-11-23 4.71%
+SPY worst 5-session return: -11.50% ending 2025-04-08; 5-session windows <= -8%: 8
+SPY last two sessions: 2026-11-20 -3.64%, 2026-11-23 +4.71%
+
+=== PRE-REGISTERED RESULT ROWS (excess/P&L in % ; t clustered by date) ===
+clustering rows: excess = pct-points of probability over same-stock unconditional rate; straddle rows: mean P&L in % of underlying (break-even 0)
+
+* 2-sigma shock (pooled stocks): P(|next| > 1x typical)  [t+1 abs move]
+   event dates 1140, episodes 122 (disc 75, hold 47), stock-events 8308
+   discovery: excess +8.25  t 7.36  hit 47.3% | hold-out: excess +7.73  t 5.53  hit 50.8% | unconditional hit 39.1% | holds: True
+
+* 2-sigma shock (pooled stocks): P(|next| > 1.5x typical)  [t+1 abs move]
+   event dates 1140, episodes 122 (disc 75, hold 47), stock-events 8308
+   discovery: excess +8.41  t 8.22  hit 29.8% | hold-out: excess +6.16  t 4.94  hit 33.8% | unconditional hit 21.9% | holds: True
+
+* 2-sigma shock (pooled stocks): P(|next| > 2x typical)  [t+1 abs move]
+   event dates 1140, episodes 122 (disc 75, hold 47), stock-events 8308
+   discovery: excess +6.45  t 7.58  hit 19.0% | hold-out: excess +4.50  t 4.43  hit 22.5% | unconditional hit 12.0% | holds: True
+
+* 3-sigma shock (pooled stocks): P(|next| > 1x typical)  [t+1 abs move]
+   event dates 816, episodes 115 (disc 70, hold 45), stock-events 2409
+   discovery: excess +15.44  t 8.75  hit 54.3% | hold-out: excess +17.15  t 7.79  hit 60.2% | unconditional hit 39.1% | holds: True
+
+* 3-sigma shock (pooled stocks): P(|next| > 1.5x typical)  [t+1 abs move]
+   event dates 816, episodes 115 (disc 70, hold 45), stock-events 2409
+   discovery: excess +14.91  t 8.70  hit 36.4% | hold-out: excess +14.68  t 6.82  hit 44.6% | unconditional hit 21.9% | holds: True
+
+* 3-sigma shock (pooled stocks): P(|next| > 2x typical)  [t+1 abs move]
+   event dates 816, episodes 115 (disc 70, hold 45), stock-events 2409
+   discovery: excess +12.82  t 8.31  hit 24.7% | hold-out: excess +10.61  t 5.73  hit 32.3% | unconditional hit 12.0% | holds: True
+
+* SPY 2-sigma shock: P(|next| > 1.5x typical)  [t+1 abs move]
+   event dates 77, episodes 39 (disc 22, hold 17), stock-events 77
+   discovery: excess +0.56  t 0.08  hit 24.4% | hold-out: excess +15.47  t 1.88  hit 38.9% | unconditional hit 23.7% | holds: False
+
+* Straddle every day, all stocks (IV=1.2x EWMA10) - baseline  [buy close t, settle close t+1]
+   event dates 1225, episodes 123 (disc 76, hold 48), stock-events 152934
+   discovery: excess -0.53  t -17.64  hit 31.9% | hold-out: excess -0.53  t -12.63  hit 31.5% | unconditional hit 31.8% | holds: True
+
+* Straddle after 2-sigma shock, stocks (IV=1.2x)  [buy close t, settle close t+1]
+   event dates 1140, episodes 122 (disc 75, hold 47), stock-events 8308
+   discovery: excess -1.66  t -19.54  hit 19.8% | hold-out: excess -1.72  t -18.44  hit 21.6% | unconditional hit 31.8% | holds: True
+
+* Straddle after 2-sigma DOWN shock, stocks (IV=1.2x)  [buy close t, settle close t+1]
+   event dates 868, episodes 117 (disc 71, hold 46), stock-events 3912
+   discovery: excess -1.56  t -12.69  hit 20.7% | hold-out: excess -1.59  t -13.70  hit 23.8% | unconditional hit 31.8% | holds: True
+
+* Straddle after 3-sigma shock, stocks (IV=1.1x)  [buy close t, settle close t+1]
+   event dates 816, episodes 115 (disc 70, hold 45), stock-events 2409
+   discovery: excess -2.26  t -15.98  hit 17.3% | hold-out: excess -2.05  t -13.53  hit 22.2% | unconditional hit 35.4% | holds: True
+
+* Straddle after 3-sigma shock, stocks (IV=1.3x)  [buy close t, settle close t+1]
+   event dates 816, episodes 115 (disc 70, hold 45), stock-events 2409
+   discovery: excess -3.24  t -21.27  hit 10.9% | hold-out: excess -2.95  t -17.63  hit 17.0% | unconditional hit 28.6% | holds: True
+
+* Straddle SPY after SPY 2-sigma shock (IV=1.2x)  [buy close t, settle close t+1]
+   event dates 77, episodes 39 (disc 22, hold 17), stock-events 77
+   discovery: excess -0.66  t -4.84  hit 22.0% | hold-out: excess -0.26  t -1.11  hit 30.6% | unconditional hit 36.0% | holds: False
+
+=== PERSISTENCE: mean |cc_{t+h}| / typical_t after a 2-sigma shock vs all days (pooled, date-clustered) ===
+unconditional ratio 1.03
+h1:1.24  h2:1.20  h3:1.17  h4:1.16  h5:1.12  h6:1.10  h7:1.14  h8:1.11  h9:1.13  h10:1.10  h11:1.11  h12:1.09  h13:1.09  h14:1.11  h15:1.07  h16:1.10  h17:1.08  h18:1.08  h19:1.11  h20:1.11
+First horizon where ratio < 1.10x unconditional: h=5
+  2-sigma disc: h1 ratio 1.25, h5 ratio 1.10
+  2-sigma hold: h1 ratio 1.23, h5 ratio 1.14
+  3-sigma disc: h1 ratio 1.44, h5 ratio 1.15
+  3-sigma hold: h1 ratio 1.47, h5 ratio 1.13
+
+=== STRADDLE DIAGNOSTIC: next |move| / cost (IV=1.2x) ===
+  all days : mean |next|/cost 0.88, median 0.64; mean cost 2.75% , mean |next| 2.22%
+  2-sigma  : mean |next|/cost 0.66, median 0.49; mean cost 4.24% , mean |next| 2.70%
+  3-sigma  : mean |next|/cost 0.60, median 0.45; mean cost 5.50% , mean |next| 3.12%
+  2-sigma, IV premium 0.8: date-clustered mean P&L -0.227%
+  2-sigma, IV premium 0.9: date-clustered mean P&L -0.591%
+  2-sigma, IV premium 1.0: date-clustered mean P&L -0.955%
+  2-sigma, IV premium 1.1: date-clustered mean P&L -1.319%
+  2-sigma, IV premium 1.2: date-clustered mean P&L -1.683%
+(premium sweep above is descriptive only, not a tested signal)

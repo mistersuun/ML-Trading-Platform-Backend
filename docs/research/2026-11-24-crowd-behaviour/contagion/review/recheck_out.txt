@@ -1,0 +1,21 @@
+dropped |move|>45% in this subset: 5
+event dates per leader: {'NVDA': 13, 'AAPL': 26, 'TSLA': 17, 'COIN': 16, 'BABA': 23, 'CRM': 21}
+(a) S6 leader shock, next c2c                  | disc: n=56 mean=+0.563% t=+1.26 hit=54% med=+0.821% | hold: n=43 mean=+0.974% t=+3.22 hit=60% med=+0.594%
+  distinct dates 99
+  episodes 51
+    (a) winsor-trim 5/95                       | disc: n=48 mean=+0.563% t=+1.88 hit=56% med=+0.862% | hold: n=41 mean=+0.696% t=+2.87 hit=59% med=+0.437%
+(b) same spread, ALL days                      | disc: n=732 mean=-0.036% t=-0.92 hit=48% med=-0.041% | hold: n=474 mean=-0.011% t=-0.24 hit=49% med=-0.011%
+(b) same spread, NON-event days                | disc: n=732 mean=-0.047% t=-1.16 hit=48% med=-0.047% | hold: n=474 mean=-0.042% t=-0.85 hit=48% med=-0.050%
+(c) placebo: events shifted +20 sessions       | disc: n=55 mean=+0.286% t=+1.08 hit=55% med=+0.172% | hold: n=41 mean=+0.266% t=+1.18 hit=56% med=+0.168%
+(d) shuffle-in-year disc: mean of placebo means=-0.026%  5-95% [-0.559,+0.572]  share t>=1.56/2.55: 0.07
+(d) shuffle-in-year hold: mean of placebo means=-0.003%  5-95% [-0.463,+0.461]  share t>=1.56/2.55: 0.01
+(e) S6 leader shock, next o2c (no bounce)      | disc: n=56 mean=+0.487% t=+1.67 hit=55% med=+0.147% | hold: n=43 mean=+0.408% t=+1.57 hit=56% med=+0.053%
+(e) same o2c spread, ALL days                  | disc: n=732 mean=-0.040% t=-1.21 hit=49% med=-0.017% | hold: n=474 mean=-0.010% t=-0.25 hit=47% med=-0.049%
+(f) S7 leader shock, next 3d c2c               | disc: n=56 mean=+1.236% t=+1.40 hit=52% med=+0.234% | hold: n=42 mean=+1.095% t=+1.95 hit=64% med=+1.228%
+(f) same 3d spread, ALL days                   | disc: n=732 mean=-0.018% t=-0.26 hit=52% med=+0.092% | hold: n=472 mean=-0.119% t=-1.55 hit=48% med=-0.070%
+    by leader NVDA                             | disc: n=6 mean=+0.092% t=+0.07 hit=50% med=+0.488% | hold: n=6 mean=+0.759% t=+1.17 hit=50% med=+0.361%
+    by leader AAPL                             | disc: n=12 mean=-0.294% t=-0.82 hit=33% med=-0.358% | hold: n=14 mean=+0.832% t=+1.94 hit=57% med=+0.453%
+    by leader TSLA                             | disc: n=10 mean=+2.668% t=+1.83 hit=80% med=+1.858% | hold: n=6 mean=+0.810% t=+0.76 hit=33% med=-0.127%
+    by leader COIN                             | disc: n=9 mean=+1.238% t=+0.80 hit=56% med=+2.429% | hold: n=7 mean=+2.329% t=+2.36 hit=57% med=+2.384%
+    by leader BABA                             | disc: n=11 mean=-0.062% t=-0.11 hit=55% med=+0.730% | hold: n=12 mean=+1.167% t=+1.71 hit=75% med=+0.815%
+    by leader CRM                              | disc: n=12 mean=-0.251% t=-0.25 hit=50% med=+0.570% | hold: n=9 mean=+0.686% t=+1.16 hit=67% med=+0.882%

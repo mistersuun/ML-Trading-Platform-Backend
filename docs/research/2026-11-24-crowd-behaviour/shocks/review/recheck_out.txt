@@ -1,0 +1,32 @@
+stocks=125 dropped |r|>45%: 15; isolated missing bars: 1
+
+== Headline: UP z>=3 (long-side excess; team's 'short' edge is minus this) ==
+UP z>=3                    uni1  | DISC  413d  70ep   986tr long-excess=+0.26% t=+1.38 | HOLD  251d  44ep   694tr long-excess=+0.27% t=+1.19
+UP z>=3                    uni3  | DISC  413d  70ep   986tr long-excess=+0.61% t=+2.10 | HOLD  250d  43ep   693tr long-excess=+0.33% t=+0.81
+UP z>=3                    uni5  | DISC  413d  70ep   986tr long-excess=+0.78% t=+2.14 | HOLD  249d  43ep   692tr long-excess=+0.52% t=+1.00
+UP z>=3                    own5  | DISC  413d  70ep   986tr long-excess=+0.70% t=+1.92 | HOLD  249d  43ep   692tr long-excess=+0.45% t=+0.87
+UP z>=3                    uno5  | DISC  413d  70ep   986tr long-excess=+0.70% t=+2.02 | HOLD  249d  43ep   692tr long-excess=+0.49% t=+0.99
+   DISC next-day UP rate pooled=53.8% date-avg=52.1%  (uncond 50.1%)
+   HOLD next-day UP rate pooled=46.4% date-avg=52.7%  (uncond 50.4%)
+DOWN z<=-3                 uni1  | DISC  353d  68ep   811tr long-excess=-0.25% t=-1.35 | HOLD  242d  43ep   592tr long-excess=+0.29% t=+1.41
+DOWN z<=-3                 uni3  | DISC  353d  68ep   811tr long-excess=-0.11% t=-0.37 | HOLD  241d  43ep   591tr long-excess=+0.51% t=+1.71
+DOWN z<=-3                 uni5  | DISC  353d  68ep   811tr long-excess=-0.25% t=-0.71 | HOLD  239d  43ep   587tr long-excess=+0.65% t=+1.76
+DOWN z<=-3                 own5  | DISC  353d  68ep   811tr long-excess=-0.19% t=-0.54 | HOLD  239d  43ep   587tr long-excess=+0.74% t=+1.98
+DOWN z<=-3                 uno5  | DISC  353d  68ep   811tr long-excess=-0.22% t=-0.63 | HOLD  239d  43ep   587tr long-excess=+0.56% t=+1.55
+   DISC next-day UP rate pooled=47.5% date-avg=46.8%  (uncond 50.1%)
+   HOLD next-day UP rate pooled=50.0% date-avg=51.9%  (uncond 50.4%)
+
+UP z>=3 5d date-mean excess by year: {2021: -1.26, 2022: 1.0, 2023: 0.55, 2024: 0.91, 2025: 0.61, 2026: 0.41} n dates: {2021: np.int64(5), 2022: np.int64(96), 2023: np.int64(149), 2024: np.int64(163), 2025: np.int64(137), 2026: np.int64(112)}
+  DISC: mean +0.78%, median +0.12%, drop top-5 dates +0.37% t=1.17
+  HOLD: mean +0.52%, median +0.24%, drop top-5 dates -0.10% t=-0.22
+
+== Placebo: signal shifted +20 sessions ==
+UP z>=3 shifted+20         uni1  | DISC  404d  68ep   969tr long-excess=-0.04% t=-0.34 | HOLD  247d  44ep   676tr long-excess=-0.14% t=-0.76
+UP z>=3 shifted+20         uni3  | DISC  404d  68ep   969tr long-excess=-0.01% t=-0.03 | HOLD  246d  43ep   674tr long-excess=-0.62% t=-1.94
+UP z>=3 shifted+20         uni5  | DISC  404d  68ep   969tr long-excess=-0.11% t=-0.38 | HOLD  246d  43ep   674tr long-excess=-0.94% t=-2.49
+UP z>=3 shifted+20         own5  | DISC  404d  68ep   969tr long-excess=-0.19% t=-0.67 | HOLD  246d  43ep   674tr long-excess=-1.00% t=-2.67
+UP z>=3 shifted+20         uno5  | DISC  404d  68ep   969tr long-excess=-0.08% t=-0.30 | HOLD  246d  43ep   674tr long-excess=-1.01% t=-2.69
+   DISC next-day UP rate pooled=50.9% date-avg=48.5%  (uncond 50.1%)
+   HOLD next-day UP rate pooled=45.7% date-avg=47.2%  (uncond 50.4%)
+Shuffle-within-year placebo 5d DISC: placebo mean +0.31% sd 0.29%  real +0.78%  p(placebo>=real)=0.050
+Shuffle-within-year placebo 5d HOLD: placebo mean +0.11% sd 0.33%  real +0.52%  p(placebo>=real)=0.105

@@ -1,0 +1,37 @@
+dropped |1d|>45% moves: 15
+
+S5 LOW30 dates disc/hold: 90 34
+SPY h= 1 disc: dates  90 ep 17 | pooled -0.11% HAC t -0.85 | episode-wt +0.03% t +0.19 | causal-wt -0.18% | non-overlap n=90 -0.11% t -0.80 | hit 42 vs 53
+SPY h= 1 hold: dates  34 ep 12 | pooled +0.25% HAC t +0.67 | episode-wt +0.44% t +2.31 | causal-wt -0.06% | non-overlap n=34 +0.25% t +0.57 | hit 53 vs 54
+SPY h= 3 disc: dates  90 ep 17 | pooled +0.04% HAC t +0.15 | episode-wt +0.65% t +2.11 | causal-wt -0.06% | non-overlap n=50 +0.17% t +0.51 | hit 52 vs 55
+SPY h= 3 hold: dates  32 ep 12 | pooled +0.51% HAC t +0.93 | episode-wt +0.95% t +2.28 | causal-wt +0.14% | non-overlap n=20 -0.17% t -0.24 | hit 62 vs 58
+SPY h= 5 disc: dates  90 ep 17 | pooled +0.17% HAC t +0.53 | episode-wt +0.98% t +2.64 | causal-wt -0.02% | non-overlap n=38 +0.05% t +0.11 | hit 60 vs 57
+SPY h= 5 hold: dates  31 ep 12 | pooled +0.86% HAC t +1.25 | episode-wt +1.16% t +2.58 | causal-wt +0.36% | non-overlap n=16 +0.14% t +0.22 | hit 71 vs 57
+SPY h=10 disc: dates  90 ep 17 | pooled +0.56% HAC t +1.14 | episode-wt +1.59% t +3.06 | causal-wt +0.16% | non-overlap n=26 +0.32% t +0.39 | hit 56 vs 59
+SPY h=10 hold: dates  31 ep 12 | pooled +1.18% HAC t +1.60 | episode-wt +1.16% t +1.61 | causal-wt +0.48% | non-overlap n=13 -0.29% t -0.43 | hit 61 vs 60
+EW h= 1 disc: dates  90 ep 17 | pooled -0.10% HAC t -0.46 | episode-wt +0.22% t +0.82 | causal-wt -0.13% | non-overlap n=90 -0.10% t -0.44 | hit 47 vs 52
+EW h= 1 hold: dates  34 ep 12 | pooled +0.46% HAC t +0.98 | episode-wt +0.78% t +3.53 | causal-wt +0.07% | non-overlap n=34 +0.46% t +0.80 | hit 59 vs 53
+EW h= 3 disc: dates  90 ep 17 | pooled +0.22% HAC t +0.48 | episode-wt +1.14% t +2.31 | causal-wt +0.02% | non-overlap n=50 +0.35% t +0.63 | hit 51 vs 54
+EW h= 3 hold: dates  32 ep 12 | pooled +0.64% HAC t +0.91 | episode-wt +1.40% t +2.45 | causal-wt +0.20% | non-overlap n=20 -0.23% t -0.25 | hit 59 vs 53
+EW h= 5 disc: dates  90 ep 17 | pooled +0.45% HAC t +0.82 | episode-wt +1.54% t +2.67 | causal-wt +0.02% | non-overlap n=38 +0.11% t +0.14 | hit 60 vs 55
+EW h= 5 hold: dates  31 ep 12 | pooled +0.74% HAC t +0.85 | episode-wt +1.19% t +2.12 | causal-wt -0.00% | non-overlap n=16 +0.01% t +0.01 | hit 61 vs 55
+EW h=10 disc: dates  90 ep 17 | pooled +1.16% HAC t +1.46 | episode-wt +2.66% t +3.42 | causal-wt +0.34% | non-overlap n=26 +0.36% t +0.27 | hit 64 vs 57
+EW h=10 hold: dates  31 ep 12 | pooled +1.30% HAC t +1.40 | episode-wt +0.73% t +0.81 | causal-wt -0.15% | non-overlap n=13 -1.36% t -1.58 | hit 58 vs 57
+
+Look-ahead check (SPY h=5): excess by episode length
+  disc: single-date eps n=4 ex +2.84% | dates in multi-date eps n=86 ex +0.05% | LAST date of each ep +2.92% vs other dates -0.47%
+  hold: single-date eps n=6 ex +1.09% | dates in multi-date eps n=25 ex +0.81% | LAST date of each ep +2.41% vs other dates -0.11%
+
+Placebo 1: signal shifted +20 sessions (SPY/EW h=5)
+  SPY disc: pooled +0.05% (HAC t +0.09) episode-wt +0.02% t +0.04 ep 16
+  SPY hold: pooled +0.07% (HAC t +0.09) episode-wt -0.26% t -0.30 ep 12
+  EW disc: pooled +0.16% (HAC t +0.20) episode-wt +0.14% t +0.15 ep 16
+  EW hold: pooled +0.14% (HAC t +0.13) episode-wt -0.65% t -0.53 ep 12
+
+Placebo 2: 500 random circular shifts of the signal within each sample (preserves clustering); SPY h=5
+  SPY disc: real episode-wt +0.98 (t +2.64); placebo episode-wt mean +0.00, share>=real 0.00, share placebo t>2 0.02 | real pooled +0.17; placebo pooled mean +0.01, share>=real 0.33
+  SPY hold: real episode-wt +1.16 (t +2.58); placebo episode-wt mean -0.02, share>=real 0.02, share placebo t>2 0.03 | real pooled +0.86; placebo pooled mean +0.06, share>=real 0.06
+  EW disc: real episode-wt +1.54 (t +2.67); placebo episode-wt mean -0.00, share>=real 0.01, share placebo t>2 0.04 | real pooled +0.45; placebo pooled mean +0.04, share>=real 0.22
+  EW hold: real episode-wt +1.19 (t +2.12); placebo episode-wt mean +0.05, share>=real 0.08, share placebo t>2 0.04 | real pooled +0.74; placebo pooled mean +0.11, share>=real 0.23
+
+Gauge last 4 sessions: {'2026-11-18': 0.27, '2026-11-19': 0.43, '2026-11-20': 0.59, '2026-11-23': 0.03}
