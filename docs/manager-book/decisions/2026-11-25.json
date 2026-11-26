@@ -1,0 +1,25 @@
+{
+ "asof": "2026-11-25",
+ "made_at": "2026-11-26T01:25:54Z",
+ "decision": "Buy one SPY 2026-12-11 755 call at the 1.26 ask (US$126.65, 12.7% of equity) with a resting take-profit at 6.30 (5x) and no nightly stop. The analyst's case passed its entry test (EV 1.54 per dollar at 26% vol); the red team could not refute it but cut the estimate to about 1.1 (90% CI 0.55-1.83) and showed the edge comes from rebounds after drawdowns, so this is a marginal rebound bet sized at one contract. The 12-04 742 call was rejected (EV about 0.9).",
+ "research": {
+  "news_scout": "Early sell-off (Nasdaq -4.6% at the low) on hot PCE (core 3.3% y/y) and proposed Section 301 tariffs on 14 partners, mostly recovered in thin holiday dip-buying: S&P 500 -0.25% to 7,182.78, Nasdaq -0.62%, Dow +0.33%. NVDA -3.9% (S&P Global credit watch). A December 8-9 Fed hike priced at about 90-95% (mid-November FedWatch). No verified calendar 11-27 to 12-04 (jobs report possibly 12-04, unconfirmed). Thanksgiving 11-26, half day 11-27.",
+  "price_scout": "SPY 716.70 (-0.3%, closed at 92% of its range, 20 days -7.2%, 20-day realized 32%); QQQ 633.93 (-0.65%, 20 days -12.6%); NVDA 149.30 (-3.9%, 20 days -31%); AMD 406.03 (5 days -23%). After similar 20-day drops (overlapping episodes) SPY moved beyond +/-4% within 8 sessions 35% of the time against 15% normally.",
+  "options_scout": "Implied below realized on SPY calls (18-26 vs 32), QQQ (31-40 vs 48), NVDA, AMD and AMZN calls. SPY 12-04 740C 2.09/2.13 (breakeven +3.5%), 742C 1.66/1.71, 680P 3.07/3.12 (IV 34, rich); SPY 12-11 755C 1.22/1.26 (breakeven +5.5%); QQQ 12-04 670C 2.26/2.44; NVDA, AMZN and META quotes thin with wide spreads.",
+  "analyst": "Calendar-day IV overstates the gap to realized; only the upside call wing is cheap. Central vol 26% (trading days) with 1 point lower per +1% rally, zero drift, fat tails: SPY 12-11 755C x1 with take-profit 6.30: EV 1.54 per dollar (1.39 at 25%, 0.87 at implied); SPY 12-04 742C: 1.20 (0.87 at implied). QQQ, NVDA, AMZN and META fail. Prefers the 755C (spans the FOMC and the possible jobs report at the lowest IV).",
+  "red_team": "Vol fades after shocks: after similar set-ups the next 11 sessions realized a median 24% (0.82x the 20-day figure), so a 23-24% central vol is better supported; at that level A is 1.16-1.29 and B 0.88-0.98. No material code bugs (take-profit marked at mid flatters a few percent). De-duplicated episodes 2021-26 (n=27, 5-10% below the 20-day high): the 11-session high reached +5.3% in 22%; backtest EV for A 1.10 (90% CI 0.55-1.83), B 0.91; unconditional days only 0.44. The edge is a rebound bet; 2 of 13 bear-market episodes paid. Verdict: accept A marginally at one contract, reject B."
+ },
+ "actions": [
+  {
+   "action": "buy",
+   "underlying": "SPY",
+   "right": "C",
+   "strike": 755.0,
+   "expiry": "2026-12-11",
+   "qty": 1,
+   "take_profit": 6.3,
+   "stop": null,
+   "thesis": "Cheap upside wing after a 7% drawdown: implied 19% (trading days) against an expected 23-26% realized, spanning the 12-08/09 FOMC. Marginal rebound bet, EV about 1.1 per dollar per the red team; one contract, held to expiry unless the 6.30 take-profit fills."
+  }
+ ]
+}

@@ -1,0 +1,1 @@
+{"asof": "2026-11-25", "source": "IBKR get_price_snapshot (read-only), closing quotes fetched 2026-11-26 ~01:45Z for the SPY 2026-12-11 755C. The options scout's other quotes are summarised in the decisions file.", "quotes": [{"contract_id": 939932171, "underlying": "SPY", "right": "C", "strike": 755.0, "expiry": "2026-12-11", "bid": 1.22, "ask": 1.26, "delta": null}]}

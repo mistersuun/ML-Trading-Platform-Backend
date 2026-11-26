@@ -1,8 +1,24 @@
 {
  "inception": "2026-11-17",
- "last_asof": "2026-11-24",
+ "last_asof": "2026-11-25",
  "spy_start": 732.44,
- "cash": 1000.0,
- "positions": [],
+ "cash": 873.35,
+ "positions": [
+  {
+   "contract_id": 939932171,
+   "underlying": "SPY",
+   "right": "C",
+   "strike": 755.0,
+   "expiry": "2026-12-11",
+   "qty": 1,
+   "entry": 1.26,
+   "entry_date": "2026-11-25",
+   "cost": 126.65,
+   "take_profit": 6.3,
+   "stop": null,
+   "thesis": "Cheap upside wing after a 7% drawdown: implied 19% (trading days) against an expected 23-26% realized, spanning the 12-08/09 FOMC. Marginal rebound bet, EV about 1.1 per dollar per the red team; one contract, held to expiry unless the 6.30 take-profit fills.",
+   "mark": 1.22
+  }
+ ],
  "closed": []
 }
