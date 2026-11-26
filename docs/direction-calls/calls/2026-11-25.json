@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-25",
+ "target": "2026-11-27",
+ "made_at": "2026-11-26T01:09:28Z",
+ "method": "Each call follows the base rate computed tonight for that name from 5 years of daily bars: next-day direction after days of the same size (in units of the name's own 20-day volatility) and a similar close within the day's range. News (press recaps of 11-25): hot PCE inflation and new tariff proposals drove an early sell-off (S&P 500 down as much as 3.2%, Nasdaq 4.6%), most of which was recovered by the close; AI leaders lagged. Thanksgiving 11-26, half day 11-27.",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.56,
+   "reason": "-0.3% to 716.70 after falling as much as 3.2% intraday on hot PCE inflation and new tariff proposals; closed at 92% of its range. Days of this size were followed by an up day 54% of the time (n=493), 57% with a close this high in the range (n=119)."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.54,
+   "reason": "-0.6% to 633.93 after being down as much as 4.6% intraday; closed at the top of its range. 52% up after days of this size (n=467), 55% with a similar close (n=77)."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "down",
+   "confidence": 0.53,
+   "reason": "-3.9% to 149.30 (down more than 9% at one point) on AI-spending, rate and inflation worries. 49% up after days of this size (n=421), 36% with a similar high close but on a small sample (n=58). Slight downside lean."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "+0.4% to 355.58, third up day, close near the high. 52% up after days of this size (n=530 and n=197 with a similar close). Coin flip with a slight upward lean."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-1.3% to 489.93, closing in the upper part of the range. 51% up after days of this size (n=425; n=93 with a similar close). Coin flip."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "up",
+   "confidence": 0.56,
+   "reason": "-3.1% to 244.43 after being down about 5% at the worst; closed at 80% of its range. 55% up after days of this size (n=233); 84% with a similar close but only n=25, so the confidence is capped."
+  },
+  {
+   "symbol": "META",
+   "direction": "down",
+   "confidence": 0.51,
+   "reason": "+3.4% to 609.89 against the AI sell-off, closing at the high. 49% up after days of this size (n=207), 48% with a similar close (n=115). Coin flip with a slight lean to giving some back."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "-1.2% to 380.14. TSLA rose only 46% of the time after days of this size (n=517; 49% with a similar close, n=116), mean -0.25%."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "-2.1% to 273.10, closing near the high after a ~5% intraday drop. 52% up after days of this size (n=402; n=40 with a similar close, mean +0.45%)."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "-1.8% to 406.03, -23% over 5 days, closing at 95% of its range. 50% up after days of this size (n=513), 51% with a similar close (n=89). Coin flip."
+  }
+ ]
+}
