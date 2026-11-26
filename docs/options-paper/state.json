@@ -1,6 +1,6 @@
 {
   "inception": "2026-10-14",
-  "last_asof": "2026-11-24",
+  "last_asof": "2026-11-25",
   "bench_start": {
     "L": 728.95,
     "P": 769.6,
@@ -60,7 +60,7 @@
           "side": "short",
           "entry_price": 5.95,
           "entry_date": "2026-11-09",
-          "last_mid": 15.47
+          "last_mid": 16.54
         }
       ],
       "closed": [
@@ -100,21 +100,8 @@
     },
     "M": {
       "start": 1000.0,
-      "cash": 135.14999999999998,
-      "positions": [
-        {
-          "contract_id": 936998186,
-          "underlying": "XOM",
-          "right": "C",
-          "strike": 195.0,
-          "expiry": "2027-02-19",
-          "qty": 1,
-          "side": "long",
-          "entry_price": 0.86,
-          "entry_date": "2026-11-19",
-          "last_mid": 0.525
-        }
-      ],
+      "cash": 162.49999999999997,
+      "positions": [],
       "closed": [
         {
           "contract_id": 852747638,
@@ -179,6 +166,22 @@
           "exit_date": "2026-11-20",
           "reason": "stop (-60%)",
           "pnl": -86.3
+        },
+        {
+          "contract_id": 936998186,
+          "underlying": "XOM",
+          "right": "C",
+          "strike": 195.0,
+          "expiry": "2027-02-19",
+          "qty": 1,
+          "side": "long",
+          "entry_price": 0.86,
+          "entry_date": "2026-11-19",
+          "last_mid": 0.745,
+          "exit_price": 0.28,
+          "exit_date": "2026-11-25",
+          "reason": "stop (-60%)",
+          "pnl": -59.3
         }
       ]
     }

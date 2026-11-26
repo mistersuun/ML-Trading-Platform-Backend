@@ -1,10 +1,10 @@
-# Aggressive paper accounts (as of 2026-11-24)
+# Aggressive paper accounts (as of 2026-11-25)
 
-Paper only. US$1,000 each, rules frozen in `PREREG.md`. First decision on the 2026-10-15 close, first fills at the next open; review on 2027-04-15. The options account of this group (momentum calls) is Book M in `docs/options-paper/report.md`. SPY from the same first open: -7.05%.
+Paper only. US$1,000 each, rules frozen in `PREREG.md`. First decision on the 2026-10-15 close, first fills at the next open; review on 2027-04-15. The options account of this group (momentum calls) is Book M in `docs/options-paper/report.md`. SPY from the same first open: -7.32%.
 
 | Account | Equity | Multiple | Trades | Costs | Holdings |
 |---|---:|---:|---:|---:|---|
-| 3x Nasdaq trend (TQQQ above the 200-day line, else T-bills) | $688.03 | 0.69x | 7 | $5.08 | SGOV |
-| All-in top momentum stock | $754.56 | 0.75x | 1 | $0.85 | AMD |
+| 3x Nasdaq trend (TQQQ above the 200-day line, else T-bills) | $688.16 | 0.69x | 7 | $5.08 | SGOV |
+| All-in top momentum stock | $741.34 | 0.74x | 1 | $0.85 | AMD |
 
 Odds before starting are in `odds.md`. Expect large swings: a 3x fund can fall a third in a few weeks, and a single stock can halve.
