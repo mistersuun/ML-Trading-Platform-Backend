@@ -1,21 +1,17 @@
 {
- "cash": 311.05000000000007,
- "position": {
-  "contract_id": 932517186,
-  "label": "AMZN 2026-11-27 255C",
+ "cash": 952.9000000000001,
+ "position": null,
+ "pending": {
+  "ts": "2026-11-27T11:06",
+  "contract_id": 943209792,
+  "label": "AMZN 2026-11-27 257.5C",
   "underlying": "AMZN",
   "right": "C",
-  "strike": 255.0,
+  "strike": 257.5,
   "expiry": "2026-11-27",
-  "reason": "AMZN +2.3% (1.1x a typical day)",
-  "qty": 11,
-  "entry": 0.24,
-  "ordered_ts": "2026-11-27T10:06",
-  "entry_ts": "2026-11-27T10:27",
-  "cost": 271.15,
-  "mark": 0.23
+  "reason": "AMZN +4.0% (2.0x a typical day)",
+  "seen_ask": 0.11
  },
- "pending": null,
  "trades": [
   {
    "contract_id": 943826160,
@@ -54,6 +50,25 @@
    "exit_ts": "2026-11-24T15:50",
    "why": "final check",
    "pnl": -36.3
+  },
+  {
+   "contract_id": 932517186,
+   "label": "AMZN 2026-11-27 255C",
+   "underlying": "AMZN",
+   "right": "C",
+   "strike": 255.0,
+   "expiry": "2026-11-27",
+   "reason": "AMZN +2.3% (1.1x a typical day)",
+   "qty": 11,
+   "entry": 0.24,
+   "ordered_ts": "2026-11-27T10:06",
+   "entry_ts": "2026-11-27T10:27",
+   "cost": 271.15,
+   "mark": 0.23,
+   "exit": 0.59,
+   "exit_ts": "2026-11-27T11:06",
+   "why": "take profit",
+   "pnl": 370.7
   }
  ],
  "day": {
@@ -62,8 +77,8 @@
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-27T10:27",
+ "last_ts": "2026-11-27T11:06",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 997.49
+ "bench_last": 1004.31
 }
