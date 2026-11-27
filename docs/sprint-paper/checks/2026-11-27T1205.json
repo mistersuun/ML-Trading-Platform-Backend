@@ -1,0 +1,12 @@
+{
+ "ts": "2026-11-27T12:05",
+ "asof": "11:50:00",
+ "final": true,
+ "source": "IBKR. spy.last is the close of SPY's 1-minute bar 11:50 New York (727.36), about 15 minutes before the check (option quotes are 15 minutes delayed). Open 725.86 from the SPY snapshot; prior close 716.7 = last minus change.",
+ "spy": {
+  "last": 727.36,
+  "open": 725.86,
+  "prior_close": 716.7
+ },
+ "quotes": []
+}
