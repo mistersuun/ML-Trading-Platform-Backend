@@ -1,0 +1,20 @@
+{
+ "asof": "2026-11-27",
+ "made_at": "2026-11-27T22:55:05Z",
+ "decision": "Hold the SPY 2026-12-11 755 call (bid 1.91 vs cost 1.26) and lower its resting take-profit from 6.30 to 4.00; plan to sell before the 12-08/09 FOMC if 4.00 has not filled by the 12-07 close. No new trade: the analyst's one pass (NVDA 12-11 130P at 2.54) rests entirely on realized volatility staying above implied and returns 0.94 per dollar at implied vol; today's long-shot study (docs/research/2026-11-27-longshot) refuted model-priced out-of-the-money edges once real prices were used, so the manager declines it and the red team is not needed.",
+ "research": {
+  "news_scout": "Today's drivers unverified by search (thin half-day). Calendar: November jobs report Fri 12-04 08:30 (BLS), CPI Thu 12-10 08:30 (BLS), Broadcom earnings Wed 12-09 after the close (company release); Marvell 12-01 and Snowflake/Salesforce 12-02 after the close; FOMC 12-08/09. December hike pricing not found tonight (mid-November FedWatch about 90-95%).",
+  "price_scout": "SPY 728.32 (+1.6%, 20 days -5.3%, closed at 91% of range, RV20 32%); QQQ 650.99 (+2.7%); NVDA 150.49 (+0.8%, 20 days -30%); AMD 424.54 (+4.6%, 5 days -13%); AMZN 254.12 (+4.0%); META 628.96 (+3.1%); TSLA 400.00 (+5.2%). Next-day base rates near 50% for all names.",
+  "options_scout": "12-04 ATM implied vol below 30-day historical for SPY (21.5 vs 23.9), QQQ (32.7 vs 37.6), NVDA (83.9 vs 114), AMD, AMZN, TSLA; META in line. Under-US$3 contracts: SPY 12-04 744C 2.13/2.22, 748C 1.25/1.33; SPY 12-11 752C 2.48/2.55; QQQ 12-04 675C 2.21/2.37; NVDA 12-04 165C 1.94/2.10, 12-11 170C 2.11/2.65, 12-11 130P 2.27/2.54; AMZN and TSLA wings with 25-52% spreads; no SPY/QQQ/AMD/META puts under US$3.",
+  "analyst": "Hold the 755C and lower the take-profit to 4.00 (about +2.3% in SPY by 12-03); sell before the FOMC if unfilled by 12-07. One marginal candidate, NVDA 12-11 130P x1 (US$255): EV 1.20 at 92% vol, 0.94 at implied 83%; alternative NVDA 12-04 165C (0.96 at implied). AMZN, TSLA and QQQ rejected (spreads, EV at implied below 1).",
+  "red_team": "Not run: the manager declined the only candidate."
+ },
+ "actions": [
+  {
+   "action": "set",
+   "contract_id": 939932171,
+   "take_profit": 4.0,
+   "stop": null
+  }
+ ]
+}
