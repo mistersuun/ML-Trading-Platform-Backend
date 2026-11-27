@@ -1,0 +1,12 @@
+1d 1sd call, all days: tickets 1253, >=5x 5.6%, >=10x 2.7%, mean 0.77x, median 0.00x, US$100 each -> total P&L -29,352; chain 3 steps to 1,000x 0.009% (1 in 10,811); 4 steps to 625x 0.007%
+      by year (tickets, P&L): 2021:24/+74 2022:251/+431 2023:250/-5,389 2024:252/-8,033 2025:250/-10,479 2026:226/-5,956
+1d 1sd call, VIX >= 25: tickets 184, >=5x 8.7%, >=10x 4.3%, mean 1.35x, median 0.00x, US$100 each -> total P&L +6,525; chain 3 steps to 1,000x 0.052% (1 in 1,914); 4 steps to 625x 0.065%
+      by year (tickets, P&L): 2021:5/-181 2022:131/+4,086 2023:3/-279 2024:4/+82 2025:20/+1,118 2026:21/+1,699
+2d 1sd call, all days: tickets 626, >=5x 9.3%, >=10x 2.2%, mean 0.85x, median 0.00x, US$100 each -> total P&L -9,646; chain 3 steps to 1,000x 0.009% (1 in 11,765); 4 steps to 625x 0.020%
+      by year (tickets, P&L): 2021:12/-90 2022:126/-2,375 2023:125/-873 2024:126/-1,231 2025:125/-2,683 2026:112/-2,394
+2d 1sd call, VIX >= 25: tickets 102, >=5x 10.8%, >=10x 2.0%, mean 0.99x, median 0.00x, US$100 each -> total P&L -67; chain 3 steps to 1,000x 0.005% (1 in 21,053); 4 steps to 625x 0.038%
+      by year (tickets, P&L): 2021:3/-300 2022:69/-30 2023:3/-300 2024:3/-152 2025:12/+672 2026:12/+42
+5d 1sd call, all days: tickets 250, >=5x 18.0%, >=10x 2.8%, mean 1.46x, median 0.00x, US$100 each -> total P&L +11,507; chain 3 steps to 1,000x 0.051% (1 in 1,961); 4 steps to 625x 0.128%
+      by year (tickets, P&L): 2021:5/+29 2022:50/+3,442 2023:50/+4,663 2024:51/+2,881 2025:50/+171 2026:44/+321
+5d 1sd call, VIX >= 25: tickets 49, >=5x 20.4%, >=10x 0.0%, mean 1.32x, median 0.00x, US$100 each -> total P&L +1,578; chain 3 steps to 1,000x 0.000% (1 in 1,000,000,000); 4 steps to 625x 0.173%
+      by year (tickets, P&L): 2021:1/-100 2022:31/+1,545 2023:1/-100 2024:2/-200 2025:7/+608 2026:7/-174

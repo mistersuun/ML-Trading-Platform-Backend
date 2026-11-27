@@ -1,0 +1,227 @@
+date,event,time_et,source_url,note
+2021-11-03,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2021-11-05,NFP,08:30,https://www.bls.gov/schedule/2021/home.htm,
+2021-11-10,CPI,08:30,https://www.bls.gov/schedule/2021/home.htm,
+2021-11-24,PCE,10:00,https://www.bea.gov/news/2021/personal-income-and-outlays-october-2021,
+2021-12-03,NFP,08:30,https://www.bls.gov/schedule/2021/home.htm,
+2021-12-10,CPI,08:30,https://www.bls.gov/schedule/2021/home.htm,
+2021-12-15,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2021-12-23,PCE,08:30,https://www.bea.gov/news/2021/personal-income-and-outlays-november-2021,
+2022-01-07,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-01-12,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-01-26,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-01-28,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-december-2021,
+2022-02-04,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-02-10,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-02-25,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-january-2022,
+2022-03-04,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-03-10,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-03-16,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-03-31,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-february-2022,
+2022-04-01,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-04-12,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-04-29,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-march-2022,
+2022-05-04,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-05-06,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-05-11,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-05-27,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-april-2022,
+2022-06-03,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-06-10,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-06-15,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-06-30,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-may-2022,
+2022-07-08,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-07-13,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-07-27,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-07-29,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-june-2022,
+2022-08-05,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-08-10,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-08-26,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-july-2022,
+2022-09-02,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-09-13,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-09-21,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-09-30,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-august-2022-and-annual-update,
+2022-10-07,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-10-13,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-10-28,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-september-2022,
+2022-11-02,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-11-04,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-11-10,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-12-01,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-october-2022,
+2022-12-02,NFP,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-12-13,CPI,08:30,https://www.bls.gov/schedule/2022/home.htm,
+2022-12-14,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2022-12-23,PCE,08:30,https://www.bea.gov/news/2022/personal-income-and-outlays-november-2022,
+2023-01-06,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-01-12,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-01-27,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-december-2022,
+2023-02-01,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-02-03,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-02-14,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-02-24,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-january-2023,
+2023-03-10,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-03-14,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-03-22,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-03-31,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-february-2023,
+2023-04-07,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-04-12,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-04-28,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-march-2023,
+2023-05-03,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-05-05,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-05-10,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-05-26,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-april-2023,
+2023-06-02,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-06-13,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-06-14,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-06-30,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-may-2023,
+2023-07-07,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-07-12,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-07-26,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-07-28,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-june-2023,
+2023-08-04,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-08-10,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-08-31,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-july-2023,
+2023-09-01,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-09-13,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-09-20,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-09-29,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-august-2023,
+2023-10-06,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-10-12,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-10-27,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-september-2023,
+2023-11-01,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-11-03,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-11-14,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-11-30,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-october-2023,
+2023-12-08,NFP,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-12-12,CPI,08:30,https://www.bls.gov/schedule/2023/home.htm,
+2023-12-13,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2023-12-22,PCE,08:30,https://www.bea.gov/news/2023/personal-income-and-outlays-november-2023,
+2024-01-05,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-01-11,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-01-26,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-december-2023,
+2024-01-31,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-02-02,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-02-13,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-02-29,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-january-2024,
+2024-03-08,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-03-12,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-03-20,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-03-29,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-february-2024,
+2024-04-05,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-04-10,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-04-26,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-march-2024,
+2024-05-01,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-05-03,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-05-15,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-05-31,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-april-2024,
+2024-06-07,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-06-12,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-06-12,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-06-28,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-may-2024,
+2024-07-05,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-07-11,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-07-26,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-june-2024,
+2024-07-31,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-08-02,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-08-14,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-08-30,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-july-2024,
+2024-09-06,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-09-11,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-09-18,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-09-27,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-august-2024,
+2024-10-04,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-10-10,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-10-31,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-september-2024,
+2024-11-01,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-11-07,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-11-13,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-11-27,PCE,10:00,https://www.bea.gov/news/2024/personal-income-and-outlays-october-2024,
+2024-12-06,NFP,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-12-11,CPI,08:30,https://www.bls.gov/schedule/2024/home.htm,
+2024-12-18,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2024-12-20,PCE,08:30,https://www.bea.gov/news/2024/personal-income-and-outlays-november-2024,
+2025-01-10,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-01-15,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-01-29,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-01-31,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-december-2024,
+2025-02-07,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-02-12,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-02-28,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-january-2025,
+2025-03-07,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-03-12,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-03-19,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-03-28,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-february-2025,
+2025-04-04,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-04-10,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-04-30,PCE,10:00,https://www.bea.gov/news/2025/personal-income-and-outlays-march-2025,
+2025-05-02,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-05-07,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-05-13,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-05-30,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-april-2025,
+2025-06-06,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-06-11,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-06-18,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-06-27,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-may-2025,
+2025-07-03,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-07-15,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-07-30,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-07-31,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-june-2025,
+2025-08-01,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-08-12,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-08-29,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-july-2025,
+2025-09-05,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-09-11,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,
+2025-09-17,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-09-26,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-august-2025,
+2025-10-24,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,delayed by shutdown (Sep 2025 data)
+2025-10-29,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-11-20,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,delayed by shutdown (Sep 2025 data)
+2025-12-05,PCE,10:00,https://www.bea.gov/news/2025/personal-income-and-outlays-september-2025,delayed by shutdown
+2025-12-10,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2025-12-16,NFP,08:30,https://www.bls.gov/schedule/2025/home.htm,"Nov 2025 data (Oct data not separately released, shutdown)"
+2025-12-18,CPI,08:30,https://www.bls.gov/schedule/2025/home.htm,Nov 2025 data; Oct 2025 CPI not published (shutdown)
+2025-12-23,PCE,08:30,https://www.bea.gov/news/2025/personal-income-and-outlays-data-update-september-2025,"data update/revision release, not first print"
+2026-01-09,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-01-13,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-01-22,PCE,10:00,https://www.bea.gov/news/2026/personal-income-and-outlays-october-and-november-2025,combined Oct+Nov 2025 release (shutdown delay)
+2026-01-28,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-02-11,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-02-13,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-02-20,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-december-2025,
+2026-03-06,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-03-11,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-03-13,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-january-2026,
+2026-03-18,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-04-03,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-04-09,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-february-2026,
+2026-04-10,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-04-29,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-04-30,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-march-2026,
+2026-05-08,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-05-12,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-05-28,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-april-2026,
+2026-06-05,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-06-10,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-06-17,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-06-25,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-may-2026,
+2026-07-02,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-07-14,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-07-29,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-07-30,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-june-2026,
+2026-08-07,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-08-12,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-08-26,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-july-2026,
+2026-09-04,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-09-11,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-09-16,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-09-30,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-august-2026,
+2026-10-02,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-10-14,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-10-28,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting
+2026-10-29,PCE,08:30,https://www.bea.gov/news/2026/personal-income-and-outlays-september-2026,
+2026-11-06,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-11-10,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,
+2026-11-25,PCE,08:30,https://www.bea.gov/data/personal-consumption-expenditures-price-index,Oct 2026 data; time not verified
+2026-12-04,NFP,08:30,https://www.bls.gov/schedule/2026/home.htm,scheduled (future)
+2026-12-09,FOMC,14:00,https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm,statement day; 2nd day of meeting; 2026-12 is future/scheduled
+2026-12-10,CPI,08:30,https://www.bls.gov/schedule/2026/home.htm,scheduled (future)
+2026-12-23,PCE,08:30,https://www.bea.gov/news/schedule,scheduled (future)

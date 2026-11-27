@@ -1,0 +1,12 @@
+Next week's earnings tickets (12-04 expiry), priced at the IBKR ask after the 2026-11-27 close, replayed over each
+stock's last 20 earnings reactions (close before the news to the 3rd close after it; held to expiry).
+
+MRVL 150C ask 6.00 (US$600): quarters 20, paid anything 25%, >=2x 20%, >=5x 0%, >=10x 0%, average 0.66x per dollar, best 4.7x
+MRVL 165C ask 2.12 (US$212): quarters 20, paid anything 10%, >=2x 10%, >=5x 5%, >=10x 0%, average 0.45x per dollar, best 6.3x
+MRVL 125P ask 4.00 (US$400): quarters 20, paid anything 35%, >=2x 15%, >=5x 5%, >=10x 0%, average 0.77x per dollar, best 6.0x
+CRM 215C ask 4.35 (US$435): quarters 20, paid anything 35%, >=2x 15%, >=5x 5%, >=10x 0%, average 0.83x per dollar, best 7.7x
+CRM 225C ask 2.26 (US$226): quarters 20, paid anything 15%, >=2x 10%, >=5x 5%, >=10x 5%, average 0.80x per dollar, best 10.3x
+CRM 230C ask 1.57 (US$157): quarters 20, paid anything 10%, >=2x 10%, >=5x 5%, >=10x 5%, average 0.71x per dollar, best 11.6x
+CRM 180P ask 3.95 (US$395): quarters 20, paid anything 20%, >=2x 5%, >=5x 0%, >=10x 0%, average 0.32x per dollar, best 3.6x
+SNOW 305C ask 9.45 (US$945): quarters 20, paid anything 25%, >=2x 10%, >=5x 10%, >=10x 5%, average 1.32x per dollar, best 14.5x
+SNOW 250P ask 9.50 (US$950): quarters 20, paid anything 25%, >=2x 10%, >=5x 5%, >=10x 0%, average 0.58x per dollar, best 5.1x
