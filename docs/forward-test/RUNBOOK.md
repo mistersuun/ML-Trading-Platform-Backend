@@ -197,6 +197,10 @@ Nothing under `state/` or `results/` is ever committed. Do not commit code chang
 
 ## Investor shadow portfolios (side study, does not touch the sim)
 
+**Restarted 2026-11-27 at the owner's request** (it had stopped after the 2026-11-16 session). Nightly again: top up the ETFs and
+listed vehicles below (SEQ, the Sequoia ETF, is conid 935551665 on ARCA; SEQUX no longer prints) and run the tracker (step 7b of
+the nightly prompt). The first night uses ONE_MONTH bars to fill 11-17..11-27.
+
 Tracks "famous investor" 13F clones, listed vehicles and ETFs next to SPY (definitions, weights, conids:
 `docs/forward-test/2026-10/investor-portfolios.json`). Inception is the close of 2026-10-06 (until that bar is on
 file the latest close is used and the output says so). Each evening, after the normal fetch, top up these tickers
