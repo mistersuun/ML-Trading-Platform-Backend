@@ -1,20 +1,20 @@
 # Y7 Mover sprint: US$1,000 to US$200,000
 
-As of 2026-11-27T10:06 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
+As of 2026-11-27T10:27 New York. Paper only; rules frozen in `PREREG.md`. Started 2026-11-23T10:13.
 
 | | Value |
 |---|---:|
-| Equity | **US$582.20** |
+| Equity | **US$564.05** |
 | Status | live |
-| Progress to US$200,000 | 0.29% |
+| Progress to US$200,000 | 0.28% |
 | US$1,000 in SPY | US$997.49 |
 | Closed trades | 2 (0 wins) |
 
 ## Last check
 
-- order: buy AMZN 2026-11-27 255C (delayed ask 0.16); AMZN +2.3% (1.1x a typical day); movers AMZN +2.3% (1.1x)
+- buy AMZN 2026-11-27 255C x11 at 0.24 (US$271.15); ordered 10:06: AMZN +2.3% (1.1x a typical day)
 
-Order waiting for its fill: AMZN 2026-11-27 255C, placed 2026-11-27T10:06.
+Open: AMZN 2026-11-27 255C x11, entry 0.24 at 2026-11-27T10:27, last bid 0.23.
 
 ## Trades
 

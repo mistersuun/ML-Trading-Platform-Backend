@@ -1,0 +1,1 @@
+{"ts": "2026-11-27T10:27", "kind": "fill", "source": "IBKR get_price_snapshot (bid_ask, 15 minutes delayed) of the ordered AMZN 255 call, requested about 21 minutes after the order.", "quotes": [{"contract_id": 932517186, "underlying": "AMZN", "right": "C", "strike": 255.0, "expiry": "2026-11-27", "bid": 0.23, "ask": 0.24, "delta": null}]}
