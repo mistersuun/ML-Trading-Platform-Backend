@@ -1,7 +1,17 @@
 {
  "cash": 582.2,
  "position": null,
- "pending": null,
+ "pending": {
+  "ts": "2026-11-27T10:06",
+  "contract_id": 932517186,
+  "label": "AMZN 2026-11-27 255C",
+  "underlying": "AMZN",
+  "right": "C",
+  "strike": 255.0,
+  "expiry": "2026-11-27",
+  "reason": "AMZN +2.3% (1.1x a typical day)",
+  "seen_ask": 0.16
+ },
  "trades": [
   {
    "contract_id": 943826160,
@@ -43,13 +53,13 @@
   }
  ],
  "day": {
-  "date": "2026-11-24",
-  "entries": 1,
+  "date": "2026-11-27",
+  "entries": 0,
   "stopped": false
  },
  "status": "live",
- "last_ts": "2026-11-24T15:50",
+ "last_ts": "2026-11-27T10:06",
  "inception": "2026-11-23T10:13",
  "spy_start": 721.9,
- "bench_last": 995.05
+ "bench_last": 997.49
 }
