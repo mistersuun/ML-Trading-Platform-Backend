@@ -32,8 +32,12 @@
    "entry": 3.5500000000000003,
    "cost": 355.65,
    "unspent": 344.35,
-   "settled": false
+   "settled": true,
+   "settle": 0.0,
+   "underlying_close": 150.49,
+   "proceeds": 344.35,
+   "multiple": 0.4919
   }
  ],
- "last_asof": "2026-11-25"
+ "last_asof": "2026-11-27"
 }
