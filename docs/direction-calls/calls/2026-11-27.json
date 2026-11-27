@@ -1,0 +1,68 @@
+{
+ "asof": "2026-11-27",
+ "target": "2026-11-30",
+ "made_at": "2026-11-27T22:51:06Z",
+ "method": "Each call follows the base rate computed tonight for that name from 5 years of daily bars: next-day direction after days of the same size (in units of the name's own 20-day volatility) and a similar close within the day's range. News: a broad half-day rebound led by AI/chip names and Amazon; next week brings Marvell (12-1) and Snowflake (12-2) earnings and the November jobs report (Fri 12-4, per BLS). Record so far: 29 of 70.",
+ "calls": [
+  {
+   "symbol": "SPY",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "+1.6% to 728.32 on a thin half-day, closing at 91% of the range, recovering Wednesday's sell-off. Days of this size were followed by an up day 52% of the time (n=362; same with a similar close, n=263), mean about 0. Coin flip; the jobs report is due Fri 12-4."
+  },
+  {
+   "symbol": "QQQ",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "+2.7% to 650.99, closing at the high. 57% up after days of this size (n=345; 57% with a similar close, n=207)."
+  },
+  {
+   "symbol": "NVDA",
+   "direction": "up",
+   "confidence": 0.53,
+   "reason": "+0.8% to 150.49 after -5.9% and -3.9% days. 53% up after days of this size (n=503), 55% with a similar close (n=211)."
+  },
+  {
+   "symbol": "AAPL",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "+0.8% to 358.54, near its 20-day high. 51% up after days of this size (n=472), 50% with a similar close. Coin flip."
+  },
+  {
+   "symbol": "MSFT",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "+0.6% to 492.85 but closing low in the range (36%). 50% up after days of this size (n=525), 46% with a similar close (n=204)."
+  },
+  {
+   "symbol": "AMZN",
+   "direction": "down",
+   "confidence": 0.52,
+   "reason": "+4.0% to 254.12 on Black Friday / AI-chip news. After days of this size AMZN rose only 47% of the time (n=210), 48% with a similar close, mean -0.15%."
+  },
+  {
+   "symbol": "META",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "+3.1% to 628.96, mid-range close. 51% up after days of this size (n=248), 50% with a similar close. Coin flip."
+  },
+  {
+   "symbol": "TSLA",
+   "direction": "up",
+   "confidence": 0.55,
+   "reason": "+5.2% to 400.00 (reported EMAG acquisition filing), closing near the high. 56% up after days of this size (n=227), 58% with a similar close (n=153)."
+  },
+  {
+   "symbol": "GOOGL",
+   "direction": "up",
+   "confidence": 0.52,
+   "reason": "+0.7% to 274.96. 54% up after days of this size (n=537), 50% with a similar close. Slight upward lean."
+  },
+  {
+   "symbol": "AMD",
+   "direction": "up",
+   "confidence": 0.51,
+   "reason": "+4.6% to 424.54 after a -23% week, closing near the high. 51% up after days of this size (n=419), 49% with a similar close. Coin flip."
+  }
+ ]
+}
